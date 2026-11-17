@@ -1,0 +1,107 @@
+name: Update POT
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'pssh_ui/**/*.py'
+      - 'main.py'
+      - 'babel.cfg'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-pot-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-pot:
+    name: Extract Translation Template
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Babel
+        run: |
+          python -m pip install --upgrade pip
+          pip install Babel
+
+      - name: Extract strings to locales/pssh_ui.pot
+        id: extract
+        run: |
+          python - <<'EOF'
+          import os
+          import pathlib
+          import shutil
+          import subprocess
+          import sys
+          import tempfile
+
+          pot_path = pathlib.Path("locales/pssh_ui.pot")
+
+          def normalize(text: str) -> str:
+              return "\n".join(
+                  line for line in text.splitlines()
+                  if not line.startswith('"POT-Creation-Date:')
+                  and not line.startswith('"Generated-By: Babel')
+              )
+
+          is_tracked = (
+              subprocess.run(
+                  ["git", "ls-files", "--error-unmatch", str(pot_path)],
+                  capture_output=True,
+              ).returncode
+              == 0
+          )
+          before = normalize(pot_path.read_text(encoding="utf-8")) if pot_path.is_file() else ""
+
+          with tempfile.TemporaryDirectory() as tmpdir:
+              tmp_pot = pathlib.Path(tmpdir) / "pssh_ui.pot"
+              subprocess.run(
+                  [
+                      sys.executable,
+                      "-m",
+                      "babel.messages.frontend",
+                      "extract",
+                      "-F",
+                      "babel.cfg",
+                      "-o",
+                      str(tmp_pot),
+                      "--project=pssh-ui",
+                      "--version=0.1.0",
+                      ".",
+                  ],
+                  check=True,
+              )
+              after = normalize(tmp_pot.read_text(encoding="utf-8"))
+              changed = (not pot_path.is_file()) or (not is_tracked) or (before != after)
+              if changed:
+                  pot_path.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copyfile(tmp_pot, pot_path)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"changed={'true' if changed else 'false'}\n")
+          EOF
+
+      - name: Commit and push updated template
+        if: steps.extract.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add locales/pssh_ui.pot
+          if ! git diff --cached --quiet; then
+            git commit -m "Update translation template (pssh_ui.pot)"
+            git pull --rebase origin "${{ github.ref_name }}"
+            git push origin HEAD:"${{ github.ref_name }}"
+          fi

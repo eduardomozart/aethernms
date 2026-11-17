@@ -1,8 +1,0 @@
-[main]
-host = https://www.transifex.com
-
-[o:eduardomozart:p:pssh-ui:r:pssh_ui]
-file_filter = locales/<lang>/LC_MESSAGES/pssh_ui.po
-source_file = locales/pssh_ui.pot
-source_lang = en
-type = PO

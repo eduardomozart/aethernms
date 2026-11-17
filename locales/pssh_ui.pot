@@ -1,0 +1,1120 @@
+# Translations template for pssh-ui.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the pssh-ui project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pssh-ui 0.1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-17 18:40-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: pssh_ui/gui.py:192
+msgid "Settings"
+msgstr ""
+
+#: pssh_ui/gui.py:203
+msgid "Appearance"
+msgstr ""
+
+#: pssh_ui/gui.py:208 pssh_ui/gui.py:230
+msgid "Auto (OS Default)"
+msgstr ""
+
+#: pssh_ui/gui.py:222
+msgid "Language:"
+msgstr ""
+
+#: pssh_ui/gui.py:231
+msgid "Light"
+msgstr ""
+
+#: pssh_ui/gui.py:232
+msgid "Dark"
+msgstr ""
+
+#: pssh_ui/gui.py:245
+msgid "Dark Theme:"
+msgstr ""
+
+#: pssh_ui/gui.py:254
+msgid "SSH & Execution Defaults"
+msgstr ""
+
+#: pssh_ui/gui.py:265
+msgid "Default SSH Username:"
+msgstr ""
+
+#: pssh_ui/gui.py:266
+msgid "Default SSH Port:"
+msgstr ""
+
+#: pssh_ui/gui.py:267
+msgid "Max Parallel Executions:"
+msgstr ""
+
+#: pssh_ui/gui.py:268
+msgid "Connect Timeout (s):"
+msgstr ""
+
+#: pssh_ui/gui.py:269
+msgid "Command Timeout (s):"
+msgstr ""
+
+#: pssh_ui/gui.py:277 pssh_ui/gui.py:494 pssh_ui/gui.py:678 pssh_ui/gui.py:862
+#: pssh_ui/gui.py:1090 pssh_ui/gui.py:1356
+msgid "Cancel"
+msgstr ""
+
+#: pssh_ui/gui.py:278 pssh_ui/gui.py:495 pssh_ui/gui.py:679
+msgid "Save"
+msgstr ""
+
+#: pssh_ui/gui.py:331
+#, python-brace-format
+msgid "About {app}"
+msgstr ""
+
+#: pssh_ui/gui.py:352 pssh_ui/gui.py:2386 pssh_ui/gui.py:2415
+msgid "Config & Audit Automation"
+msgstr ""
+
+#: pssh_ui/gui.py:356
+msgid "Repository:"
+msgstr ""
+
+#: pssh_ui/gui.py:367 pssh_ui/gui.py:608
+msgid "Close"
+msgstr ""
+
+#: pssh_ui/gui.py:385
+msgid "Edit Device Model"
+msgstr ""
+
+#: pssh_ui/gui.py:385
+msgid "Add Device Model"
+msgstr ""
+
+#: pssh_ui/gui.py:416
+msgid "Model Name *"
+msgstr ""
+
+#: pssh_ui/gui.py:418 pssh_ui/gui.py:660
+msgid "Switch OS *"
+msgstr ""
+
+#: pssh_ui/gui.py:425 pssh_ui/gui.py:3084
+msgid "Vendor"
+msgstr ""
+
+#: pssh_ui/gui.py:426 pssh_ui/gui.py:796 pssh_ui/gui.py:2656
+#: pssh_ui/gui.py:2872 pssh_ui/gui.py:3552
+msgid "Description"
+msgstr ""
+
+#: pssh_ui/gui.py:427 pssh_ui/gui.py:3085 pssh_ui/gui.py:3553
+msgid "Enable Command"
+msgstr ""
+
+#: pssh_ui/gui.py:428 pssh_ui/gui.py:3553
+msgid "Disable Paging Command"
+msgstr ""
+
+#: pssh_ui/gui.py:429
+msgid "Write / Save Command"
+msgstr ""
+
+#: pssh_ui/gui.py:436
+msgid "Automation Prompt Detection RegEx (Credentials, Enable & Paging)"
+msgstr ""
+
+#: pssh_ui/gui.py:442
+msgid "CLI Prompt RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:443 pssh_ui/gui.py:3554
+msgid "Username Prompt RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:444 pssh_ui/gui.py:3555
+msgid "Password Prompt RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:445
+msgid "Enable Prompt RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:446 pssh_ui/gui.py:3556
+msgid "Enable Password Prompt RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:447
+msgid "Pager / Banner RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:455
+msgid "Common Task Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:462
+msgid "Pre-Config Commands (e.g. configure terminal)"
+msgstr ""
+
+#: pssh_ui/gui.py:465
+msgid "Post-Config Commands (e.g. end / write memory)"
+msgstr ""
+
+#: pssh_ui/gui.py:476
+msgid "Pre-Audit Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:479
+msgid "Post-Audit Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:502 pssh_ui/gui.py:698 pssh_ui/gui.py:902 pssh_ui/gui.py:905
+#: pssh_ui/gui.py:1121 pssh_ui/gui.py:2119 pssh_ui/gui.py:2124
+#: pssh_ui/gui.py:2129 pssh_ui/gui.py:2138 pssh_ui/gui.py:2152
+#: pssh_ui/gui.py:2184
+msgid "Validation"
+msgstr ""
+
+#: pssh_ui/gui.py:502
+msgid "Model Name is required."
+msgstr ""
+
+#: pssh_ui/gui.py:542
+#, python-brace-format
+msgid "Device Log — {name} ({ip})"
+msgstr ""
+
+#: pssh_ui/gui.py:563
+#, python-brace-format
+msgid "⚠ {count} error(s) detected: {summary}"
+msgstr ""
+
+#: pssh_ui/gui.py:568
+#, python-brace-format
+msgid "Operation Result: {msg}"
+msgstr ""
+
+#: pssh_ui/gui.py:605
+msgid "Open External Log"
+msgstr ""
+
+#: pssh_ui/gui.py:625
+msgid "Edit Device"
+msgstr ""
+
+#: pssh_ui/gui.py:625 pssh_ui/gui.py:2933
+msgid "Add Device"
+msgstr ""
+
+#: pssh_ui/gui.py:656
+msgid "Device Name"
+msgstr ""
+
+#: pssh_ui/gui.py:657
+msgid "IP Address *"
+msgstr ""
+
+#: pssh_ui/gui.py:658 pssh_ui/gui.py:1063 pssh_ui/gui.py:1734
+#: pssh_ui/gui.py:1772 pssh_ui/gui.py:3002
+msgid "Model"
+msgstr ""
+
+#: pssh_ui/gui.py:668 pssh_ui/gui.py:1745 pssh_ui/gui.py:1774
+#: pssh_ui/gui.py:3003
+msgid "Group"
+msgstr ""
+
+#: pssh_ui/gui.py:669 pssh_ui/gui.py:1951
+msgid "SSH Port"
+msgstr ""
+
+#: pssh_ui/gui.py:698
+msgid "IP Address is required."
+msgstr ""
+
+#: pssh_ui/gui.py:739
+msgid "Edit Snippet"
+msgstr ""
+
+#: pssh_ui/gui.py:739 pssh_ui/gui.py:2799
+msgid "Add Snippet"
+msgstr ""
+
+#: pssh_ui/gui.py:762
+msgid "Snippet Type *"
+msgstr ""
+
+#: pssh_ui/gui.py:774
+msgid "Name *"
+msgstr ""
+
+#: pssh_ui/gui.py:777
+msgid "Device Type (OS) *"
+msgstr ""
+
+#: pssh_ui/gui.py:787 pssh_ui/gui.py:2869
+msgid "Severity"
+msgstr ""
+
+#: pssh_ui/gui.py:804
+#, python-brace-format
+msgid ""
+"Commands *\n"
+"(! comments,\n"
+"${var|type|regex},\n"
+"${var|[\"A\", \"B\"]})"
+msgstr ""
+
+#: pssh_ui/gui.py:827
+msgid ""
+"Audit Validation RegEx\n"
+"(1 pattern per line)"
+msgstr ""
+
+#: pssh_ui/gui.py:864
+msgid "Save Snippet"
+msgstr ""
+
+#: pssh_ui/gui.py:891
+msgid "Detected template variables: none"
+msgstr ""
+
+#: pssh_ui/gui.py:895
+#, python-brace-format
+msgid "Detected template variables: {vars}"
+msgstr ""
+
+#: pssh_ui/gui.py:902
+msgid "Snippet Name is required."
+msgstr ""
+
+#: pssh_ui/gui.py:905 pssh_ui/gui.py:2129 pssh_ui/job_builder.py:171
+msgid "Commands cannot be empty."
+msgstr ""
+
+#: pssh_ui/gui.py:942
+msgid "Import from AirWave"
+msgstr ""
+
+#: pssh_ui/gui.py:960 pssh_ui/gui.py:1008 pssh_ui/gui.py:1103
+#: pssh_ui/gui.py:1161 pssh_ui/gui.py:1162 pssh_ui/gui.py:1163
+msgid "All"
+msgstr ""
+
+#: pssh_ui/gui.py:967
+msgid "Enter AirWave credentials and click Fetch Inventory."
+msgstr ""
+
+#: pssh_ui/gui.py:979
+msgid "AirWave Connection"
+msgstr ""
+
+#: pssh_ui/gui.py:985
+msgid "AirWave Name / IP:"
+msgstr ""
+
+#: pssh_ui/gui.py:987
+msgid "Username:"
+msgstr ""
+
+#: pssh_ui/gui.py:989
+msgid "Password:"
+msgstr ""
+
+#: pssh_ui/gui.py:993
+msgid "Verify SSL"
+msgstr ""
+
+#: pssh_ui/gui.py:997
+msgid "Fetch Inventory"
+msgstr ""
+
+#: pssh_ui/gui.py:1001
+msgid "Device Filters"
+msgstr ""
+
+#: pssh_ui/gui.py:1006
+msgid "Folder:"
+msgstr ""
+
+#: pssh_ui/gui.py:1012
+msgid "Category:"
+msgstr ""
+
+#: pssh_ui/gui.py:1017 pssh_ui/gui.py:2971
+msgid "Model:"
+msgstr ""
+
+#: pssh_ui/gui.py:1022 pssh_ui/gui.py:2960
+msgid "OS Type:"
+msgstr ""
+
+#: pssh_ui/gui.py:1030 pssh_ui/gui.py:2546 pssh_ui/gui.py:2721
+#: pssh_ui/gui.py:2982
+msgid "Status:"
+msgstr ""
+
+#: pssh_ui/gui.py:1038
+msgid "Search (Name/IP):"
+msgstr ""
+
+#: pssh_ui/gui.py:1047
+msgid "Apply Filters"
+msgstr ""
+
+#: pssh_ui/gui.py:1059 pssh_ui/gui.py:1709 pssh_ui/gui.py:1768
+#: pssh_ui/gui.py:2742 pssh_ui/gui.py:2998
+msgid "Device"
+msgstr ""
+
+#: pssh_ui/gui.py:1060 pssh_ui/gui.py:1610 pssh_ui/gui.py:1711
+#: pssh_ui/gui.py:1769 pssh_ui/gui.py:2565 pssh_ui/gui.py:2744
+#: pssh_ui/gui.py:2999
+msgid "Status"
+msgstr ""
+
+#: pssh_ui/gui.py:1061 pssh_ui/gui.py:1721 pssh_ui/gui.py:1770
+#: pssh_ui/gui.py:2743 pssh_ui/gui.py:3000
+msgid "IP Address"
+msgstr ""
+
+#: pssh_ui/gui.py:1062 pssh_ui/gui.py:3001
+msgid "OS Type"
+msgstr ""
+
+#: pssh_ui/gui.py:1064 pssh_ui/gui.py:1744 pssh_ui/gui.py:1773
+msgid "Device Role"
+msgstr ""
+
+#: pssh_ui/gui.py:1065
+msgid "Folder"
+msgstr ""
+
+#: pssh_ui/gui.py:1066 pssh_ui/gui.py:1746 pssh_ui/gui.py:1775
+#: pssh_ui/gui.py:3004
+msgid "Firmware"
+msgstr ""
+
+#: pssh_ui/gui.py:1093
+msgid "Import All Filtered"
+msgstr ""
+
+#: pssh_ui/gui.py:1098
+msgid "Import Highlighted"
+msgstr ""
+
+#: pssh_ui/gui.py:1122
+msgid "AirWave Name / IP, Username, and Password are required."
+msgstr ""
+
+#: pssh_ui/gui.py:1128
+msgid "Connecting to AirWave and fetching inventory..."
+msgstr ""
+
+#: pssh_ui/gui.py:1166
+#, python-brace-format
+msgid "Error: {msg}"
+msgstr ""
+
+#: pssh_ui/gui.py:1167 pssh_ui/gui.py:3861
+msgid "Import Error"
+msgstr ""
+
+#: pssh_ui/gui.py:1202
+#, python-brace-format
+msgid "Matched {matched} switches out of {total} total records."
+msgstr ""
+
+#: pssh_ui/gui.py:1209 pssh_ui/gui.py:1215 pssh_ui/gui.py:3857
+msgid "Import"
+msgstr ""
+
+#: pssh_ui/gui.py:1209
+msgid "No devices available to import."
+msgstr ""
+
+#: pssh_ui/gui.py:1215
+msgid "Select at least one row or click Import All Filtered."
+msgstr ""
+
+#: pssh_ui/gui.py:1252 pssh_ui/gui.py:2505
+msgid "Add Job"
+msgstr ""
+
+#: pssh_ui/gui.py:1312
+msgid "Config Command"
+msgstr ""
+
+#: pssh_ui/gui.py:1313
+msgid "Parameters"
+msgstr ""
+
+#: pssh_ui/gui.py:1314
+msgid "Select Device"
+msgstr ""
+
+#: pssh_ui/gui.py:1315
+msgid "Confirm"
+msgstr ""
+
+#: pssh_ui/gui.py:1359
+msgid "Next >"
+msgstr ""
+
+#: pssh_ui/gui.py:1364
+msgid "Run Job"
+msgstr ""
+
+#: pssh_ui/gui.py:1367
+msgid "< Back"
+msgstr ""
+
+#: pssh_ui/gui.py:1378
+msgid "Job Type *"
+msgstr ""
+
+#: pssh_ui/gui.py:1392
+msgid "Job Name *"
+msgstr ""
+
+#: pssh_ui/gui.py:1397
+msgid "Job Description"
+msgstr ""
+
+#: pssh_ui/gui.py:1403
+msgid "Device Type *"
+msgstr ""
+
+#: pssh_ui/gui.py:1421
+msgid "Device Model:"
+msgstr ""
+
+#: pssh_ui/gui.py:1427
+msgid "Snippets *"
+msgstr ""
+
+#: pssh_ui/gui.py:1439
+msgid "Config Commands *"
+msgstr ""
+
+#: pssh_ui/gui.py:1458
+msgid "Audit Validation RegEx (1 pattern per line)"
+msgstr ""
+
+#: pssh_ui/gui.py:1518
+#, python-brace-format
+msgid "No snippets available for {os}."
+msgstr ""
+
+#: pssh_ui/gui.py:1566
+msgid "Fill in the snippet variables below."
+msgstr ""
+
+#: pssh_ui/gui.py:1600
+msgid "No variables required by this snippet. Click Next to select devices."
+msgstr ""
+
+#: pssh_ui/gui.py:1604
+msgid "Variable"
+msgstr ""
+
+#: pssh_ui/gui.py:1607
+msgid "Value"
+msgstr ""
+
+#: pssh_ui/gui.py:1650
+msgid "Show"
+msgstr ""
+
+#: pssh_ui/gui.py:1689
+msgid "Select All"
+msgstr ""
+
+#: pssh_ui/gui.py:1693
+msgid "Deselect All"
+msgstr ""
+
+#: pssh_ui/gui.py:1697
+msgid "Clear Filters"
+msgstr ""
+
+#: pssh_ui/gui.py:1723 pssh_ui/gui.py:1771
+msgid "OS"
+msgstr ""
+
+#: pssh_ui/gui.py:1823
+#, python-brace-format
+msgid "Snippet Target OS: {os}"
+msgstr ""
+
+#: pssh_ui/gui.py:1893
+#, python-brace-format
+msgid "Total Records: {shown}   |   Selected ({os}): {chosen}"
+msgstr ""
+
+#: pssh_ui/gui.py:1937
+msgid "SSH Credentials & Execution Settings"
+msgstr ""
+
+#: pssh_ui/gui.py:1942
+msgid "SSH Username *"
+msgstr ""
+
+#: pssh_ui/gui.py:1946
+msgid "SSH Password *"
+msgstr ""
+
+#: pssh_ui/gui.py:1957
+msgid "Max Parallel Executions"
+msgstr ""
+
+#: pssh_ui/gui.py:1968
+msgid "Sequential (1 switch at a time)"
+msgstr ""
+
+#: pssh_ui/gui.py:1974
+msgid "Enable Password"
+msgstr ""
+
+#: pssh_ui/gui.py:1982
+msgid "Save configuration"
+msgstr ""
+
+#: pssh_ui/gui.py:1988
+msgid "Resulting Commands (Read-Only)"
+msgstr ""
+
+#: pssh_ui/gui.py:2032
+#, python-brace-format
+msgid "Run write command ({cmd})"
+msgstr ""
+
+#: pssh_ui/gui.py:2047
+msgid "Device Model"
+msgstr ""
+
+#: pssh_ui/gui.py:2049
+msgid "Job Name"
+msgstr ""
+
+#: pssh_ui/gui.py:2050
+msgid "Snippet"
+msgstr ""
+
+#: pssh_ui/gui.py:2051 pssh_ui/gui.py:2564 pssh_ui/gui.py:2870
+#: pssh_ui/gui.py:3083
+msgid "Device Type"
+msgstr ""
+
+#: pssh_ui/gui.py:2052
+msgid "Selected Devices"
+msgstr ""
+
+#: pssh_ui/gui.py:2058
+msgid "(No commands)"
+msgstr ""
+
+#: pssh_ui/gui.py:2119
+msgid "Please select a Snippet."
+msgstr ""
+
+#: pssh_ui/gui.py:2124
+msgid "Job Name is required."
+msgstr ""
+
+#: pssh_ui/gui.py:2139
+msgid "Please correct the parameter values:"
+msgstr ""
+
+#: pssh_ui/gui.py:2153 pssh_ui/job_builder.py:153
+msgid "Select at least one target switch matching this snippet OS."
+msgstr ""
+
+#: pssh_ui/gui.py:2185
+msgid "Please resolve the following before running:"
+msgstr ""
+
+#: pssh_ui/gui.py:2448 pssh_ui/gui.py:2502
+msgid "Jobs"
+msgstr ""
+
+#: pssh_ui/gui.py:2449 pssh_ui/gui.py:2796
+msgid "Snippets"
+msgstr ""
+
+#: pssh_ui/gui.py:2450 pssh_ui/gui.py:2623 pssh_ui/gui.py:2703
+#: pssh_ui/gui.py:2930
+msgid "Devices"
+msgstr ""
+
+#: pssh_ui/gui.py:2451 pssh_ui/gui.py:3049
+msgid "Device Models"
+msgstr ""
+
+#: pssh_ui/gui.py:2519 pssh_ui/gui.py:2819 pssh_ui/gui.py:3061
+msgid "Name:"
+msgstr ""
+
+#: pssh_ui/gui.py:2524
+msgid "Job Type:"
+msgstr ""
+
+#: pssh_ui/gui.py:2535 pssh_ui/gui.py:2846
+msgid "Device Type:"
+msgstr ""
+
+#: pssh_ui/gui.py:2562 pssh_ui/gui.py:2867 pssh_ui/gui.py:3082
+msgid "Name"
+msgstr ""
+
+#: pssh_ui/gui.py:2563
+msgid "Job Type"
+msgstr ""
+
+#: pssh_ui/gui.py:2566 pssh_ui/gui.py:2871
+msgid "Creation Time"
+msgstr ""
+
+#: pssh_ui/gui.py:2567 pssh_ui/gui.py:2745
+msgid "Start Time"
+msgstr ""
+
+#: pssh_ui/gui.py:2568 pssh_ui/gui.py:2746
+msgid "End Time"
+msgstr ""
+
+#: pssh_ui/gui.py:2569 pssh_ui/gui.py:2873 pssh_ui/gui.py:3005
+#: pssh_ui/gui.py:3088
+msgid "Action"
+msgstr ""
+
+#: pssh_ui/gui.py:2609 pssh_ui/gui.py:3248
+msgid "Job Details"
+msgstr ""
+
+#: pssh_ui/gui.py:2621
+msgid "Details"
+msgstr ""
+
+#: pssh_ui/gui.py:2631
+msgid "Total:"
+msgstr ""
+
+#: pssh_ui/gui.py:2639 pssh_ui/gui.py:3173 pssh_ui/gui.py:3312
+msgid "Success"
+msgstr ""
+
+#: pssh_ui/gui.py:2647 pssh_ui/gui.py:3175 pssh_ui/gui.py:3314
+msgid "Failed"
+msgstr ""
+
+#: pssh_ui/gui.py:2664
+msgid "Config Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:2684
+msgid "Audit Validation RegEx"
+msgstr ""
+
+#: pssh_ui/gui.py:2711 pssh_ui/gui.py:2950
+msgid "Device:"
+msgstr ""
+
+#: pssh_ui/gui.py:2716 pssh_ui/gui.py:2955
+msgid "IP Address:"
+msgstr ""
+
+#: pssh_ui/gui.py:2733
+msgid "Open Logs Folder"
+msgstr ""
+
+#: pssh_ui/gui.py:2747
+msgid "Operation Result"
+msgstr ""
+
+#: pssh_ui/gui.py:2748
+msgid "Log"
+msgstr ""
+
+#: pssh_ui/gui.py:2801
+msgid "Export XML..."
+msgstr ""
+
+#: pssh_ui/gui.py:2804
+msgid "Import XML..."
+msgstr ""
+
+#: pssh_ui/gui.py:2824
+msgid "Snippet Type:"
+msgstr ""
+
+#: pssh_ui/gui.py:2835
+msgid "Severity:"
+msgstr ""
+
+#: pssh_ui/gui.py:2857
+msgid "Description:"
+msgstr ""
+
+#: pssh_ui/gui.py:2868
+msgid "Snippet Type"
+msgstr ""
+
+#: pssh_ui/gui.py:2899
+msgid "Snippet Commands Preview"
+msgstr ""
+
+#: pssh_ui/gui.py:2935
+msgid "Import from AirWave..."
+msgstr ""
+
+#: pssh_ui/gui.py:3051
+msgid "Add Model"
+msgstr ""
+
+#: pssh_ui/gui.py:3066
+msgid "Switch OS:"
+msgstr ""
+
+#: pssh_ui/gui.py:3086 pssh_ui/gui.py:3557
+msgid "Pre-Config Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:3087 pssh_ui/gui.py:3558
+msgid "Post-Config Commands"
+msgstr ""
+
+#: pssh_ui/gui.py:3114
+msgid "Device Model Automation Preview"
+msgstr ""
+
+#: pssh_ui/gui.py:3177 pssh_ui/gui.py:3316
+msgid "Running"
+msgstr ""
+
+#: pssh_ui/gui.py:3205 pssh_ui/gui.py:3258 pssh_ui/gui.py:3339
+#: pssh_ui/gui.py:3471
+#, python-brace-format
+msgid "Total Records: {total}"
+msgstr ""
+
+#: pssh_ui/gui.py:3262
+#, python-brace-format
+msgid "Job Details ({name})"
+msgstr ""
+
+#: pssh_ui/gui.py:3318
+msgid "Pending"
+msgstr ""
+
+#: pssh_ui/gui.py:3392 pssh_ui/gui.py:3521
+#, python-brace-format
+msgid "Total Items: {total}"
+msgstr ""
+
+#: pssh_ui/gui.py:3632
+msgid "Queued"
+msgstr ""
+
+#: pssh_ui/gui.py:3704
+msgid "Job Running"
+msgstr ""
+
+#: pssh_ui/gui.py:3704
+msgid "Stop the running job before deleting it."
+msgstr ""
+
+#: pssh_ui/gui.py:3707
+msgid "Confirm Delete"
+msgstr ""
+
+#: pssh_ui/gui.py:3708
+#, python-brace-format
+msgid "Remove job '{name}' from history?"
+msgstr ""
+
+#: pssh_ui/gui.py:3756
+msgid "Executing..."
+msgstr ""
+
+#: pssh_ui/gui.py:3837
+msgid "Delete Snippet"
+msgstr ""
+
+#: pssh_ui/gui.py:3838
+#, python-brace-format
+msgid "Delete snippet '{name}'?"
+msgstr ""
+
+#: pssh_ui/gui.py:3847
+msgid "Import Snippet XML"
+msgstr ""
+
+#: pssh_ui/gui.py:3848 pssh_ui/gui.py:3872
+msgid "XML files"
+msgstr ""
+
+#: pssh_ui/gui.py:3848 pssh_ui/gui.py:3872
+msgid "All files"
+msgstr ""
+
+#: pssh_ui/gui.py:3858
+#, python-brace-format
+msgid "Imported snippet '{name}'."
+msgstr ""
+
+#: pssh_ui/gui.py:3866 pssh_ui/gui.py:3877
+msgid "Export"
+msgstr ""
+
+#: pssh_ui/gui.py:3866
+msgid "Select a snippet row to export."
+msgstr ""
+
+#: pssh_ui/gui.py:3869
+msgid "Export Snippet XML"
+msgstr ""
+
+#: pssh_ui/gui.py:3877
+#, python-brace-format
+msgid "Exported to {path}"
+msgstr ""
+
+#: pssh_ui/gui.py:3944
+msgid "Delete Device"
+msgstr ""
+
+#: pssh_ui/gui.py:3945
+#, python-brace-format
+msgid "Remove device '{name}'?"
+msgstr ""
+
+#: pssh_ui/gui.py:4006
+msgid "Delete Device Model"
+msgstr ""
+
+#: pssh_ui/gui.py:4007
+#, python-brace-format
+msgid "Delete device model '{name}'?"
+msgstr ""
+
+#: pssh_ui/job_builder.py:155
+msgid "SSH Username is required."
+msgstr ""
+
+#: pssh_ui/job_builder.py:157
+msgid "SSH Password is required."
+msgstr ""
+
+#: pssh_ui/job_builder.py:168
+msgid "No executable commands found (check script contents or '!' comments)."
+msgstr ""
+
+#: pssh_ui/parser.py:38
+msgid "Invalid CLI input"
+msgstr ""
+
+#: pssh_ui/parser.py:39
+msgid ""
+"Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration "
+"context (e.g., configure terminal)."
+msgstr ""
+
+#: pssh_ui/parser.py:42
+msgid "Invalid command or parameter"
+msgstr ""
+
+#: pssh_ui/parser.py:43
+msgid ""
+"Verify ArubaOS-CX syntax and confirm the switch is in the required "
+"configuration context."
+msgstr ""
+
+#: pssh_ui/parser.py:46
+msgid "Ambiguous command"
+msgstr ""
+
+#: pssh_ui/parser.py:47
+msgid "Spell out the full command keyword so it is unambiguous."
+msgstr ""
+
+#: pssh_ui/parser.py:50
+msgid "Incomplete command"
+msgstr ""
+
+#: pssh_ui/parser.py:51
+msgid "Provide all required command parameters on the same line."
+msgstr ""
+
+#: pssh_ui/parser.py:54
+msgid "Unknown command"
+msgstr ""
+
+#: pssh_ui/parser.py:55
+msgid "Verify this command is supported by the target firmware and switch OS."
+msgstr ""
+
+#: pssh_ui/parser.py:58
+msgid "Execution error"
+msgstr ""
+
+#: pssh_ui/parser.py:59
+msgid ""
+"Review the switch output around this line and check configuration "
+"prerequisites."
+msgstr ""
+
+#: pssh_ui/parser.py:62
+msgid "Target entity not found"
+msgstr ""
+
+#: pssh_ui/parser.py:63
+msgid "The referenced user, VLAN, or object does not exist on this switch."
+msgstr ""
+
+#: pssh_ui/parser.py:66
+msgid "Authentication / Authorization failure"
+msgstr ""
+
+#: pssh_ui/parser.py:67
+msgid ""
+"Verify SSH credentials and confirm the account has Manager / admin "
+"privileges."
+msgstr ""
+
+#: pssh_ui/parser.py:70
+msgid "Command rejected by switch"
+msgstr ""
+
+#: pssh_ui/parser.py:71
+msgid ""
+"Check switch state or prerequisites required before executing this "
+"command."
+msgstr ""
+
+#: pssh_ui/parser.py:74
+msgid "SSH communication error"
+msgstr ""
+
+#: pssh_ui/parser.py:75
+msgid ""
+"Verify reachability, SSH service status on the switch, or increase "
+"timeout settings."
+msgstr ""
+
+#: pssh_ui/parser.py:78
+msgid "CLI error"
+msgstr ""
+
+#: pssh_ui/parser.py:78
+msgid "Check device output for details."
+msgstr ""
+
+#: pssh_ui/parser.py:154
+#, python-brace-format
+msgid "Invalid audit RegEx: {err}"
+msgstr ""
+
+#: pssh_ui/parser.py:155
+msgid "Correct the regular expression syntax in Audit Validation RegEx."
+msgstr ""
+
+#: pssh_ui/parser.py:165
+msgid "Expected audit RegEx not found in output"
+msgstr ""
+
+#: pssh_ui/parser.py:166
+#, python-brace-format
+msgid "Switch output did not match the required audit pattern: {pat}"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:251
+#, python-brace-format
+msgid "Skipped (no commands for {os})"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:309
+msgid "Timed out waiting for initial switch CLI prompt."
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:357
+msgid "Cancelled by operator."
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:383
+#, python-brace-format
+msgid "Timed out waiting for switch prompt after {sec:.0f}s."
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:414
+msgid "Cancelled by operator"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:419
+#, python-brace-format
+msgid "Audit failed ({count} RegEx pattern(s) not matched)"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:423
+#, python-brace-format
+msgid "{count} error(s) detected"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:426
+#, python-brace-format
+msgid "Completed ({count} commands)"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:433
+msgid "Authentication failed"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:441
+msgid "SSH connection error"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:510
+msgid "Cancelled before start"
+msgstr ""
+
+#: pssh_ui/ssh_runner.py:565
+msgid "Unexpected worker error"
+msgstr ""
+
+#: pssh_ui/variables.py:184
+#, python-brace-format
+msgid "No options available for '{name}'."
+msgstr ""
+
+#: pssh_ui/variables.py:186
+#, python-brace-format
+msgid "Select a valid option for '{name}'."
+msgstr ""
+
+#: pssh_ui/variables.py:193
+#, python-brace-format
+msgid "Invalid regex '{regex}' for '{name}': {err}"
+msgstr ""
+
+#: pssh_ui/variables.py:197
+#, python-brace-format
+msgid "Value for '{name}' must match regex: {regex}"
+msgstr ""
+
+#: pssh_ui/variables.py:202
+#, python-brace-format
+msgid "Value for '{name}' is required."
+msgstr ""
+

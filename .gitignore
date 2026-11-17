@@ -55,6 +55,7 @@ cover/
 # Translations
 *.mo
 *.pot
+!locales/pssh_ui.pot
 
 # Django stuff:
 *.log

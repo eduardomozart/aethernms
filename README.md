@@ -12,7 +12,7 @@ Multiplatform GUI application (`tkinter`/`ttk` + [Sun-Valley-ttk-theme](https://
   - **Device Models**: Distributed `model/<vendor>/*.xml` profiles handling `Username:` / `Password:` / `Enable` automation prompts and common `Pre-Config` / `Post-Config` / `Write` command wrappers (`configure terminal`, `end`, `write memory`) — supporting new vendors/OSes via drop-in XML files without source code edits.
 - **Parameterized Templates (`${var|type|regex}` & `${var|["Item 1", "Item 2"]}`)**: Supports uppercase letters, spaces, accents, HTML-like types (`text`, `password`, `number`, `email`, `url`, `select`), regex validation, and `!` comments.
 - **Timestamped Logs & Password-Free State**: Writes per-switch logs to `logs/YYYY-MM-DD_HH-MM-SS/<hostname-or-switch-ip>.log` without ever persisting SSH, Enable, or `|password|` values to disk.
-- **Multi-Language & Transifex Ready**: Drop-in `.po` support powered by `gettext`/Babel (no source edits required for new languages) and `.tx/config`.
+- **Multi-Language & Transifex Ready**: Drop-in `.po` support powered by `gettext`/Babel (no source edits required for new languages) and `transifex.yml` Git integration.
 
 ## Quick Start
 
