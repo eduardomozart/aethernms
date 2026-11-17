@@ -1,6 +1,9 @@
 """Tests for multi-language (i18n), Transifex PO discovery, and dynamic Babel labels."""
 
+from collections import Counter
 from pathlib import Path
+
+from babel.messages import pofile
 
 from pssh_ui.i18n import (
     Translator,
@@ -74,3 +77,65 @@ def test_transifex_po_discovery_works_without_source_edits(tmp_path: Path):
     tr.set_language("fr_UNKNOWN")
     assert tr.language == "en"
     assert tr.gettext("Hello World") == "Hello World"
+
+
+def _extract_raw_po_keys(po_path: Path) -> list[tuple[str, str]]:
+    """Collect (msgctxt, msgid) entries including obsolete blocks without deduplicating."""
+    keys: list[tuple[str, str]] = []
+    cur_ctx: list[str] = []
+    cur_id: list[str] = []
+    field: str | None = None
+    obsolete = False
+
+    def flush() -> None:
+        nonlocal cur_ctx, cur_id, field, obsolete
+        if cur_id:
+            msgid = "".join(cur_id)
+            if msgid != '""':
+                keys.append(("".join(cur_ctx), msgid))
+        cur_ctx = []
+        cur_id = []
+        field = None
+        obsolete = False
+
+    for raw_line in po_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        is_obs = line.startswith("#~ ")
+        body = line[3:].strip() if is_obs else line
+        if body.startswith("msgctxt "):
+            if cur_id:
+                flush()
+            cur_ctx = [body[len("msgctxt "):]]
+            field = "msgctxt"
+            obsolete = is_obs
+        elif body.startswith("msgid "):
+            if cur_id:
+                flush()
+            cur_id = [body[len("msgid "):]]
+            field = "msgid"
+            obsolete = is_obs
+        elif field == "msgctxt" and is_obs == obsolete and body.startswith('"'):
+            cur_ctx.append(body)
+        elif field == "msgid" and is_obs == obsolete and body.startswith('"'):
+            cur_id.append(body)
+        elif not body or body.startswith(("msgstr", "msgid_plural", "#")):
+            if field in {"msgctxt", "msgid"} and (body.startswith("msgstr") or body.startswith("msgid_plural") or not body):
+                flush()
+    flush()
+    return keys
+
+
+def test_po_and_pot_catalogs_have_no_duplicate_or_colliding_msgids():
+    """Ensure Transifex never rejects catalogs due to active or obsolete duplicate msgids."""
+    locales_root = Path(__file__).resolve().parents[1] / "locales"
+    catalog_paths = sorted(p for p in locales_root.rglob("*") if p.suffix in {".po", ".pot"})
+    assert catalog_paths
+
+    for catalog_path in catalog_paths:
+        with catalog_path.open("rb") as fh:
+            catalog = pofile.read_po(fh)
+        assert not catalog.obsolete, f"Obsolete entries remain in {catalog_path}"
+        raw_counts = Counter(_extract_raw_po_keys(catalog_path))
+        collisions = {key: count for key, count in raw_counts.items() if count > 1}
+        assert not collisions, f"Duplicate/colliding msgids in {catalog_path}: {collisions}"
+

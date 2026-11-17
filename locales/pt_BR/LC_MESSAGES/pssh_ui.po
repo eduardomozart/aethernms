@@ -182,16 +182,16 @@ msgstr "Comandos Pré-Auditoria"
 msgid "Post-Audit Commands"
 msgstr "Comandos Pós-Auditoria"
 
-#: pssh_ui/gui.py:502
-msgid "Model Name is required."
-msgstr "O Nome do Modelo é obrigatório."
-
 #: pssh_ui/gui.py:502 pssh_ui/gui.py:698 pssh_ui/gui.py:902 pssh_ui/gui.py:905
 #: pssh_ui/gui.py:1121 pssh_ui/gui.py:2119 pssh_ui/gui.py:2124
 #: pssh_ui/gui.py:2129 pssh_ui/gui.py:2138 pssh_ui/gui.py:2152
 #: pssh_ui/gui.py:2184
 msgid "Validation"
 msgstr "Validação"
+
+#: pssh_ui/gui.py:502
+msgid "Model Name is required."
+msgstr "O Nome do Modelo é obrigatório."
 
 #: pssh_ui/gui.py:542
 #, python-brace-format
@@ -445,13 +445,13 @@ msgstr "Erro ao Importar"
 msgid "Matched {matched} switches out of {total} total records."
 msgstr "{matched} switches encontrados de {total} registros totais."
 
-#: pssh_ui/gui.py:1209
-msgid "No devices available to import."
-msgstr "Nenhum dispositivo disponível para importação."
-
 #: pssh_ui/gui.py:1209 pssh_ui/gui.py:1215 pssh_ui/gui.py:3857
 msgid "Import"
 msgstr "Importar"
+
+#: pssh_ui/gui.py:1209
+msgid "No devices available to import."
+msgstr "Nenhum dispositivo disponível para importação."
 
 #: pssh_ui/gui.py:1215
 msgid "Select at least one row or click Import All Filtered."
@@ -885,13 +885,13 @@ msgstr "Todos os arquivos"
 msgid "Imported snippet '{name}'."
 msgstr "Snippet '{name}' importado."
 
-#: pssh_ui/gui.py:3866
-msgid "Select a snippet row to export."
-msgstr "Selecione uma linha de snippet para exportar."
-
 #: pssh_ui/gui.py:3866 pssh_ui/gui.py:3877
 msgid "Export"
 msgstr "Exportar"
+
+#: pssh_ui/gui.py:3866
+msgid "Select a snippet row to export."
+msgstr "Selecione uma linha de snippet para exportar."
 
 #: pssh_ui/gui.py:3869
 msgid "Export Snippet XML"
@@ -1139,84 +1139,4 @@ msgstr "O valor de '{name}' deve corresponder à regex: {regex}"
 #, python-brace-format
 msgid "Value for '{name}' is required."
 msgstr "O valor de '{name}' é obrigatório."
-
-#~ msgid "Valid"
-#~ msgstr "Válido"
-
-#~ msgid "Required"
-#~ msgstr "Obrigatório"
-
-#~ msgid "Use"
-#~ msgstr "Usar"
-
-#~ msgid "Target OS: {os} (only {os} devices can be selected)"
-#~ msgstr "SO Alvo: {os} (somente dispositivos {os} podem ser selecionados)"
-
-#~ msgid "Sequential"
-#~ msgstr "Sequencial"
-
-#~ msgid "Stop"
-#~ msgstr "Parar"
-
-#~ msgid ""
-#~ "Click a switch row above to view"
-#~ " execution output and highlighted errors."
-#~ msgstr ""
-#~ "Clique em um switch acima para ver"
-#~ " a saída da execução e erros "
-#~ "destacados."
-
-#~ msgid "Select a job row above to view execution details."
-#~ msgstr "Selecione uma tarefa acima para visualizar os detalhes da execução."
-
-#~ msgid "(none)"
-#~ msgstr "(nenhum)"
-
-#~ msgid "Sequence"
-#~ msgstr "Sequência"
-
-#~ msgid "Parameters"
-#~ msgstr "Parâmetros"
-
-#~ msgid "Logs Folder"
-#~ msgstr "Pasta de Logs"
-
-#~ msgid "(No output captured yet)"
-#~ msgstr "(Nenhuma saída capturada ainda)"
-
-#~ msgid "Import XML Snippet"
-#~ msgstr "Importar Snippet XML"
-
-#~ msgid "Snippet Imported"
-#~ msgstr "Snippet Importado"
-
-#~ msgid "Imported '{name}' ({os})."
-#~ msgstr "Snippet '{name}' ({os}) importado."
-
-#~ msgid "Export Complete"
-#~ msgstr "Exportação Concluída"
-
-#~ msgid "Duplicate Device"
-#~ msgstr "Dispositivo Duplicado"
-
-#~ msgid "A device with IP:port {key} already exists."
-#~ msgstr "Já existe um dispositivo com IP:porta {key}."
-
-#~ msgid "1. Config Command"
-#~ msgstr "1. Comando de Configuração"
-
-#~ msgid "3. Select Device"
-#~ msgstr "3. Selecionar Dispositivos"
-
-#~ msgid "ArubaOS-S & ArubaOS-CX Batch SSH"
-#~ msgstr "SSH em Lote para ArubaOS-S & ArubaOS-CX"
-
-#~ msgid "Language"
-#~ msgstr "Idioma"
-
-#~ msgid "Delete"
-#~ msgstr "Excluir"
-
-#~ msgid "Edit"
-#~ msgstr "Editar"
 
