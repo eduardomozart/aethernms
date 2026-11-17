@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Snippet version="1.0">
+    <Name>ArubaOS-CX SNMPv3 User</Name>
+    <Type>Config</Type>
+    <DeviceType>AOS-CX</DeviceType>
+    <Severity>Info</Severity>
+    <Description>Create an SNMPv3 user with SHA authentication and AES encryption on ArubaOS-CX switches.</Description>
+    <CreatedAt>2026-11-17T15:00:00</CreatedAt>
+    <Commands>! Define SNMPv3 user with SHA auth and AES privacy on ArubaOS-CX
+snmpv3 user ${SNMPv3 Username|text|^[A-Za-z0-9_.-]{1,32}$} auth sha auth-pass plaintext ${Auth Password|password|^.{8,64}$} priv aes priv-pass plaintext ${Privacy Password|password|^.{8,64}$}</Commands>
+</Snippet>

@@ -1,0 +1,53 @@
+name: Build and Release Windows Binary
+run-name: Release ${{ github.ref_name }}
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Compile translation catalogs
+      run: |
+        python -m babel.messages.frontend compile -d locales -D pssh_ui
+
+    - name: Run test suite
+      run: |
+        python -m pytest tests/ -v
+
+    - name: Inject Version & Repository Metadata
+      run: |
+        (Get-Content pssh_ui/__init__.py) -replace '__version__ = "DEV_BUILD"', "__version__ = `"${{ github.ref_name }}`"" -replace '__repo_url__ = ".*"', "__repo_url__ = `"https://github.com/${{ github.repository }}`"" | Set-Content pssh_ui/__init__.py
+
+    - name: Build executable
+      run: |
+        pyinstaller --onefile --windowed --icon assets/pssh-ui.ico --name pssh-ui-x64 --collect-all sv_ttk --add-data "snippets;snippets" --add-data "model;model" --add-data "locales;locales" --add-data "assets;assets" --hidden-import airwaveapiclient main.py
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/pssh-ui-x64.exe
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Snippet version="1.0">
+    <Name>ArubaOS-CX NTP</Name>
+    <Type>Config</Type>
+    <DeviceType>AOS-CX</DeviceType>
+    <Severity>Info</Severity>
+    <Description>Configure NTP server (${NTP Server}) on ArubaOS-CX switches.</Description>
+    <CreatedAt>2026-11-17T18:10:00</CreatedAt>
+    <Commands>! Configure NTP server and enable NTP client on ArubaOS-CX
+ntp server ${NTP Server|text|^[A-Za-z0-9_.-]+$}
+ntp enable</Commands>
+</Snippet>

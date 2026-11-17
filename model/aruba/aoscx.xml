@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DeviceModel version="1.0">
+    <Name>ArubaOS-CX</Name>
+    <DeviceType>AOS-CX</DeviceType>
+    <Vendor>Aruba</Vendor>
+    <Description>ArubaOS-CX switches: handles SSH credentials, enable escalation, no page, and configure terminal context.</Description>
+    <CliPromptRegex>(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?[#>][ \t]*$</CliPromptRegex>
+    <UsernamePromptRegex>(?:Username|Login|User)\s*:</UsernamePromptRegex>
+    <PasswordPromptRegex>(?:Enable\s+password|Password)\s*:</PasswordPromptRegex>
+    <EnableCommand>enable</EnableCommand>
+    <EnablePromptRegex>(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?#\s*$</EnablePromptRegex>
+    <EnablePasswordPromptRegex>(?:Enable\s+password|Password)\s*:</EnablePasswordPromptRegex>
+    <PagerPromptRegex>(?:Press any key to continue|--\s*MORE\s*--|Press &lt;SPACE&gt; to continue)</PagerPromptRegex>
+    <PagerDismissKey> </PagerDismissKey>
+    <DisablePagingCommand>no page</DisablePagingCommand>
+    <PreConfigCommands>configure terminal</PreConfigCommands>
+    <PostConfigCommands>end</PostConfigCommands>
+    <WriteCommand>write memory</WriteCommand>
+    <PreAuditCommands />
+    <PostAuditCommands />
+</DeviceModel>

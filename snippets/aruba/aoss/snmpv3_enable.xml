@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Snippet version="1.0">
+    <Name>ArubaOS-S SNMPv3 Configuration</Name>
+    <Type>Config</Type>
+    <DeviceType>AOS-S</DeviceType>
+    <Severity>Info</Severity>
+    <Description>Enable SNMPv3 with SHA/AES authentication and privacy, configure read-only group, restrict SNMPv1/v2c, and remove default initial user.</Description>
+    <CreatedAt>2026-11-17T15:00:00</CreatedAt>
+    <Commands>! Enable SNMPv3 protocol on the switch
+snmpv3 enable
+! Define username, authentication protocol (SHA), and encryption protocol (AES)
+snmpv3 user "${SNMPv3 Username|text|^[A-Za-z0-9_.-]{1,32}$}" auth sha "${Auth Password|password|^.{8,64}$}" priv aes "${Privacy Password|password|^.{8,64}$}"
+! Assign read-only group (operatorauth) to SNMPv3 user
+snmpv3 group operatorauth user "${SNMPv3 Username|text|^[A-Za-z0-9_.-]{1,32}$}" sec-model ver3
+! Read-only access for SNMPv1 and SNMPv2c (recommended)
+snmpv3 restricted-access
+! Block SNMPv1 and v2c (recommended)
+snmpv3 only
+! Remove default system-created user
+no snmpv3 user initial</Commands>
+</Snippet>

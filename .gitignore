@@ -221,3 +221,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Application runtime logs, state, and compiled localization binaries
+logs/
+settings.xml
+session.xml
+device_models.xml
+locales/**/LC_MESSAGES/*.mo
+
