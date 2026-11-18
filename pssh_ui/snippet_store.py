@@ -9,7 +9,12 @@ from typing import List, Optional
 import xml.etree.ElementTree as ET
 
 from pssh_ui.models import Snippet, SnippetSeverity, SnippetType, SwitchOS, parse_device_type
-from pssh_ui.paths import get_external_snippets_dir, get_snippets_dir
+from pssh_ui.paths import (
+    bundled_snippets_dir,
+    get_snippets_dir,
+    is_frozen,
+    seed_bundled_templates,
+)
 
 
 DEFAULT_SNIPPETS_DIR = get_snippets_dir()
@@ -105,13 +110,22 @@ class SnippetStore:
         return f"custom/{slug}" if slug else "custom"
 
     def __init__(self, base_dir: Optional[Path | str] = None) -> None:
-        self._explicit_base_dir = base_dir is not None
         self.base_dir = Path(base_dir) if base_dir else get_snippets_dir()
+
+    def seed_defaults(self, source_dir: Optional[Path] = None) -> List[str]:
+        """Seed bundled XML snippets into user folder when frozen (or explicit source_dir)."""
+        if source_dir is None and not is_frozen():
+            return []
+        src = Path(source_dir) if source_dir else bundled_snippets_dir()
+        return seed_bundled_templates(src, self.base_dir)
 
     def ensure_default_folders(self) -> None:
         """Ensure standard vendor/OS snippet directories exist."""
         for rel in ("aruba/aoss", "aruba/aoscx"):
-            (self.base_dir / rel).mkdir(parents=True, exist_ok=True)
+            try:
+                (self.base_dir / rel).mkdir(parents=True, exist_ok=True)
+            except OSError:
+                pass
 
     def create_folder(self, relative_folder: str) -> Path:
         """Create a subfolder inside snippets/ safely."""
@@ -125,38 +139,28 @@ class SnippetStore:
         target.mkdir(parents=True, exist_ok=True)
         return target
 
-    def _search_roots(self) -> List[Path]:
-        roots = [self.base_dir]
-        if not self._explicit_base_dir:
-            ext = get_external_snippets_dir()
-            if ext and ext.is_dir() and ext.resolve() != self.base_dir.resolve():
-                roots.append(ext)
-        return roots
-
     def list_folders(self) -> List[str]:
         """Return sorted relative folder paths under snippets/."""
+        if not self.base_dir.exists():
+            return []
         folders: List[str] = []
-        for root in self._search_roots():
-            if not root.exists():
-                continue
-            for p in root.rglob("*"):
-                if p.is_dir():
-                    rel = normalize_folder_path(str(p.relative_to(root)))
-                    if rel:
-                        folders.append(rel)
+        for p in self.base_dir.rglob("*"):
+            if p.is_dir():
+                rel = normalize_folder_path(str(p.relative_to(self.base_dir)))
+                if rel:
+                    folders.append(rel)
         return sorted(set(folders))
 
     def load_all_snippets(self) -> List[Snippet]:
-        """Load every XML snippet recursively from bundled and optional companion snippets/."""
+        """Load every XML snippet recursively from snippets/."""
+        if not self.base_dir.exists():
+            return []
         snippets: List[Snippet] = []
-        for root in self._search_roots():
-            if not root.exists():
+        for xml_path in sorted(self.base_dir.rglob("*.xml")):
+            try:
+                snippets.append(snippet_from_xml_file(xml_path, base_dir=self.base_dir))
+            except Exception:
                 continue
-            for xml_path in sorted(root.rglob("*.xml")):
-                try:
-                    snippets.append(snippet_from_xml_file(xml_path, base_dir=root))
-                except Exception:
-                    continue
         snippets.sort(key=lambda s: (s.folder.lower(), s.name.lower()))
         return snippets
 

@@ -30,9 +30,12 @@ def test_builtin_aruba_snippets_exist_in_subfolders():
 
     # Config snippets omit hardcoded 'configure terminal' (delegated to DeviceModel)
     assert "configure terminal" not in snmp_aoss.commands.lower()
-    # Neither built-in snippets nor newly saved XML files include redundant <Folder>
+    # Neither built-in snippets nor newly saved XML files include redundant <Folder>,
+    # and <Description> fields never embed raw ${...} placeholders
     for s in snippets:
         assert "<Folder>" not in Path(s.file_path).read_text(encoding="utf-8")
+        assert "${" not in s.description
+        assert "}" not in s.description
 
 
 def test_save_import_export_and_delete_snippets(tmp_path: Path):

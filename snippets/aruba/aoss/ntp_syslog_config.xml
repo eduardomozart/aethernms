@@ -4,7 +4,7 @@
     <Type>Config</Type>
     <DeviceType>AOS-S</DeviceType>
     <Severity>Info</Severity>
-    <Description>Configure SNTP server (${NTP Server}) and Syslog destination (${Syslog IP}) on ArubaOS-S switches.</Description>
+    <Description>Configure SNTP server and Syslog destination on ArubaOS-S switches.</Description>
     <CreatedAt>2026-11-17T15:00:00</CreatedAt>
     <Commands>! Configure NTP server using ${var|regex} substitution
 timesync sntp

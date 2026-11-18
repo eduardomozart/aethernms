@@ -8,7 +8,12 @@ from typing import List, Optional
 import xml.etree.ElementTree as ET
 
 from pssh_ui.models import DeviceModel, SwitchOS, parse_device_type
-from pssh_ui.paths import get_external_models_dir, get_models_dir
+from pssh_ui.paths import (
+    bundled_models_dir,
+    get_models_dir,
+    is_frozen,
+    seed_bundled_templates,
+)
 
 
 DEFAULT_MODELS_DIR = get_models_dir()
@@ -111,33 +116,41 @@ def model_from_xml_file(xml_path: Path, base_dir: Optional[Path] = None) -> Devi
 
 
 class ModelStore:
-    """Manages reusable XML device automation models distributed in `model/`."""
+    """Manages reusable XML device automation models under `model/`."""
 
     def __init__(self, base_dir: Optional[Path | str] = None) -> None:
-        self._explicit_base_dir = base_dir is not None
         self.base_dir = Path(base_dir) if base_dir else get_models_dir()
 
-    def _search_roots(self) -> List[Path]:
-        roots = [self.base_dir]
-        if not self._explicit_base_dir:
-            ext = get_external_models_dir()
-            if ext and ext.is_dir() and ext.resolve() != self.base_dir.resolve():
-                roots.append(ext)
-        return roots
+    def seed_defaults(self, source_dir: Optional[Path] = None) -> List[str]:
+        """Seed bundled XML device models into user folder when frozen (or explicit source_dir)."""
+        if source_dir is None and not is_frozen():
+            return []
+        src = Path(source_dir) if source_dir else bundled_models_dir()
+        return seed_bundled_templates(src, self.base_dir)
 
     def load_all_models(self) -> List[DeviceModel]:
-        """Recursively load all DeviceModel XML definitions from bundled and companion model/."""
+        """Recursively load all DeviceModel XML definitions from `model/`."""
+        if not self.base_dir.exists():
+            return []
         models: List[DeviceModel] = []
-        for root in self._search_roots():
-            if not root.exists():
+        for xml_path in sorted(self.base_dir.rglob("*.xml")):
+            try:
+                models.append(model_from_xml_file(xml_path, base_dir=self.base_dir))
+            except Exception:
                 continue
-            for xml_path in sorted(root.rglob("*.xml")):
-                try:
-                    models.append(model_from_xml_file(xml_path, base_dir=root))
-                except Exception:
-                    continue
         models.sort(key=lambda m: (m.device_type.value.lower(), m.name.lower()))
         return models
+
+    @staticmethod
+    def _write_model_xml(model: DeviceModel, out_path: Path) -> None:
+        root = model_to_xml_element(model)
+        tree = ET.ElementTree(root)
+        ET.indent(tree, space="    ", level=0)
+        xml_str = ET.tostring(root, encoding="utf-8").decode("utf-8")
+        with out_path.open("w", encoding="utf-8", newline="\n") as fh:
+            fh.write('<?xml version="1.0" encoding="utf-8"?>\n')
+            fh.write(xml_str)
+            fh.write("\n")
 
     def save_model(self, model: DeviceModel, filename: Optional[str] = None) -> Path:
         """Persist a DeviceModel XML file under `model/<folder>/`."""
@@ -156,17 +169,32 @@ class ModelStore:
             out_name = f"{_slugify(model.name)}.xml"
 
         out_path = target_dir / out_name
-        root = model_to_xml_element(model)
-        tree = ET.ElementTree(root)
-        ET.indent(tree, space="    ", level=0)
-        xml_str = ET.tostring(root, encoding="utf-8").decode("utf-8")
-        with out_path.open("w", encoding="utf-8", newline="\n") as fh:
-            fh.write('<?xml version="1.0" encoding="utf-8"?>\n')
-            fh.write(xml_str)
-            fh.write("\n")
-
+        self._write_model_xml(model, out_path)
         model.file_path = str(out_path)
         return out_path
+
+    def export_model(self, model: DeviceModel, destination: Path | str) -> Path:
+        """Export a DeviceModel XML file to an arbitrary destination path."""
+        dest = Path(destination)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        self._write_model_xml(model, dest)
+        return dest
+
+    def import_model(
+        self,
+        source_path: Path | str,
+        target_folder: Optional[str] = None,
+    ) -> DeviceModel:
+        """Import an external DeviceModel XML file into `model/<vendor>/`."""
+        src = Path(source_path)
+        model = model_from_xml_file(src, base_dir=None)
+        if target_folder is not None and _normalize_folder(target_folder):
+            model.folder = _normalize_folder(target_folder)
+        elif not model.folder:
+            model.folder = _normalize_folder((model.vendor or "custom").lower())
+        model.file_path = None
+        self.save_model(model, filename=src.name)
+        return model
 
     def delete_model(self, model: DeviceModel) -> bool:
         """Delete a DeviceModel XML file from disk."""

@@ -4,7 +4,7 @@
     <Type>Config</Type>
     <DeviceType>AOS-CX</DeviceType>
     <Severity>Info</Severity>
-    <Description>Configure remote Syslog destination (${Syslog IP}) on ArubaOS-CX switches.</Description>
+    <Description>Configure remote Syslog destination on ArubaOS-CX switches.</Description>
     <CreatedAt>2026-11-17T18:10:00</CreatedAt>
     <Commands>! Configure remote Syslog server on ArubaOS-CX
 logging ${Syslog IP|text|^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$}</Commands>

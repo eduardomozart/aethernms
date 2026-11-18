@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pssh-ui 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 18:40-0300\n"
+"POT-Creation-Date: 2026-11-17 20:55-0300\n"
 "PO-Revision-Date: 2026-11-17 16:50-0300\n"
 "Last-Translator: pssh-ui maintainers\n"
 "Language: pt_BR\n"
@@ -17,260 +17,268 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: pssh_ui/gui.py:192
+#: pssh_ui/gui.py:154
+msgid "Config"
+msgstr "Configuração"
+
+#: pssh_ui/gui.py:156
+msgid "Audit and Remediate"
+msgstr "Auditoria e Remediação"
+
+#: pssh_ui/gui.py:253
 msgid "Settings"
 msgstr "Configurações"
 
-#: pssh_ui/gui.py:203
+#: pssh_ui/gui.py:264
 msgid "Appearance"
 msgstr "Aparência"
 
-#: pssh_ui/gui.py:208 pssh_ui/gui.py:230
+#: pssh_ui/gui.py:269 pssh_ui/gui.py:291
 msgid "Auto (OS Default)"
 msgstr "Automático (Padrão do SO)"
 
-#: pssh_ui/gui.py:222
+#: pssh_ui/gui.py:283
 msgid "Language:"
 msgstr "Idioma:"
 
-#: pssh_ui/gui.py:231
+#: pssh_ui/gui.py:292
 msgid "Light"
 msgstr "Claro"
 
-#: pssh_ui/gui.py:232
+#: pssh_ui/gui.py:293
 msgid "Dark"
 msgstr "Escuro"
 
-#: pssh_ui/gui.py:245
+#: pssh_ui/gui.py:306
 msgid "Dark Theme:"
 msgstr "Tema Escuro:"
 
-#: pssh_ui/gui.py:254
+#: pssh_ui/gui.py:315
 msgid "SSH & Execution Defaults"
 msgstr "Padrões de SSH e Execução"
 
-#: pssh_ui/gui.py:265
+#: pssh_ui/gui.py:326
 msgid "Default SSH Username:"
 msgstr "Usuário SSH Padrão:"
 
-#: pssh_ui/gui.py:266
+#: pssh_ui/gui.py:327
 msgid "Default SSH Port:"
 msgstr "Porta SSH Padrão:"
 
-#: pssh_ui/gui.py:267
+#: pssh_ui/gui.py:328
 msgid "Max Parallel Executions:"
 msgstr "Máx. Execuções em Paralelo:"
 
-#: pssh_ui/gui.py:268
+#: pssh_ui/gui.py:329
 msgid "Connect Timeout (s):"
 msgstr "Tempo Limite de Conexão (s):"
 
-#: pssh_ui/gui.py:269
+#: pssh_ui/gui.py:330
 msgid "Command Timeout (s):"
 msgstr "Tempo Limite de Comando (s):"
 
-#: pssh_ui/gui.py:277 pssh_ui/gui.py:494 pssh_ui/gui.py:678 pssh_ui/gui.py:862
-#: pssh_ui/gui.py:1090 pssh_ui/gui.py:1356
+#: pssh_ui/gui.py:338 pssh_ui/gui.py:555 pssh_ui/gui.py:739 pssh_ui/gui.py:923
+#: pssh_ui/gui.py:1151 pssh_ui/gui.py:1452
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: pssh_ui/gui.py:278 pssh_ui/gui.py:495 pssh_ui/gui.py:679
+#: pssh_ui/gui.py:339 pssh_ui/gui.py:556 pssh_ui/gui.py:740
 msgid "Save"
 msgstr "Salvar"
 
-#: pssh_ui/gui.py:331
+#: pssh_ui/gui.py:392
 #, python-brace-format
 msgid "About {app}"
 msgstr "Sobre {app}"
 
-#: pssh_ui/gui.py:352 pssh_ui/gui.py:2386 pssh_ui/gui.py:2415
+#: pssh_ui/gui.py:413 pssh_ui/gui.py:2565 pssh_ui/gui.py:2594
 msgid "Config & Audit Automation"
 msgstr "Automação de Configuração e Auditoria"
 
-#: pssh_ui/gui.py:356
+#: pssh_ui/gui.py:417
 msgid "Repository:"
 msgstr "Repositório:"
 
-#: pssh_ui/gui.py:367 pssh_ui/gui.py:608
+#: pssh_ui/gui.py:428 pssh_ui/gui.py:669
 msgid "Close"
 msgstr "Fechar"
 
-#: pssh_ui/gui.py:385
+#: pssh_ui/gui.py:446
 msgid "Edit Device Model"
 msgstr "Editar Modelo de Dispositivo"
 
-#: pssh_ui/gui.py:385
+#: pssh_ui/gui.py:446
 msgid "Add Device Model"
 msgstr "Adicionar Modelo de Dispositivo"
 
-#: pssh_ui/gui.py:416
+#: pssh_ui/gui.py:477
 msgid "Model Name *"
 msgstr "Nome do Modelo *"
 
-#: pssh_ui/gui.py:418 pssh_ui/gui.py:660
+#: pssh_ui/gui.py:479 pssh_ui/gui.py:721
 msgid "Switch OS *"
 msgstr "SO do Switch *"
 
-#: pssh_ui/gui.py:425 pssh_ui/gui.py:3084
+#: pssh_ui/gui.py:486 pssh_ui/gui.py:3279
 msgid "Vendor"
 msgstr "Fabricante"
 
-#: pssh_ui/gui.py:426 pssh_ui/gui.py:796 pssh_ui/gui.py:2656
-#: pssh_ui/gui.py:2872 pssh_ui/gui.py:3552
+#: pssh_ui/gui.py:487 pssh_ui/gui.py:858 pssh_ui/gui.py:2840
+#: pssh_ui/gui.py:3061 pssh_ui/gui.py:3747
 msgid "Description"
 msgstr "Descrição"
 
-#: pssh_ui/gui.py:427 pssh_ui/gui.py:3085 pssh_ui/gui.py:3553
+#: pssh_ui/gui.py:488 pssh_ui/gui.py:3280 pssh_ui/gui.py:3748
 msgid "Enable Command"
 msgstr "Comando Enable"
 
-#: pssh_ui/gui.py:428 pssh_ui/gui.py:3553
+#: pssh_ui/gui.py:489 pssh_ui/gui.py:3748
 msgid "Disable Paging Command"
 msgstr "Comando para Desativar Paginação"
 
-#: pssh_ui/gui.py:429
+#: pssh_ui/gui.py:490
 msgid "Write / Save Command"
 msgstr "Comando de Gravação / Save"
 
-#: pssh_ui/gui.py:436
+#: pssh_ui/gui.py:497
 msgid "Automation Prompt Detection RegEx (Credentials, Enable & Paging)"
 msgstr ""
 "RegEx de Detecção de Prompts na Automação (Credenciais, Enable e "
 "Paginação)"
 
-#: pssh_ui/gui.py:442
+#: pssh_ui/gui.py:503
 msgid "CLI Prompt RegEx"
 msgstr "RegEx do Prompt CLI"
 
-#: pssh_ui/gui.py:443 pssh_ui/gui.py:3554
+#: pssh_ui/gui.py:504 pssh_ui/gui.py:3749
 msgid "Username Prompt RegEx"
 msgstr "RegEx do Prompt de Usuário"
 
-#: pssh_ui/gui.py:444 pssh_ui/gui.py:3555
+#: pssh_ui/gui.py:505 pssh_ui/gui.py:3750
 msgid "Password Prompt RegEx"
 msgstr "RegEx do Prompt de Senha"
 
-#: pssh_ui/gui.py:445
+#: pssh_ui/gui.py:506
 msgid "Enable Prompt RegEx"
 msgstr "RegEx do Prompt Enable"
 
-#: pssh_ui/gui.py:446 pssh_ui/gui.py:3556
+#: pssh_ui/gui.py:507 pssh_ui/gui.py:3751
 msgid "Enable Password Prompt RegEx"
 msgstr "RegEx do Prompt de Senha Enable"
 
-#: pssh_ui/gui.py:447
+#: pssh_ui/gui.py:508
 msgid "Pager / Banner RegEx"
 msgstr "RegEx de Paginação / Banner"
 
-#: pssh_ui/gui.py:455
+#: pssh_ui/gui.py:516
 msgid "Common Task Commands"
 msgstr "Comandos Comuns da Tarefa"
 
-#: pssh_ui/gui.py:462
+#: pssh_ui/gui.py:523
 msgid "Pre-Config Commands (e.g. configure terminal)"
 msgstr "Comandos Pré-Configuração (ex.: configure terminal)"
 
-#: pssh_ui/gui.py:465
+#: pssh_ui/gui.py:526
 msgid "Post-Config Commands (e.g. end / write memory)"
 msgstr "Comandos Pós-Configuração (ex.: end / write memory)"
 
-#: pssh_ui/gui.py:476
+#: pssh_ui/gui.py:537
 msgid "Pre-Audit Commands"
 msgstr "Comandos Pré-Auditoria"
 
-#: pssh_ui/gui.py:479
+#: pssh_ui/gui.py:540
 msgid "Post-Audit Commands"
 msgstr "Comandos Pós-Auditoria"
 
-#: pssh_ui/gui.py:502 pssh_ui/gui.py:698 pssh_ui/gui.py:902 pssh_ui/gui.py:905
-#: pssh_ui/gui.py:1121 pssh_ui/gui.py:2119 pssh_ui/gui.py:2124
-#: pssh_ui/gui.py:2129 pssh_ui/gui.py:2138 pssh_ui/gui.py:2152
-#: pssh_ui/gui.py:2184
+#: pssh_ui/gui.py:563 pssh_ui/gui.py:759 pssh_ui/gui.py:963 pssh_ui/gui.py:966
+#: pssh_ui/gui.py:1179 pssh_ui/gui.py:2291 pssh_ui/gui.py:2296
+#: pssh_ui/gui.py:2301 pssh_ui/gui.py:2312 pssh_ui/gui.py:2326
+#: pssh_ui/gui.py:2360
 msgid "Validation"
 msgstr "Validação"
 
-#: pssh_ui/gui.py:502
+#: pssh_ui/gui.py:563
 msgid "Model Name is required."
 msgstr "O Nome do Modelo é obrigatório."
 
-#: pssh_ui/gui.py:542
+#: pssh_ui/gui.py:603
 #, python-brace-format
 msgid "Device Log — {name} ({ip})"
 msgstr "Log do Dispositivo — {name} ({ip})"
 
-#: pssh_ui/gui.py:563
+#: pssh_ui/gui.py:624
 #, python-brace-format
 msgid "⚠ {count} error(s) detected: {summary}"
 msgstr "⚠ {count} erro(s) detectado(s): {summary}"
 
-#: pssh_ui/gui.py:568
+#: pssh_ui/gui.py:629
 #, python-brace-format
 msgid "Operation Result: {msg}"
 msgstr "Resultado da Operação: {msg}"
 
-#: pssh_ui/gui.py:605
+#: pssh_ui/gui.py:666
 msgid "Open External Log"
 msgstr "Abrir Log Externo"
 
-#: pssh_ui/gui.py:625
+#: pssh_ui/gui.py:686
 msgid "Edit Device"
 msgstr "Editar Dispositivo"
 
-#: pssh_ui/gui.py:625 pssh_ui/gui.py:2933
+#: pssh_ui/gui.py:686 pssh_ui/gui.py:3122
 msgid "Add Device"
 msgstr "Adicionar Dispositivo"
 
-#: pssh_ui/gui.py:656
+#: pssh_ui/gui.py:717
 msgid "Device Name"
 msgstr "Nome do Dispositivo"
 
-#: pssh_ui/gui.py:657
+#: pssh_ui/gui.py:718
 msgid "IP Address *"
 msgstr "Endereço IP *"
 
-#: pssh_ui/gui.py:658 pssh_ui/gui.py:1063 pssh_ui/gui.py:1734
-#: pssh_ui/gui.py:1772 pssh_ui/gui.py:3002
+#: pssh_ui/gui.py:719 pssh_ui/gui.py:1124 pssh_ui/gui.py:1859
+#: pssh_ui/gui.py:1897 pssh_ui/gui.py:3191
 msgid "Model"
 msgstr "Modelo"
 
-#: pssh_ui/gui.py:668 pssh_ui/gui.py:1745 pssh_ui/gui.py:1774
-#: pssh_ui/gui.py:3003
+#: pssh_ui/gui.py:729 pssh_ui/gui.py:1870 pssh_ui/gui.py:1899
+#: pssh_ui/gui.py:3192
 msgid "Group"
 msgstr "Grupo"
 
-#: pssh_ui/gui.py:669 pssh_ui/gui.py:1951
+#: pssh_ui/gui.py:730 pssh_ui/gui.py:2076
 msgid "SSH Port"
 msgstr "Porta SSH"
 
-#: pssh_ui/gui.py:698
+#: pssh_ui/gui.py:759
 msgid "IP Address is required."
 msgstr "O Endereço IP é obrigatório."
 
-#: pssh_ui/gui.py:739
+#: pssh_ui/gui.py:800
 msgid "Edit Snippet"
 msgstr "Editar Snippet"
 
-#: pssh_ui/gui.py:739 pssh_ui/gui.py:2799
+#: pssh_ui/gui.py:800 pssh_ui/gui.py:2983
 msgid "Add Snippet"
 msgstr "Adicionar Snippet"
 
-#: pssh_ui/gui.py:762
+#: pssh_ui/gui.py:824
 msgid "Snippet Type *"
 msgstr "Tipo de Snippet *"
 
-#: pssh_ui/gui.py:774
+#: pssh_ui/gui.py:836
 msgid "Name *"
 msgstr "Nome *"
 
-#: pssh_ui/gui.py:777
+#: pssh_ui/gui.py:839
 msgid "Device Type (OS) *"
 msgstr "Tipo de Dispositivo (SO) *"
 
-#: pssh_ui/gui.py:787 pssh_ui/gui.py:2869
+#: pssh_ui/gui.py:849 pssh_ui/gui.py:3058
 msgid "Severity"
 msgstr "Severidade"
 
-#: pssh_ui/gui.py:804
+#: pssh_ui/gui.py:865
 #, python-brace-format
 msgid ""
 "Commands *\n"
@@ -283,7 +291,7 @@ msgstr ""
 "${var|tipo|regex},\n"
 "${var|[\"A\", \"B\"]})"
 
-#: pssh_ui/gui.py:827
+#: pssh_ui/gui.py:888
 msgid ""
 "Audit Validation RegEx\n"
 "(1 pattern per line)"
@@ -291,631 +299,648 @@ msgstr ""
 "RegEx de Validação de Auditoria\n"
 "(1 padrão por linha)"
 
-#: pssh_ui/gui.py:864
+#: pssh_ui/gui.py:925
 msgid "Save Snippet"
 msgstr "Salvar Snippet"
 
-#: pssh_ui/gui.py:891
+#: pssh_ui/gui.py:952
 msgid "Detected template variables: none"
 msgstr "Variáveis detectadas: nenhuma"
 
-#: pssh_ui/gui.py:895
+#: pssh_ui/gui.py:956
 #, python-brace-format
 msgid "Detected template variables: {vars}"
 msgstr "Variáveis detectadas: {vars}"
 
-#: pssh_ui/gui.py:902
+#: pssh_ui/gui.py:963
 msgid "Snippet Name is required."
 msgstr "O Nome do Snippet é obrigatório."
 
-#: pssh_ui/gui.py:905 pssh_ui/gui.py:2129 pssh_ui/job_builder.py:171
+#: pssh_ui/gui.py:966 pssh_ui/gui.py:2301 pssh_ui/job_builder.py:171
 msgid "Commands cannot be empty."
 msgstr "Os Comandos não podem estar vazios."
 
-#: pssh_ui/gui.py:942
+#: pssh_ui/gui.py:1003
 msgid "Import from AirWave"
 msgstr "Importar do AirWave"
 
-#: pssh_ui/gui.py:960 pssh_ui/gui.py:1008 pssh_ui/gui.py:1103
-#: pssh_ui/gui.py:1161 pssh_ui/gui.py:1162 pssh_ui/gui.py:1163
+#: pssh_ui/gui.py:1021 pssh_ui/gui.py:1069 pssh_ui/gui.py:1161
+#: pssh_ui/gui.py:1219 pssh_ui/gui.py:1220 pssh_ui/gui.py:1221
 msgid "All"
 msgstr "Todos"
 
-#: pssh_ui/gui.py:967
+#: pssh_ui/gui.py:1028
 msgid "Enter AirWave credentials and click Fetch Inventory."
 msgstr "Informe as credenciais do AirWave e clique em Buscar Inventário."
 
-#: pssh_ui/gui.py:979
+#: pssh_ui/gui.py:1040
 msgid "AirWave Connection"
 msgstr "Conexão com AirWave"
 
-#: pssh_ui/gui.py:985
+#: pssh_ui/gui.py:1046
 msgid "AirWave Name / IP:"
 msgstr "Nome / IP do AirWave:"
 
-#: pssh_ui/gui.py:987
+#: pssh_ui/gui.py:1048
 msgid "Username:"
 msgstr "Usuário:"
 
-#: pssh_ui/gui.py:989
+#: pssh_ui/gui.py:1050
 msgid "Password:"
 msgstr "Senha:"
 
-#: pssh_ui/gui.py:993
+#: pssh_ui/gui.py:1054
 msgid "Verify SSL"
 msgstr "Verificar SSL"
 
-#: pssh_ui/gui.py:997
+#: pssh_ui/gui.py:1058
 msgid "Fetch Inventory"
 msgstr "Buscar Inventário"
 
-#: pssh_ui/gui.py:1001
+#: pssh_ui/gui.py:1062
 msgid "Device Filters"
 msgstr "Filtros de Dispositivos"
 
-#: pssh_ui/gui.py:1006
+#: pssh_ui/gui.py:1067
 msgid "Folder:"
 msgstr "Pasta:"
 
-#: pssh_ui/gui.py:1012
+#: pssh_ui/gui.py:1073
 msgid "Category:"
 msgstr "Categoria:"
 
-#: pssh_ui/gui.py:1017 pssh_ui/gui.py:2971
+#: pssh_ui/gui.py:1078 pssh_ui/gui.py:3160
 msgid "Model:"
 msgstr "Modelo:"
 
-#: pssh_ui/gui.py:1022 pssh_ui/gui.py:2960
+#: pssh_ui/gui.py:1083 pssh_ui/gui.py:3149
 msgid "OS Type:"
 msgstr "Tipo de SO:"
 
-#: pssh_ui/gui.py:1030 pssh_ui/gui.py:2546 pssh_ui/gui.py:2721
-#: pssh_ui/gui.py:2982
+#: pssh_ui/gui.py:1091 pssh_ui/gui.py:2730 pssh_ui/gui.py:2905
+#: pssh_ui/gui.py:3171
 msgid "Status:"
 msgstr "Status:"
 
-#: pssh_ui/gui.py:1038
+#: pssh_ui/gui.py:1099
 msgid "Search (Name/IP):"
 msgstr "Buscar (Nome/IP):"
 
-#: pssh_ui/gui.py:1047
+#: pssh_ui/gui.py:1108
 msgid "Apply Filters"
 msgstr "Aplicar Filtros"
 
-#: pssh_ui/gui.py:1059 pssh_ui/gui.py:1709 pssh_ui/gui.py:1768
-#: pssh_ui/gui.py:2742 pssh_ui/gui.py:2998
+#: pssh_ui/gui.py:1120 pssh_ui/gui.py:1834 pssh_ui/gui.py:1893
+#: pssh_ui/gui.py:2926 pssh_ui/gui.py:3187
 msgid "Device"
 msgstr "Dispositivo"
 
-#: pssh_ui/gui.py:1060 pssh_ui/gui.py:1610 pssh_ui/gui.py:1711
-#: pssh_ui/gui.py:1769 pssh_ui/gui.py:2565 pssh_ui/gui.py:2744
-#: pssh_ui/gui.py:2999
+#: pssh_ui/gui.py:1121 pssh_ui/gui.py:1735 pssh_ui/gui.py:1836
+#: pssh_ui/gui.py:1894 pssh_ui/gui.py:2749 pssh_ui/gui.py:2928
+#: pssh_ui/gui.py:3188
 msgid "Status"
 msgstr "Status"
 
-#: pssh_ui/gui.py:1061 pssh_ui/gui.py:1721 pssh_ui/gui.py:1770
-#: pssh_ui/gui.py:2743 pssh_ui/gui.py:3000
+#: pssh_ui/gui.py:1122 pssh_ui/gui.py:1846 pssh_ui/gui.py:1895
+#: pssh_ui/gui.py:2927 pssh_ui/gui.py:3189
 msgid "IP Address"
 msgstr "Endereço IP"
 
-#: pssh_ui/gui.py:1062 pssh_ui/gui.py:3001
+#: pssh_ui/gui.py:1123 pssh_ui/gui.py:3190
 msgid "OS Type"
 msgstr "Tipo de SO"
 
-#: pssh_ui/gui.py:1064 pssh_ui/gui.py:1744 pssh_ui/gui.py:1773
+#: pssh_ui/gui.py:1125 pssh_ui/gui.py:1869 pssh_ui/gui.py:1898
 msgid "Device Role"
 msgstr "Função do Dispositivo"
 
-#: pssh_ui/gui.py:1065
+#: pssh_ui/gui.py:1126
 msgid "Folder"
 msgstr "Pasta"
 
-#: pssh_ui/gui.py:1066 pssh_ui/gui.py:1746 pssh_ui/gui.py:1775
-#: pssh_ui/gui.py:3004
+#: pssh_ui/gui.py:1127 pssh_ui/gui.py:1871 pssh_ui/gui.py:1900
+#: pssh_ui/gui.py:3193
 msgid "Firmware"
 msgstr "Firmware"
 
-#: pssh_ui/gui.py:1093
-msgid "Import All Filtered"
-msgstr "Importar Todos Filtrados"
-
-#: pssh_ui/gui.py:1098
+#: pssh_ui/gui.py:1154
 msgid "Import Highlighted"
 msgstr "Importar Selecionados"
 
-#: pssh_ui/gui.py:1122
+#: pssh_ui/gui.py:1180
 msgid "AirWave Name / IP, Username, and Password are required."
 msgstr "Nome / IP do AirWave, Usuário e Senha são obrigatórios."
 
-#: pssh_ui/gui.py:1128
+#: pssh_ui/gui.py:1186
 msgid "Connecting to AirWave and fetching inventory..."
 msgstr "Conectando ao AirWave e buscando inventário..."
 
-#: pssh_ui/gui.py:1166
+#: pssh_ui/gui.py:1224
 #, python-brace-format
 msgid "Error: {msg}"
 msgstr "Erro: {msg}"
 
-#: pssh_ui/gui.py:1167 pssh_ui/gui.py:3861
+#: pssh_ui/gui.py:1225 pssh_ui/gui.py:4056 pssh_ui/gui.py:4186
 msgid "Import Error"
 msgstr "Erro ao Importar"
 
-#: pssh_ui/gui.py:1202
+#: pssh_ui/gui.py:1260
 #, python-brace-format
 msgid "Matched {matched} switches out of {total} total records."
 msgstr "{matched} switches encontrados de {total} registros totais."
 
-#: pssh_ui/gui.py:1209 pssh_ui/gui.py:1215 pssh_ui/gui.py:3857
+#: pssh_ui/gui.py:1267 pssh_ui/gui.py:1272 pssh_ui/gui.py:4052
+#: pssh_ui/gui.py:4182
 msgid "Import"
 msgstr "Importar"
 
-#: pssh_ui/gui.py:1209
+#: pssh_ui/gui.py:1267
 msgid "No devices available to import."
 msgstr "Nenhum dispositivo disponível para importação."
 
-#: pssh_ui/gui.py:1215
-msgid "Select at least one row or click Import All Filtered."
-msgstr "Selecione ao menos uma linha ou clique em Importar Todos Filtrados."
+#: pssh_ui/gui.py:1272
+msgid "Select at least one row to import."
+msgstr "Selecione pelo menos uma linha para importar."
 
-#: pssh_ui/gui.py:1252 pssh_ui/gui.py:2505
+#: pssh_ui/gui.py:1313 pssh_ui/gui.py:2684
 msgid "Add Job"
 msgstr "Nova Tarefa"
 
-#: pssh_ui/gui.py:1312
+#: pssh_ui/gui.py:1395
 msgid "Config Command"
 msgstr "Comando de Configuração"
 
-#: pssh_ui/gui.py:1313
+#: pssh_ui/gui.py:1396
 msgid "Parameters"
 msgstr "Parâmetros"
 
-#: pssh_ui/gui.py:1314
+#: pssh_ui/gui.py:1397
 msgid "Select Device"
 msgstr "Selecionar Dispositivos"
 
-#: pssh_ui/gui.py:1315
+#: pssh_ui/gui.py:1398
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: pssh_ui/gui.py:1359
+#: pssh_ui/gui.py:1455
 msgid "Next >"
 msgstr "Avançar >"
 
-#: pssh_ui/gui.py:1364
+#: pssh_ui/gui.py:1460
 msgid "Run Job"
 msgstr "Executar Tarefa"
 
-#: pssh_ui/gui.py:1367
+#: pssh_ui/gui.py:1463
 msgid "< Back"
 msgstr "< Voltar"
 
-#: pssh_ui/gui.py:1378
+#: pssh_ui/gui.py:1474
 msgid "Job Type *"
 msgstr "Tipo de Tarefa *"
 
-#: pssh_ui/gui.py:1392
+#: pssh_ui/gui.py:1488
 msgid "Job Name *"
 msgstr "Nome da Tarefa *"
 
-#: pssh_ui/gui.py:1397
+#: pssh_ui/gui.py:1493
 msgid "Job Description"
 msgstr "Descrição da Tarefa"
 
-#: pssh_ui/gui.py:1403
+#: pssh_ui/gui.py:1500
 msgid "Device Type *"
 msgstr "Tipo de Dispositivo *"
 
-#: pssh_ui/gui.py:1421
+#: pssh_ui/gui.py:1518
 msgid "Device Model:"
 msgstr "Modelo de Dispositivo:"
 
-#: pssh_ui/gui.py:1427
+#: pssh_ui/gui.py:1524
 msgid "Snippets *"
 msgstr "Snippets *"
 
-#: pssh_ui/gui.py:1439
+#: pssh_ui/gui.py:1536
 msgid "Config Commands *"
 msgstr "Comandos de Configuração *"
 
-#: pssh_ui/gui.py:1458
+#: pssh_ui/gui.py:1555
 msgid "Audit Validation RegEx (1 pattern per line)"
 msgstr "RegEx de Validação de Auditoria (1 padrão por linha)"
 
-#: pssh_ui/gui.py:1518
+#: pssh_ui/gui.py:1640
 #, python-brace-format
-msgid "No snippets available for {os}."
-msgstr "Nenhum snippet disponível para {os}."
+msgid "No {job_type} snippets available for {os}."
+msgstr "Nenhum snippet de {job_type} disponível para {os}."
 
-#: pssh_ui/gui.py:1566
+#: pssh_ui/gui.py:1691
 msgid "Fill in the snippet variables below."
 msgstr "Preencha as variáveis do snippet abaixo."
 
-#: pssh_ui/gui.py:1600
+#: pssh_ui/gui.py:1725
 msgid "No variables required by this snippet. Click Next to select devices."
 msgstr ""
 "Este snippet não exige variáveis. Clique em Avançar para selecionar os "
 "dispositivos."
 
-#: pssh_ui/gui.py:1604
+#: pssh_ui/gui.py:1729
 msgid "Variable"
 msgstr "Variável"
 
-#: pssh_ui/gui.py:1607
+#: pssh_ui/gui.py:1732
 msgid "Value"
 msgstr "Valor"
 
-#: pssh_ui/gui.py:1650
+#: pssh_ui/gui.py:1775
 msgid "Show"
 msgstr "Mostrar"
 
-#: pssh_ui/gui.py:1689
+#: pssh_ui/gui.py:1814
 msgid "Select All"
 msgstr "Selecionar Todos"
 
-#: pssh_ui/gui.py:1693
+#: pssh_ui/gui.py:1818
 msgid "Deselect All"
 msgstr "Desmarcar Todos"
 
-#: pssh_ui/gui.py:1697
+#: pssh_ui/gui.py:1822
 msgid "Clear Filters"
 msgstr "Limpar Filtros"
 
-#: pssh_ui/gui.py:1723 pssh_ui/gui.py:1771
+#: pssh_ui/gui.py:1848 pssh_ui/gui.py:1896
 msgid "OS"
 msgstr "SO"
 
-#: pssh_ui/gui.py:1823
+#: pssh_ui/gui.py:1948
 #, python-brace-format
 msgid "Snippet Target OS: {os}"
 msgstr "SO Alvo do Snippet: {os}"
 
-#: pssh_ui/gui.py:1893
+#: pssh_ui/gui.py:2018
 #, python-brace-format
 msgid "Total Records: {shown}   |   Selected ({os}): {chosen}"
 msgstr "Total de Registros: {shown}   |   Selecionados ({os}): {chosen}"
 
-#: pssh_ui/gui.py:1937
+#: pssh_ui/gui.py:2062
 msgid "SSH Credentials & Execution Settings"
 msgstr "Credenciais SSH e Configurações de Execução"
 
-#: pssh_ui/gui.py:1942
+#: pssh_ui/gui.py:2067
 msgid "SSH Username *"
 msgstr "Usuário SSH *"
 
-#: pssh_ui/gui.py:1946
+#: pssh_ui/gui.py:2071
 msgid "SSH Password *"
 msgstr "Senha SSH *"
 
-#: pssh_ui/gui.py:1957
+#: pssh_ui/gui.py:2082
 msgid "Max Parallel Executions"
 msgstr "Máx. Execuções em Paralelo"
 
-#: pssh_ui/gui.py:1968
+#: pssh_ui/gui.py:2093
 msgid "Sequential (1 switch at a time)"
 msgstr "Sequencial (1 switch por vez)"
 
-#: pssh_ui/gui.py:1974
+#: pssh_ui/gui.py:2099
 msgid "Enable Password"
 msgstr "Senha Enable"
 
-#: pssh_ui/gui.py:1982
+#: pssh_ui/gui.py:2107
 msgid "Save configuration"
 msgstr "Salvar configuração"
 
-#: pssh_ui/gui.py:1988
+#: pssh_ui/gui.py:2113
 msgid "Resulting Commands (Read-Only)"
 msgstr "Comandos Resultantes (Somente Leitura)"
 
-#: pssh_ui/gui.py:2032
+#: pssh_ui/gui.py:2157
 #, python-brace-format
 msgid "Run write command ({cmd})"
 msgstr "Executar comando de gravação ({cmd})"
 
-#: pssh_ui/gui.py:2047
+#: pssh_ui/gui.py:2172
 msgid "Device Model"
 msgstr "Modelo de Dispositivo"
 
-#: pssh_ui/gui.py:2049
+#: pssh_ui/gui.py:2174
 msgid "Job Name"
 msgstr "Nome da Tarefa"
 
-#: pssh_ui/gui.py:2050
+#: pssh_ui/gui.py:2175
 msgid "Snippet"
 msgstr "Snippet"
 
-#: pssh_ui/gui.py:2051 pssh_ui/gui.py:2564 pssh_ui/gui.py:2870
-#: pssh_ui/gui.py:3083
+#: pssh_ui/gui.py:2176 pssh_ui/gui.py:2748 pssh_ui/gui.py:3059
+#: pssh_ui/gui.py:3278
 msgid "Device Type"
 msgstr "Tipo de Dispositivo"
 
-#: pssh_ui/gui.py:2052
+#: pssh_ui/gui.py:2177
 msgid "Selected Devices"
 msgstr "Dispositivos Selecionados"
 
-#: pssh_ui/gui.py:2058
+#: pssh_ui/gui.py:2183
 msgid "(No commands)"
 msgstr "(Sem comandos)"
 
-#: pssh_ui/gui.py:2119
+#: pssh_ui/gui.py:2291
 msgid "Please select a Snippet."
 msgstr "Selecione um Snippet."
 
-#: pssh_ui/gui.py:2124
+#: pssh_ui/gui.py:2296
 msgid "Job Name is required."
 msgstr "O Nome da Tarefa é obrigatório."
 
-#: pssh_ui/gui.py:2139
+#: pssh_ui/gui.py:2313
 msgid "Please correct the parameter values:"
 msgstr "Corrija os valores dos parâmetros:"
 
-#: pssh_ui/gui.py:2153 pssh_ui/job_builder.py:153
+#: pssh_ui/gui.py:2327 pssh_ui/job_builder.py:153
 msgid "Select at least one target switch matching this snippet OS."
 msgstr "Selecione ao menos um switch alvo compatível com o SO deste snippet."
 
-#: pssh_ui/gui.py:2185
+#: pssh_ui/gui.py:2361
 msgid "Please resolve the following before running:"
 msgstr "Corrija os itens abaixo antes de executar:"
 
-#: pssh_ui/gui.py:2448 pssh_ui/gui.py:2502
+#: pssh_ui/gui.py:2627 pssh_ui/gui.py:2681
 msgid "Jobs"
 msgstr "Tarefas"
 
-#: pssh_ui/gui.py:2449 pssh_ui/gui.py:2796
+#: pssh_ui/gui.py:2628 pssh_ui/gui.py:2980
 msgid "Snippets"
 msgstr "Snippets"
 
-#: pssh_ui/gui.py:2450 pssh_ui/gui.py:2623 pssh_ui/gui.py:2703
-#: pssh_ui/gui.py:2930
+#: pssh_ui/gui.py:2629 pssh_ui/gui.py:2807 pssh_ui/gui.py:2887
+#: pssh_ui/gui.py:3119
 msgid "Devices"
 msgstr "Dispositivos"
 
-#: pssh_ui/gui.py:2451 pssh_ui/gui.py:3049
+#: pssh_ui/gui.py:2630 pssh_ui/gui.py:3238
 msgid "Device Models"
 msgstr "Modelos de Dispositivo"
 
-#: pssh_ui/gui.py:2519 pssh_ui/gui.py:2819 pssh_ui/gui.py:3061
+#: pssh_ui/gui.py:2698 pssh_ui/gui.py:3003 pssh_ui/gui.py:3256
 msgid "Name:"
 msgstr "Nome:"
 
-#: pssh_ui/gui.py:2524
+#: pssh_ui/gui.py:2708
 msgid "Job Type:"
 msgstr "Tipo de Tarefa:"
 
-#: pssh_ui/gui.py:2535 pssh_ui/gui.py:2846
+#: pssh_ui/gui.py:2719 pssh_ui/gui.py:3035
 msgid "Device Type:"
 msgstr "Tipo de Dispositivo:"
 
-#: pssh_ui/gui.py:2562 pssh_ui/gui.py:2867 pssh_ui/gui.py:3082
+#: pssh_ui/gui.py:2746 pssh_ui/gui.py:3056 pssh_ui/gui.py:3277
 msgid "Name"
 msgstr "Nome"
 
-#: pssh_ui/gui.py:2563
+#: pssh_ui/gui.py:2747
 msgid "Job Type"
 msgstr "Tipo de Tarefa"
 
-#: pssh_ui/gui.py:2566 pssh_ui/gui.py:2871
+#: pssh_ui/gui.py:2750 pssh_ui/gui.py:3060
 msgid "Creation Time"
 msgstr "Data de Criação"
 
-#: pssh_ui/gui.py:2567 pssh_ui/gui.py:2745
+#: pssh_ui/gui.py:2751 pssh_ui/gui.py:2929
 msgid "Start Time"
 msgstr "Início"
 
-#: pssh_ui/gui.py:2568 pssh_ui/gui.py:2746
+#: pssh_ui/gui.py:2752 pssh_ui/gui.py:2930
 msgid "End Time"
 msgstr "Término"
 
-#: pssh_ui/gui.py:2569 pssh_ui/gui.py:2873 pssh_ui/gui.py:3005
-#: pssh_ui/gui.py:3088
+#: pssh_ui/gui.py:2753 pssh_ui/gui.py:3062 pssh_ui/gui.py:3194
+#: pssh_ui/gui.py:3283
 msgid "Action"
 msgstr "Ação"
 
-#: pssh_ui/gui.py:2609 pssh_ui/gui.py:3248
+#: pssh_ui/gui.py:2793 pssh_ui/gui.py:3443
 msgid "Job Details"
 msgstr "Detalhes da Tarefa"
 
-#: pssh_ui/gui.py:2621
+#: pssh_ui/gui.py:2805
 msgid "Details"
 msgstr "Detalhes"
 
-#: pssh_ui/gui.py:2631
+#: pssh_ui/gui.py:2815
 msgid "Total:"
 msgstr "Total:"
 
-#: pssh_ui/gui.py:2639 pssh_ui/gui.py:3173 pssh_ui/gui.py:3312
+#: pssh_ui/gui.py:2823 pssh_ui/gui.py:3368 pssh_ui/gui.py:3507
 msgid "Success"
 msgstr "Sucesso"
 
-#: pssh_ui/gui.py:2647 pssh_ui/gui.py:3175 pssh_ui/gui.py:3314
+#: pssh_ui/gui.py:2831 pssh_ui/gui.py:3370 pssh_ui/gui.py:3509
 msgid "Failed"
 msgstr "Falhou"
 
-#: pssh_ui/gui.py:2664
+#: pssh_ui/gui.py:2848
 msgid "Config Commands"
 msgstr "Comandos de Configuração"
 
-#: pssh_ui/gui.py:2684
+#: pssh_ui/gui.py:2868
 msgid "Audit Validation RegEx"
 msgstr "RegEx de Validação de Auditoria"
 
-#: pssh_ui/gui.py:2711 pssh_ui/gui.py:2950
+#: pssh_ui/gui.py:2895 pssh_ui/gui.py:3139
 msgid "Device:"
 msgstr "Dispositivo:"
 
-#: pssh_ui/gui.py:2716 pssh_ui/gui.py:2955
+#: pssh_ui/gui.py:2900 pssh_ui/gui.py:3144
 msgid "IP Address:"
 msgstr "Endereço IP:"
 
-#: pssh_ui/gui.py:2733
+#: pssh_ui/gui.py:2917
 msgid "Open Logs Folder"
 msgstr "Abrir Pasta de Logs"
 
-#: pssh_ui/gui.py:2747
+#: pssh_ui/gui.py:2931
 msgid "Operation Result"
 msgstr "Resultado da Operação"
 
-#: pssh_ui/gui.py:2748
+#: pssh_ui/gui.py:2932
 msgid "Log"
 msgstr "Log"
 
-#: pssh_ui/gui.py:2801
-msgid "Export XML..."
-msgstr "Exportar XML..."
+#: pssh_ui/gui.py:2985
+msgid "Export Snippet"
+msgstr "Exportar Snippet"
 
-#: pssh_ui/gui.py:2804
-msgid "Import XML..."
-msgstr "Importar XML..."
+#: pssh_ui/gui.py:2988
+msgid "Import Snippet"
+msgstr "Importar Snippet"
 
-#: pssh_ui/gui.py:2824
+#: pssh_ui/gui.py:3013
 msgid "Snippet Type:"
 msgstr "Tipo de Snippet:"
 
-#: pssh_ui/gui.py:2835
+#: pssh_ui/gui.py:3024
 msgid "Severity:"
 msgstr "Severidade:"
 
-#: pssh_ui/gui.py:2857
+#: pssh_ui/gui.py:3046
 msgid "Description:"
 msgstr "Descrição:"
 
-#: pssh_ui/gui.py:2868
+#: pssh_ui/gui.py:3057
 msgid "Snippet Type"
 msgstr "Tipo de Snippet"
 
-#: pssh_ui/gui.py:2899
+#: pssh_ui/gui.py:3088
 msgid "Snippet Commands Preview"
 msgstr "Pré-visualização dos Comandos"
 
-#: pssh_ui/gui.py:2935
+#: pssh_ui/gui.py:3124
 msgid "Import from AirWave..."
 msgstr "Importar do AirWave..."
 
-#: pssh_ui/gui.py:3051
+#: pssh_ui/gui.py:3240
 msgid "Add Model"
 msgstr "Adicionar Modelo"
 
-#: pssh_ui/gui.py:3066
+#: pssh_ui/gui.py:3242 pssh_ui/gui.py:4194
+msgid "Export Device Model"
+msgstr "Exportar Modelo de Dispositivo"
+
+#: pssh_ui/gui.py:3245 pssh_ui/gui.py:4172
+msgid "Import Device Model"
+msgstr "Importar Modelo de Dispositivo"
+
+#: pssh_ui/gui.py:3261
 msgid "Switch OS:"
 msgstr "SO do Switch:"
 
-#: pssh_ui/gui.py:3086 pssh_ui/gui.py:3557
+#: pssh_ui/gui.py:3281 pssh_ui/gui.py:3752
 msgid "Pre-Config Commands"
 msgstr "Comandos Pré-Configuração"
 
-#: pssh_ui/gui.py:3087 pssh_ui/gui.py:3558
+#: pssh_ui/gui.py:3282 pssh_ui/gui.py:3753
 msgid "Post-Config Commands"
 msgstr "Comandos Pós-Configuração"
 
-#: pssh_ui/gui.py:3114
+#: pssh_ui/gui.py:3309
 msgid "Device Model Automation Preview"
 msgstr "Pré-visualização da Automação do Modelo"
 
-#: pssh_ui/gui.py:3177 pssh_ui/gui.py:3316
+#: pssh_ui/gui.py:3372 pssh_ui/gui.py:3511
 msgid "Running"
 msgstr "Executando"
 
-#: pssh_ui/gui.py:3205 pssh_ui/gui.py:3258 pssh_ui/gui.py:3339
-#: pssh_ui/gui.py:3471
+#: pssh_ui/gui.py:3400 pssh_ui/gui.py:3453 pssh_ui/gui.py:3534
+#: pssh_ui/gui.py:3666
 #, python-brace-format
 msgid "Total Records: {total}"
 msgstr "Total de Registros: {total}"
 
-#: pssh_ui/gui.py:3262
+#: pssh_ui/gui.py:3457
 #, python-brace-format
 msgid "Job Details ({name})"
 msgstr "Detalhes da Tarefa ({name})"
 
-#: pssh_ui/gui.py:3318
+#: pssh_ui/gui.py:3513
 msgid "Pending"
 msgstr "Pendente"
 
-#: pssh_ui/gui.py:3392 pssh_ui/gui.py:3521
+#: pssh_ui/gui.py:3587 pssh_ui/gui.py:3716
 #, python-brace-format
 msgid "Total Items: {total}"
 msgstr "Total de Itens: {total}"
 
-#: pssh_ui/gui.py:3632
+#: pssh_ui/gui.py:3827
 msgid "Queued"
 msgstr "Na fila"
 
-#: pssh_ui/gui.py:3704
+#: pssh_ui/gui.py:3899
 msgid "Job Running"
 msgstr "Tarefa em Execução"
 
-#: pssh_ui/gui.py:3704
+#: pssh_ui/gui.py:3899
 msgid "Stop the running job before deleting it."
 msgstr "Pare a tarefa em execução antes de excluí-la."
 
-#: pssh_ui/gui.py:3707
+#: pssh_ui/gui.py:3902
 msgid "Confirm Delete"
 msgstr "Confirmar Exclusão"
 
-#: pssh_ui/gui.py:3708
+#: pssh_ui/gui.py:3903
 #, python-brace-format
 msgid "Remove job '{name}' from history?"
 msgstr "Remover a tarefa '{name}' do histórico?"
 
-#: pssh_ui/gui.py:3756
+#: pssh_ui/gui.py:3951
 msgid "Executing..."
 msgstr "Executando..."
 
-#: pssh_ui/gui.py:3837
+#: pssh_ui/gui.py:4032
 msgid "Delete Snippet"
 msgstr "Excluir Snippet"
 
-#: pssh_ui/gui.py:3838
+#: pssh_ui/gui.py:4033
 #, python-brace-format
 msgid "Delete snippet '{name}'?"
 msgstr "Excluir o snippet '{name}'?"
 
-#: pssh_ui/gui.py:3847
+#: pssh_ui/gui.py:4042
 msgid "Import Snippet XML"
 msgstr "Importar Snippet XML"
 
-#: pssh_ui/gui.py:3848 pssh_ui/gui.py:3872
+#: pssh_ui/gui.py:4043 pssh_ui/gui.py:4067 pssh_ui/gui.py:4173
+#: pssh_ui/gui.py:4197
 msgid "XML files"
 msgstr "Arquivos XML"
 
-#: pssh_ui/gui.py:3848 pssh_ui/gui.py:3872
+#: pssh_ui/gui.py:4043 pssh_ui/gui.py:4067 pssh_ui/gui.py:4173
+#: pssh_ui/gui.py:4197
 msgid "All files"
 msgstr "Todos os arquivos"
 
-#: pssh_ui/gui.py:3858
+#: pssh_ui/gui.py:4053
 #, python-brace-format
 msgid "Imported snippet '{name}'."
 msgstr "Snippet '{name}' importado."
 
-#: pssh_ui/gui.py:3866 pssh_ui/gui.py:3877
+#: pssh_ui/gui.py:4061 pssh_ui/gui.py:4072 pssh_ui/gui.py:4191
+#: pssh_ui/gui.py:4202
 msgid "Export"
 msgstr "Exportar"
 
-#: pssh_ui/gui.py:3866
+#: pssh_ui/gui.py:4061
 msgid "Select a snippet row to export."
 msgstr "Selecione uma linha de snippet para exportar."
 
-#: pssh_ui/gui.py:3869
+#: pssh_ui/gui.py:4064
 msgid "Export Snippet XML"
 msgstr "Exportar Snippet XML"
 
-#: pssh_ui/gui.py:3877
+#: pssh_ui/gui.py:4072 pssh_ui/gui.py:4202
 #, python-brace-format
 msgid "Exported to {path}"
 msgstr "Exportado para {path}"
 
-#: pssh_ui/gui.py:3944
+#: pssh_ui/gui.py:4139
 msgid "Delete Device"
 msgstr "Excluir Dispositivo"
 
-#: pssh_ui/gui.py:3945
+#: pssh_ui/gui.py:4140
 #, python-brace-format
 msgid "Remove device '{name}'?"
 msgstr "Remover o dispositivo '{name}'?"
 
-#: pssh_ui/gui.py:4006
+#: pssh_ui/gui.py:4183
+#, python-brace-format
+msgid "Imported device model '{name}'."
+msgstr "Modelo de dispositivo '{name}' importado."
+
+#: pssh_ui/gui.py:4191
+msgid "Select a device model row to export."
+msgstr "Selecione um modelo de dispositivo na tabela para exportar."
+
+#: pssh_ui/gui.py:4244
 msgid "Delete Device Model"
 msgstr "Excluir Modelo de Dispositivo"
 
-#: pssh_ui/gui.py:4007
+#: pssh_ui/gui.py:4245
 #, python-brace-format
 msgid "Delete device model '{name}'?"
 msgstr "Excluir o modelo de dispositivo '{name}'?"

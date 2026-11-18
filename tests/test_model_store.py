@@ -72,9 +72,16 @@ def test_new_vendor_xml_model_and_snippet_work_without_source_edits(tmp_path: Pa
     os_list = discover_device_types(models, snippets)
     assert "Cisco IOS" in os_list
 
-    # Roundtrip save omits <Folder> while preserving folder hierarchy
+    # Roundtrip save, export, and import omit <Folder> while preserving folder hierarchy
     saved = m_store.save_model(
         DeviceModel(name="Custom Junos", device_type=models[0].device_type, vendor="Juniper", folder="juniper")
     )
     assert saved.parent.name == "juniper"
     assert "<Folder>" not in saved.read_text(encoding="utf-8")
+
+    exported = tmp_path / "exported_model.xml"
+    m_store.export_model(models[0], exported)
+    assert exported.is_file()
+    imported = m_store.import_model(exported, target_folder="custom_vendor")
+    assert imported.folder == "custom_vendor"
+    assert Path(imported.file_path).is_file()

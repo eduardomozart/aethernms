@@ -17,6 +17,13 @@ import webbrowser
 
 import sv_ttk
 
+try:
+    from PIL import Image, ImageDraw, ImageTk
+
+    _HAS_PIL = True
+except ImportError:  # pragma: no cover - fallback when Pillow unavailable
+    _HAS_PIL = False
+
 from pssh_ui import __app_name__, __version__
 from pssh_ui.airwave_importer import (
     fetch_airwave_inventory,
@@ -98,6 +105,22 @@ def apply_sun_valley_theme(root: tk.Tk, mode: str) -> None:
     sv_ttk.set_theme(target, root=root)
 
 
+def _make_step_ring_photo(
+    master: tk.Misc, size: int, stroke_color: str, scale: int = 8
+) -> Optional[Any]:
+    """Render an anti-aliased circular outline badge via Pillow supersampling."""
+    if not _HAS_PIL:
+        return None
+    hi = size * scale
+    img = Image.new("RGBA", (hi, hi), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    pad = int(round(2.5 * scale))
+    stroke_w = max(scale, int(round(1.9 * scale)))
+    draw.ellipse((pad, pad, hi - pad - 1, hi - pad - 1), outline=stroke_color, width=stroke_w)
+    resized = img.resize((size, size), Image.Resampling.LANCZOS)
+    return ImageTk.PhotoImage(resized, master=master)
+
+
 def configure_editor_tags(text_widget: tk.Text, dark_mode: bool = False) -> None:
     """Configure visual syntax tags on a CLI text widget."""
     if dark_mode:
@@ -122,6 +145,60 @@ def apply_cli_syntax_highlighting(text_widget: tk.Text) -> None:
 
         for start, end, _inner in scan_dollar_brace_tokens(raw_line):
             text_widget.tag_add("variable", f"{line_idx}.{start}", f"{line_idx}.{end}")
+
+
+def _snippet_type_label(st: SnippetType | str) -> str:
+    """Return translated UI display label for a SnippetType enum or canonical string."""
+    val = st.value if isinstance(st, SnippetType) else str(st)
+    if val == SnippetType.CONFIG.value:
+        return _("Config")
+    if val == SnippetType.AUDIT.value:
+        return _("Audit and Remediate")
+    return _(val)
+
+
+def _attach_auto_scrollbars(
+    widget: Any,
+    y_sb: Optional[ttk.Scrollbar] = None,
+    x_sb: Optional[ttk.Scrollbar] = None,
+) -> None:
+    """Toggle grid scrollbars so they show only when content overflows the widget bounds."""
+
+    def _sync(sb: ttk.Scrollbar, first: str, last: str) -> None:
+        sb.set(first, last)
+        # Skip grid activation while widget is still unlaid out at 1x1 pixels
+        if widget.winfo_height() <= 2 or widget.winfo_width() <= 2:
+            if sb.winfo_manager() == "grid":
+                sb.grid_remove()
+            return
+        try:
+            needs_sb = not (float(first) <= 0.0 and float(last) >= 1.0)
+        except ValueError:
+            needs_sb = False
+        if needs_sb:
+            if sb.winfo_manager() != "grid":
+                sb.grid()
+        else:
+            if sb.winfo_manager() == "grid":
+                sb.grid_remove()
+
+    def _refresh_all(_event=None) -> None:
+        if not widget.winfo_exists():
+            return
+        if y_sb is not None:
+            f, last_val = widget.yview()
+            _sync(y_sb, str(f), str(last_val))
+        if x_sb is not None:
+            f, last_val = widget.xview()
+            _sync(x_sb, str(f), str(last_val))
+
+    if y_sb is not None:
+        y_sb.grid_remove()
+        widget.configure(yscrollcommand=lambda f, l: _sync(y_sb, f, l))
+    if x_sb is not None:
+        x_sb.grid_remove()
+        widget.configure(xscrollcommand=lambda f, l: _sync(x_sb, f, l))
+    widget.bind("<Configure>", lambda _e: widget.after_idle(_refresh_all), add="+")
 
 
 def _make_readonly_text(
@@ -349,7 +426,7 @@ class AboutDialog(tk.Toplevel):
         ttk.Label(frame, text=f"{__app_name__}", font=("Segoe UI", 16, "bold")).pack()
         ttk.Label(
             frame,
-            text=f"v{__version__} — {_('Config & Audit Automation')}",
+            text=f"{__version__} — {_('Config & Audit Automation')}",
             foreground="#cbd5e1" if dark_mode else "#475569",
         ).pack(pady=(2, 12))
 
@@ -592,10 +669,10 @@ class DeviceLogDialog(tk.Toplevel):
 
         ysb = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=text_box.yview)
         xsb = ttk.Scrollbar(frame, orient=tk.HORIZONTAL, command=text_box.xview)
-        text_box.configure(yscrollcommand=ysb.set, xscrollcommand=xsb.set)
         text_box.grid(row=1, column=0, sticky=tk.NSEW)
         ysb.grid(row=1, column=1, sticky=tk.NS)
         xsb.grid(row=2, column=0, sticky=tk.EW)
+        _attach_auto_scrollbars(text_box, y_sb=ysb, x_sb=xsb)
 
         footer = ttk.Frame(frame)
         footer.grid(row=3, column=0, columnspan=2, sticky=tk.EW, pady=(8, 0))
@@ -737,14 +814,15 @@ class SnippetEditorDialog(tk.Toplevel):
         self.result: Optional[Snippet] = None
         self._existing = snippet
         self.title(_("Edit Snippet") if snippet else _("Add Snippet"))
-        self.geometry("780x640")
+        self.geometry("800x660")
+        self.minsize(720, 580)
         self.transient(parent)
         self.grab_set()
 
         container = ttk.Frame(self, padding=14)
         container.pack(fill=tk.BOTH, expand=True)
         container.columnconfigure(1, weight=1)
-        container.rowconfigure(5, weight=2)
+        container.rowconfigure(5, weight=1)
         container.rowconfigure(6, weight=1)
 
         os_choices = list(device_types or [SwitchOS.AOS_S.value, SwitchOS.AOS_CX.value])
@@ -765,7 +843,7 @@ class SnippetEditorDialog(tk.Toplevel):
         for st in SnippetType:
             ttk.Radiobutton(
                 type_frame,
-                text=st.value,
+                text=_snippet_type_label(st),
                 variable=self.type_var,
                 value=st.value,
                 command=self._on_type_changed,
@@ -793,11 +871,10 @@ class SnippetEditorDialog(tk.Toplevel):
             width=20,
         ).grid(row=3, column=1, sticky=tk.W, pady=4)
 
-        ttk.Label(container, text=_("Description")).grid(row=4, column=0, sticky=tk.NW, pady=4)
-        self.desc_text = tk.Text(container, height=3, wrap=tk.WORD)
-        self.desc_text.grid(row=4, column=1, sticky=tk.EW, pady=4)
-        if snippet and snippet.description:
-            self.desc_text.insert("1.0", snippet.description)
+        ttk.Label(container, text=_("Description")).grid(row=4, column=0, sticky=tk.W, pady=4)
+        self.desc_var = tk.StringVar(value=snippet.description if snippet else "")
+        self.desc_entry = ttk.Entry(container, textvariable=self.desc_var)
+        self.desc_entry.grid(row=4, column=1, sticky=tk.EW, pady=4)
 
         ttk.Label(
             container,
@@ -808,14 +885,14 @@ class SnippetEditorDialog(tk.Toplevel):
         cmd_wrap.rowconfigure(0, weight=1)
         cmd_wrap.columnconfigure(0, weight=1)
 
-        self.cmd_text = tk.Text(cmd_wrap, wrap=tk.NONE, font=("Consolas", 10), undo=True)
+        self.cmd_text = tk.Text(cmd_wrap, height=7, wrap=tk.NONE, font=("Consolas", 10), undo=True)
         configure_editor_tags(self.cmd_text, dark_mode=dark_mode)
         y_sb = ttk.Scrollbar(cmd_wrap, orient=tk.VERTICAL, command=self.cmd_text.yview)
         x_sb = ttk.Scrollbar(cmd_wrap, orient=tk.HORIZONTAL, command=self.cmd_text.xview)
-        self.cmd_text.configure(yscrollcommand=y_sb.set, xscrollcommand=x_sb.set)
         self.cmd_text.grid(row=0, column=0, sticky=tk.NSEW)
         y_sb.grid(row=0, column=1, sticky=tk.NS)
         x_sb.grid(row=1, column=0, sticky=tk.EW)
+        _attach_auto_scrollbars(self.cmd_text, y_sb=y_sb, x_sb=x_sb)
 
         if snippet and snippet.commands:
             self.cmd_text.insert("1.0", snippet.commands)
@@ -833,7 +910,7 @@ class SnippetEditorDialog(tk.Toplevel):
         self.audit_regex_wrap.columnconfigure(0, weight=1)
 
         self.audit_regex_text = tk.Text(
-            self.audit_regex_wrap, height=4, wrap=tk.NONE, font=("Consolas", 10), undo=True
+            self.audit_regex_wrap, height=6, wrap=tk.NONE, font=("Consolas", 10), undo=True
         )
         configure_editor_tags(self.audit_regex_text, dark_mode=dark_mode)
         ar_ysb = ttk.Scrollbar(
@@ -842,10 +919,10 @@ class SnippetEditorDialog(tk.Toplevel):
         ar_xsb = ttk.Scrollbar(
             self.audit_regex_wrap, orient=tk.HORIZONTAL, command=self.audit_regex_text.xview
         )
-        self.audit_regex_text.configure(yscrollcommand=ar_ysb.set, xscrollcommand=ar_xsb.set)
         self.audit_regex_text.grid(row=0, column=0, sticky=tk.NSEW)
         ar_ysb.grid(row=0, column=1, sticky=tk.NS)
         ar_xsb.grid(row=1, column=0, sticky=tk.EW)
+        _attach_auto_scrollbars(self.audit_regex_text, y_sb=ar_ysb, x_sb=ar_xsb)
 
         if snippet and snippet.audit_regex:
             self.audit_regex_text.insert("1.0", snippet.audit_regex)
@@ -925,7 +1002,7 @@ class SnippetEditorDialog(tk.Toplevel):
             snippet_type=type_enum,
             device_type=os_enum,
             severity=sev_enum,
-            description=self.desc_text.get("1.0", "end-1c").strip(),
+            description=self.desc_var.get().strip(),
             commands=commands,
             audit_regex=audit_rx,
             created_at=self._existing.created_at if self._existing else "",
@@ -1090,12 +1167,9 @@ class AirWaveImportDialog(tk.Toplevel):
         ttk.Button(footer, text=_("Cancel"), command=self.destroy).pack(side=tk.RIGHT, padx=(6, 0))
         ttk.Button(
             footer,
-            text=_("Import All Filtered"),
+            text=_("Import Highlighted"),
             style="Accent.TButton",
-            command=lambda: self._accept(selected_only=False),
-        ).pack(side=tk.RIGHT, padx=4)
-        ttk.Button(
-            footer, text=_("Import Highlighted"), command=lambda: self._accept(selected_only=True)
+            command=self._accept,
         ).pack(side=tk.RIGHT, padx=4)
 
     def _build_filter(self) -> AirWaveFilter:
@@ -1204,20 +1278,17 @@ class AirWaveImportDialog(tk.Toplevel):
             )
         )
 
-    def _accept(self, selected_only: bool) -> None:
+    def _accept(self) -> None:
         if not self.preview_hosts:
             messagebox.showinfo(_("Import"), _("No devices available to import."), parent=self)
             return
-        if selected_only:
-            sel = self.tree.selection()
-            if not sel:
-                messagebox.showwarning(
-                    _("Import"), _("Select at least one row or click Import All Filtered."), parent=self
-                )
-                return
-            chosen = [self.preview_hosts[int(iid)] for iid in sel]
-        else:
-            chosen = list(self.preview_hosts)
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showwarning(
+                _("Import"), _("Select at least one row to import."), parent=self
+            )
+            return
+        chosen = [self.preview_hosts[int(iid)] for iid in sel]
 
         self.settings.airwave_url = self.url_var.get().strip()
         self.settings.airwave_username = self.user_var.get().strip()
@@ -1228,7 +1299,12 @@ class AirWaveImportDialog(tk.Toplevel):
 
 
 class AddJobDialog(tk.Toplevel):
-    """4-Step Wizard: Config Command -> Parameters -> Select Device -> Confirm (No Schedule)."""
+    """Dynamic Wizard: Config Command -> [Parameters if templated] -> Select Device -> Confirm."""
+
+    STEP_COMMAND = "command"
+    STEP_PARAMS = "params"
+    STEP_DEVICES = "devices"
+    STEP_CONFIRM = "confirm"
 
     def __init__(
         self,
@@ -1247,7 +1323,8 @@ class AddJobDialog(tk.Toplevel):
         self.device_models = device_models if device_models is not None else ModelStore().load_all_models()
         self.dark_mode = dark_mode
         self.launch_payload: Optional[Dict[str, Any]] = None
-        self.current_step: int = 0
+        self.current_step_key: str = self.STEP_COMMAND
+        self._step_ring_cache: Dict[str, Any] = {}
 
         self.title(_("Add Job"))
         self.geometry("980x710")
@@ -1297,7 +1374,29 @@ class AddJobDialog(tk.Toplevel):
         self._snippet_map: Dict[str, Snippet] = {}
         self._build_ui()
         self._populate_snippets_for_os()
-        self._go_to_step(0)
+        self._go_to_step_key(self.STEP_COMMAND)
+
+    @property
+    def current_step(self) -> int:
+        keys = self._active_step_keys()
+        if self.current_step_key in keys:
+            return keys.index(self.current_step_key)
+        return 0
+
+    def _has_template_variables(self) -> bool:
+        return bool(extract_variables(self._get_all_template_text()))
+
+    def _active_step_keys(self) -> List[str]:
+        if self._has_template_variables():
+            return [self.STEP_COMMAND, self.STEP_PARAMS, self.STEP_DEVICES, self.STEP_CONFIRM]
+        return [self.STEP_COMMAND, self.STEP_DEVICES, self.STEP_CONFIRM]
+
+    def _get_step_ring_image(self, stroke_color: str) -> Optional[Any]:
+        if stroke_color not in self._step_ring_cache:
+            self._step_ring_cache[stroke_color] = _make_step_ring_photo(
+                self, 28, stroke_color, scale=8
+            )
+        return self._step_ring_cache[stroke_color]
 
     def _build_ui(self) -> None:
         outer = ttk.Frame(self, padding=16)
@@ -1305,35 +1404,45 @@ class AddJobDialog(tk.Toplevel):
         outer.rowconfigure(1, weight=1)
         outer.columnconfigure(0, weight=1)
 
-        # Top Stepper Bar (circular step numbers, clickable ONLY for previous steps, no underline)
-        stepper = ttk.Frame(outer)
-        stepper.grid(row=0, column=0, sticky=tk.EW, pady=(0, 12))
-        self.step_titles = [
-            _("Config Command"),
-            _("Parameters"),
-            _("Select Device"),
-            _("Confirm"),
+        # Top Stepper Bar (supersampled anti-aliased step circles, backwards-only click, dynamic Parameters)
+        self.stepper_bar = ttk.Frame(outer)
+        self.stepper_bar.grid(row=0, column=0, sticky=tk.EW, pady=(0, 12))
+        self._step_defs = [
+            (self.STEP_COMMAND, _("Config Command")),
+            (self.STEP_PARAMS, _("Parameters")),
+            (self.STEP_DEVICES, _("Select Device")),
+            (self.STEP_CONFIRM, _("Confirm")),
         ]
-        canvas_bg = "#1c1c1c" if self.dark_mode else "#fafafa"
+        canvas_bg = ttk.Style(self).lookup("TFrame", "background") or (
+            "#1c1c1c" if self.dark_mode else "#fafafa"
+        )
+        self._step_widgets: Dict[
+            str, tuple[ttk.Frame, tk.Canvas, Optional[int], Optional[int], int, ttk.Label]
+        ] = {}
         self.step_labels: List[ttk.Label] = []
-        self.step_circles: List[tuple[tk.Canvas, int, int]] = []
-        for idx, text in enumerate(self.step_titles):
-            step_item = ttk.Frame(stepper)
-            step_item.pack(side=tk.LEFT, padx=(0, 22))
+        self.step_circles: List[tuple[tk.Canvas, Optional[int], int]] = []
+
+        for step_idx, (step_key, text) in enumerate(self._step_defs):
+            step_item = ttk.Frame(self.stepper_bar)
             circ = tk.Canvas(
-                step_item, width=26, height=26, highlightthickness=0, bd=0, bg=canvas_bg
+                step_item, width=28, height=28, highlightthickness=0, bd=0, bg=canvas_bg
             )
-            oval_id = circ.create_oval(2, 2, 24, 24, width=1.6, outline="#94a3b8")
+            ring_img = self._get_step_ring_image("#94a3b8")
+            img_id: Optional[int] = None
+            oval_id: Optional[int] = None
+            if ring_img is not None:
+                img_id = circ.create_image(14, 14, image=ring_img)
+            else:
+                oval_id = circ.create_oval(2, 2, 26, 26, width=1.6, outline="#94a3b8")
             num_id = circ.create_text(
-                13, 13, text=str(idx + 1), font=("Segoe UI", 9, "bold"), fill="#94a3b8"
+                14, 14, text=str(step_idx + 1), font=("Segoe UI", 9, "bold"), fill="#94a3b8"
             )
             circ.pack(side=tk.LEFT, padx=(0, 6))
             lbl = ttk.Label(step_item, text=text, font=("Segoe UI", 10))
             lbl.pack(side=tk.LEFT)
-            circ.bind("<Button-1>", lambda _event, step_idx=idx: self._on_step_label_click(step_idx))
-            lbl.bind("<Button-1>", lambda _event, step_idx=idx: self._on_step_label_click(step_idx))
-            self.step_circles.append((circ, oval_id, num_id))
-            self.step_labels.append(lbl)
+            circ.bind("<Button-1>", lambda _event, k=step_key: self._on_step_label_click(k))
+            lbl.bind("<Button-1>", lambda _event, k=step_key: self._on_step_label_click(k))
+            self._step_widgets[step_key] = (step_item, circ, img_id, oval_id, num_id, lbl)
 
         # Stage Container
         self.stage = ttk.Frame(outer)
@@ -1341,14 +1450,17 @@ class AddJobDialog(tk.Toplevel):
         self.stage.rowconfigure(0, weight=1)
         self.stage.columnconfigure(0, weight=1)
 
-        self.step_frames = [ttk.Frame(self.stage) for _step in range(4)]
-        for sf in self.step_frames:
+        self.step_frames: Dict[str, ttk.Frame] = {
+            key: ttk.Frame(self.stage)
+            for key, _title in self._step_defs
+        }
+        for sf in self.step_frames.values():
             sf.grid(row=0, column=0, sticky=tk.NSEW)
 
-        self._build_step1_config_command(self.step_frames[0])
-        self._build_step2_parameters(self.step_frames[1])
-        self._build_step3_select_device(self.step_frames[2])
-        self._build_step4_confirm(self.step_frames[3])
+        self._build_step1_config_command(self.step_frames[self.STEP_COMMAND])
+        self._build_step2_parameters(self.step_frames[self.STEP_PARAMS])
+        self._build_step3_select_device(self.step_frames[self.STEP_DEVICES])
+        self._build_step4_confirm(self.step_frames[self.STEP_CONFIRM])
 
         # Bottom Navigation Bar
         nav = ttk.Frame(outer)
@@ -1372,7 +1484,7 @@ class AddJobDialog(tk.Toplevel):
         card = ttk.Frame(parent, style="Card.TFrame", padding=16)
         card.pack(fill=tk.BOTH, expand=True)
         card.columnconfigure(0, weight=1)
-        card.rowconfigure(12, weight=2)
+        card.rowconfigure(12, weight=1)
         card.rowconfigure(14, weight=1)
 
         ttk.Label(card, text=_("Job Type *"), font=("Segoe UI", 9, "bold")).grid(
@@ -1383,10 +1495,10 @@ class AddJobDialog(tk.Toplevel):
         for st in SnippetType:
             ttk.Radiobutton(
                 jt_frame,
-                text=st.value,
+                text=_snippet_type_label(st),
                 variable=self.job_type_var,
                 value=st.value,
-                command=self._toggle_audit_regex_field,
+                command=self._on_job_type_changed,
             ).pack(side=tk.LEFT, padx=(0, 18))
 
         ttk.Label(card, text=_("Job Name *"), font=("Segoe UI", 9, "bold")).grid(
@@ -1397,8 +1509,9 @@ class AddJobDialog(tk.Toplevel):
         ttk.Label(card, text=_("Job Description"), font=("Segoe UI", 9, "bold")).grid(
             row=4, column=0, sticky=tk.W, pady=(0, 4)
         )
-        self.job_desc_text = tk.Text(card, height=2, wrap=tk.WORD)
-        self.job_desc_text.grid(row=5, column=0, sticky=tk.EW, pady=(0, 10))
+        self.job_desc_var = tk.StringVar()
+        self.job_desc_entry = ttk.Entry(card, textvariable=self.job_desc_var)
+        self.job_desc_entry.grid(row=5, column=0, sticky=tk.EW, pady=(0, 10))
 
         ttk.Label(card, text=_("Device Type *"), font=("Segoe UI", 9, "bold")).grid(
             row=6, column=0, sticky=tk.W, pady=(0, 4)
@@ -1416,7 +1529,7 @@ class AddJobDialog(tk.Toplevel):
             width=24,
         )
         self.job_os_combo.grid(row=0, column=0, sticky=tk.W, padx=(0, 16))
-        self.job_os_combo.bind("<<ComboboxSelected>>", lambda _e: self._populate_snippets_for_os())
+        self.job_os_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_os_changed())
 
         ttk.Label(dt_row, text=_("Device Model:")).grid(row=0, column=2, sticky=tk.E, padx=(16, 6))
         self.job_model_combo = ttk.Combobox(
@@ -1444,15 +1557,15 @@ class AddJobDialog(tk.Toplevel):
         cmd_wrap.rowconfigure(0, weight=1)
         cmd_wrap.columnconfigure(0, weight=1)
 
-        self.cmd_text = tk.Text(cmd_wrap, wrap=tk.NONE, font=("Consolas", 10), undo=True, height=7)
+        self.cmd_text = tk.Text(cmd_wrap, wrap=tk.NONE, font=("Consolas", 10), undo=True, height=5)
         configure_editor_tags(self.cmd_text, dark_mode=self.dark_mode)
         c_ysb = ttk.Scrollbar(cmd_wrap, orient=tk.VERTICAL, command=self.cmd_text.yview)
         c_xsb = ttk.Scrollbar(cmd_wrap, orient=tk.HORIZONTAL, command=self.cmd_text.xview)
-        self.cmd_text.configure(yscrollcommand=c_ysb.set, xscrollcommand=c_xsb.set)
         self.cmd_text.grid(row=0, column=0, sticky=tk.NSEW)
         c_ysb.grid(row=0, column=1, sticky=tk.NS)
         c_xsb.grid(row=1, column=0, sticky=tk.EW)
-        self.cmd_text.bind("<KeyRelease>", lambda _e: apply_cli_syntax_highlighting(self.cmd_text))
+        _attach_auto_scrollbars(self.cmd_text, y_sb=c_ysb, x_sb=c_xsb)
+        self.cmd_text.bind("<KeyRelease>", lambda _e: self._on_step1_text_changed())
 
         self.audit_regex_lbl = ttk.Label(
             card, text=_("Audit Validation RegEx (1 pattern per line)"), font=("Segoe UI", 9, "bold")
@@ -1464,7 +1577,7 @@ class AddJobDialog(tk.Toplevel):
         self.audit_regex_wrap.columnconfigure(0, weight=1)
 
         self.audit_regex_text = tk.Text(
-            self.audit_regex_wrap, wrap=tk.NONE, font=("Consolas", 10), undo=True, height=4
+            self.audit_regex_wrap, wrap=tk.NONE, font=("Consolas", 10), undo=True, height=5
         )
         configure_editor_tags(self.audit_regex_text, dark_mode=self.dark_mode)
         ar_ysb = ttk.Scrollbar(
@@ -1473,14 +1586,34 @@ class AddJobDialog(tk.Toplevel):
         ar_xsb = ttk.Scrollbar(
             self.audit_regex_wrap, orient=tk.HORIZONTAL, command=self.audit_regex_text.xview
         )
-        self.audit_regex_text.configure(yscrollcommand=ar_ysb.set, xscrollcommand=ar_xsb.set)
         self.audit_regex_text.grid(row=0, column=0, sticky=tk.NSEW)
         ar_ysb.grid(row=0, column=1, sticky=tk.NS)
         ar_xsb.grid(row=1, column=0, sticky=tk.EW)
-        self.audit_regex_text.bind(
-            "<KeyRelease>", lambda _e: apply_cli_syntax_highlighting(self.audit_regex_text)
-        )
+        _attach_auto_scrollbars(self.audit_regex_text, y_sb=ar_ysb, x_sb=ar_xsb)
+        self.audit_regex_text.bind("<KeyRelease>", lambda _e: self._on_step1_text_changed())
         self._toggle_audit_regex_field()
+
+    def _close_snippet_dropdown(self) -> None:
+        try:
+            self.snippet_combo.tk.call("ttk::combobox::Unpost", self.snippet_combo._w)
+        except tk.TclError:
+            pass
+
+    def _on_job_type_changed(self) -> None:
+        self._close_snippet_dropdown()
+        self._populate_snippets_for_os()
+        self._toggle_audit_regex_field()
+        self._refresh_stepper_header()
+
+    def _on_os_changed(self) -> None:
+        self._close_snippet_dropdown()
+        self._populate_snippets_for_os()
+        self._refresh_stepper_header()
+
+    def _on_step1_text_changed(self) -> None:
+        apply_cli_syntax_highlighting(self.cmd_text)
+        apply_cli_syntax_highlighting(self.audit_regex_text)
+        self._refresh_stepper_header()
 
     def _toggle_audit_regex_field(self) -> None:
         if self.job_type_var.get() == SnippetType.AUDIT.value:
@@ -1492,6 +1625,7 @@ class AddJobDialog(tk.Toplevel):
 
     def _populate_snippets_for_os(self) -> None:
         target_os = self.device_os_var.get()
+        target_type = self.job_type_var.get()
 
         # Populate matching Device Models for this Device Type
         matching_models = [m.name for m in self.device_models if m.device_type.value == target_os]
@@ -1502,12 +1636,16 @@ class AddJobDialog(tk.Toplevel):
         else:
             self.model_choice_var.set("")
 
-        matching = [s for s in self.snippets if s.device_type.value == target_os]
+        matching = [
+            s
+            for s in self.snippets
+            if s.device_type.value == target_os and s.snippet_type.value == target_type
+        ]
         self._snippet_map = {s.name: s for s in matching}
         names = [s.name for s in matching]
         self.snippet_combo.configure(values=names)
 
-        # Default to blank selection so the operator explicitly selects a Snippet
+        # Reset to blank selection so the operator explicitly picks a matching Snippet
         self.snippet_choice_var.set("")
         self.cmd_text.delete("1.0", tk.END)
         self.audit_regex_text.delete("1.0", tk.END)
@@ -1515,7 +1653,9 @@ class AddJobDialog(tk.Toplevel):
             self.snippet_desc_lbl.configure(text="")
         else:
             self.snippet_desc_lbl.configure(
-                text=_("No snippets available for {os}.").format(os=target_os)
+                text=_("No {job_type} snippets available for {os}.").format(
+                    job_type=_snippet_type_label(target_type), os=target_os
+                )
             )
 
     def _get_active_model(self) -> Optional[DeviceModel]:
@@ -1537,6 +1677,7 @@ class AddJobDialog(tk.Toplevel):
             self.audit_regex_text.insert("1.0", snip.audit_regex)
             apply_cli_syntax_highlighting(self.audit_regex_text)
         self._toggle_audit_regex_field()
+        self._refresh_stepper_header()
 
     def _get_selected_snippet(self) -> Optional[Snippet]:
         return self._snippet_map.get(self.snippet_choice_var.get())
@@ -1999,10 +2140,10 @@ class AddJobDialog(tk.Toplevel):
         configure_editor_tags(self.confirm_cmds_text, dark_mode=self.dark_mode)
         ysb = ttk.Scrollbar(cmd_wrap, orient=tk.VERTICAL, command=self.confirm_cmds_text.yview)
         xsb = ttk.Scrollbar(cmd_wrap, orient=tk.HORIZONTAL, command=self.confirm_cmds_text.xview)
-        self.confirm_cmds_text.configure(yscrollcommand=ysb.set, xscrollcommand=xsb.set)
         self.confirm_cmds_text.grid(row=0, column=0, sticky=tk.NSEW)
         ysb.grid(row=0, column=1, sticky=tk.NS)
         xsb.grid(row=1, column=0, sticky=tk.EW)
+        _attach_auto_scrollbars(self.confirm_cmds_text, y_sb=ysb, x_sb=xsb)
 
     def _on_seq_toggled(self) -> None:
         self.parallel_spin.configure(
@@ -2061,59 +2202,106 @@ class AddJobDialog(tk.Toplevel):
         self.confirm_cmds_text.configure(state=tk.DISABLED)
 
     # ---- Stepper Transitions ----
-    def _on_step_label_click(self, idx: int) -> None:
-        # Allow clicking ONLY on previous steps to go back; disallow advancing
-        if idx < self.current_step:
-            self._go_to_step(idx)
+    def _set_step_badge_style(
+        self,
+        circ: tk.Canvas,
+        img_id: Optional[int],
+        oval_id: Optional[int],
+        num_id: int,
+        step_num: int,
+        color: str,
+    ) -> None:
+        circ.itemconfigure(num_id, text=str(step_num), fill=color)
+        if img_id is not None:
+            ring_img = self._get_step_ring_image(color)
+            if ring_img is not None:
+                circ.itemconfigure(img_id, image=ring_img)
+        if oval_id is not None:
+            circ.itemconfigure(oval_id, outline=color, fill="")
 
-    def _go_to_step(self, idx: int) -> None:
-        self.current_step = max(0, min(3, idx))
-        self.step_frames[self.current_step].tkraise()
+    def _refresh_stepper_header(self) -> None:
+        keys = self._active_step_keys()
+        if self.current_step_key not in keys:
+            self.current_step_key = keys[0]
+        cur_idx = keys.index(self.current_step_key)
 
-        active_color = "#d97706"
-        done_color = "#15803d"
-        idle_color = "#94a3b8"
+        active_color = "#60cdff" if self.dark_mode else "#0067c0"
+        done_color = "#4ade80" if self.dark_mode else "#15803d"
+        idle_color = "#64748b" if self.dark_mode else "#94a3b8"
         idle_text = "#cbd5e1" if self.dark_mode else "#64748b"
 
-        for i, lbl in enumerate(self.step_labels):
-            circ, oval_id, num_id = self.step_circles[i]
-            if i == self.current_step:
-                circ.itemconfigure(oval_id, outline=active_color, fill="")
-                circ.itemconfigure(num_id, fill=active_color)
+        for item, _circ, _img_id, _oval_id, _num_id, _lbl in self._step_widgets.values():
+            item.pack_forget()
+
+        self.step_circles = []
+        self.step_labels = []
+        for pos, key in enumerate(keys):
+            item, circ, img_id, oval_id, num_id, lbl = self._step_widgets[key]
+            item.pack(side=tk.LEFT, padx=(0, 22))
+            if pos == cur_idx:
+                self._set_step_badge_style(circ, img_id, oval_id, num_id, pos + 1, active_color)
                 circ.configure(cursor="")
                 lbl.configure(font=("Segoe UI", 10, "bold"), foreground=active_color, cursor="")
-            elif i < self.current_step:
-                circ.itemconfigure(oval_id, outline=done_color, fill="")
-                circ.itemconfigure(num_id, fill=done_color)
+            elif pos < cur_idx:
+                self._set_step_badge_style(circ, img_id, oval_id, num_id, pos + 1, done_color)
                 circ.configure(cursor="hand2")
                 lbl.configure(font=("Segoe UI", 10), foreground=done_color, cursor="hand2")
             else:
-                circ.itemconfigure(oval_id, outline=idle_color, fill="")
-                circ.itemconfigure(num_id, fill=idle_color)
+                self._set_step_badge_style(circ, img_id, oval_id, num_id, pos + 1, idle_color)
                 circ.configure(cursor="")
                 lbl.configure(font=("Segoe UI", 10), foreground=idle_text, cursor="")
+            self.step_circles.append((circ, img_id or oval_id, num_id))
+            self.step_labels.append(lbl)
 
-        self.back_btn.configure(state=tk.NORMAL if self.current_step > 0 else tk.DISABLED)
-        if self.current_step == 3:
+    def _on_step_label_click(self, step_or_idx: int | str) -> None:
+        # Allow clicking ONLY on previous steps to go back; disallow advancing
+        keys = self._active_step_keys()
+        cur_idx = keys.index(self.current_step_key)
+        if isinstance(step_or_idx, int):
+            if 0 <= step_or_idx < len(keys):
+                target_key = keys[step_or_idx]
+            else:
+                return
+        else:
+            if step_or_idx not in keys:
+                return
+            target_key = step_or_idx
+
+        if keys.index(target_key) < cur_idx:
+            self._go_to_step_key(target_key)
+
+    def _go_to_step_key(self, step_key: str) -> None:
+        keys = self._active_step_keys()
+        if step_key not in keys:
+            step_key = keys[min(len(keys) - 1, 1 if step_key == self.STEP_PARAMS else 0)]
+        self.current_step_key = step_key
+        self.step_frames[step_key].tkraise()
+        self._refresh_stepper_header()
+
+        cur_idx = keys.index(step_key)
+        self.back_btn.configure(state=tk.NORMAL if cur_idx > 0 else tk.DISABLED)
+        if step_key == self.STEP_CONFIRM:
             self.next_btn.pack_forget()
             self.run_btn.pack(side=tk.RIGHT)
         else:
             self.run_btn.pack_forget()
             self.next_btn.pack(side=tk.RIGHT)
 
-        if self.current_step == 1:
+        if step_key == self.STEP_PARAMS:
             self._rebuild_parameters_form()
-        elif self.current_step == 2:
+        elif step_key == self.STEP_DEVICES:
             self._refresh_devices_table()
-        elif self.current_step == 3:
+        elif step_key == self.STEP_CONFIRM:
             self._refresh_confirm_view()
 
     def _on_back(self) -> None:
-        self._go_to_step(self.current_step - 1)
+        keys = self._active_step_keys()
+        cur_idx = keys.index(self.current_step_key)
+        self._go_to_step_key(keys[max(0, cur_idx - 1)])
 
     def _on_next(self) -> None:
         raw_commands = self._get_raw_commands()
-        if self.current_step == 0:
+        if self.current_step_key == self.STEP_COMMAND:
             if not self._get_selected_snippet():
                 messagebox.showwarning(
                     _("Validation"), _("Please select a Snippet."), parent=self
@@ -2129,7 +2317,9 @@ class AddJobDialog(tk.Toplevel):
                     _("Validation"), _("Commands cannot be empty."), parent=self
                 )
                 return
-        elif self.current_step == 1:
+            if not self._has_template_variables():
+                self.param_values.clear()
+        elif self.current_step_key == self.STEP_PARAMS:
             specs = extract_variables(self._get_all_template_text())
             vals = {k: sv.get() for k, sv in self.param_entry_vars.items()}
             errs = validate_variable_values(specs, vals)
@@ -2140,7 +2330,7 @@ class AddJobDialog(tk.Toplevel):
                     parent=self,
                 )
                 return
-        elif self.current_step == 2:
+        elif self.current_step_key == self.STEP_DEVICES:
             target_os = self._target_os_enum()
             chosen = [
                 h
@@ -2155,7 +2345,9 @@ class AddJobDialog(tk.Toplevel):
                 )
                 return
 
-        self._go_to_step(self.current_step + 1)
+        keys = self._active_step_keys()
+        cur_idx = keys.index(self.current_step_key)
+        self._go_to_step_key(keys[min(len(keys) - 1, cur_idx + 1)])
 
     def _on_run(self) -> None:
         snip = self._get_selected_snippet()
@@ -2239,7 +2431,7 @@ class AddJobDialog(tk.Toplevel):
         active_model = self._get_active_model()
         self.launch_payload = {
             "job_name": self.job_name_var.get().strip(),
-            "description": self.job_desc_text.get("1.0", "end-1c").strip(),
+            "description": self.job_desc_var.get().strip(),
             "job_type": job_type,
             "device_type": target_os,
             "snippet_name": snip.name if snip else "",
@@ -2274,8 +2466,10 @@ class PsshApp:
     ) -> None:
         self.root = root
         self.snippet_store = snippet_store or SnippetStore()
+        self.snippet_store.seed_defaults()
         self.snippet_store.ensure_default_folders()
         self.model_store = model_store or ModelStore()
+        self.model_store.seed_defaults()
         self.session_path = Path(session_path) if session_path else DEFAULT_SESSION_PATH
         self.settings_path = Path(settings_path) if settings_path else DEFAULT_SETTINGS_PATH
         self._os_theme_override = os_theme_override
@@ -2309,9 +2503,10 @@ class PsshApp:
         assets = get_assets_dir()
         ico_path = assets / "pssh-ui.ico"
         png_path = assets / "pssh-ui.png"
-        if ico_path.is_file() and sys.platform.startswith("win"):
+        if sys.platform.startswith("win") and ico_path.is_file():
             try:
                 self.root.iconbitmap(default=str(ico_path))
+                return
             except tk.TclError:
                 pass
         if png_path.is_file():
@@ -2383,7 +2578,7 @@ class PsshApp:
         return "#ffffff" if self._is_dark() else "#000000"
 
     def _build_layout(self) -> None:
-        self.root.title(f"{__app_name__} v{__version__} — {_('Config & Audit Automation')}")
+        self.root.title(f"{__app_name__} {__version__} — {_('Config & Audit Automation')}")
         self.root.geometry("1220x820")
         self.root.minsize(960, 640)
 
@@ -2420,21 +2615,21 @@ class PsshApp:
         right_ctrl = ttk.Frame(header)
         right_ctrl.pack(side=tk.RIGHT)
 
-        self.settings_btn = ttk.Button(
-            right_ctrl,
-            text="⚙",
-            width=3,
-            command=self._open_settings_dialog,
-        )
-        self.settings_btn.pack(side=tk.LEFT, padx=(0, 6))
-
         self.about_btn = ttk.Button(
             right_ctrl,
             text="ⓘ",
             width=3,
             command=self._open_about_dialog,
         )
-        self.about_btn.pack(side=tk.LEFT)
+        self.about_btn.pack(side=tk.LEFT, padx=(0, 6))
+
+        self.settings_btn = ttk.Button(
+            right_ctrl,
+            text="⚙",
+            width=3,
+            command=self._open_settings_dialog,
+        )
+        self.settings_btn.pack(side=tk.LEFT)
 
         # Primary 4 Tabs: Jobs (default), Snippets, Devices, Device Models
         self.main_notebook = ttk.Notebook(self.root)
@@ -2521,11 +2716,16 @@ class PsshApp:
         e_jname.grid(row=0, column=1, sticky=tk.EW, padx=(0, 10))
         e_jname.bind("<KeyRelease>", lambda _e: self._refresh_jobs_tree())
 
+        self._job_type_filter_map = {
+            "All": "All",
+            _snippet_type_label(SnippetType.CONFIG): SnippetType.CONFIG.value,
+            _snippet_type_label(SnippetType.AUDIT): SnippetType.AUDIT.value,
+        }
         ttk.Label(flt_row, text=_("Job Type:")).grid(row=0, column=2, padx=(0, 4))
         cb_jtype = ttk.Combobox(
             flt_row,
             textvariable=self.job_flt_type,
-            values=["All", SnippetType.CONFIG.value, SnippetType.AUDIT.value],
+            values=list(self._job_type_filter_map.keys()),
             state="readonly",
             width=18,
         )
@@ -2675,10 +2875,10 @@ class PsshApp:
         configure_editor_tags(self.job_cmds_text, dark_mode=self._is_dark())
         jc_sb = ttk.Scrollbar(cmd_box_wrap, orient=tk.VERTICAL, command=self.job_cmds_text.yview)
         jc_xsb = ttk.Scrollbar(cmd_box_wrap, orient=tk.HORIZONTAL, command=self.job_cmds_text.xview)
-        self.job_cmds_text.configure(yscrollcommand=jc_sb.set, xscrollcommand=jc_xsb.set)
         self.job_cmds_text.grid(row=0, column=0, sticky=tk.NSEW)
         jc_sb.grid(row=0, column=1, sticky=tk.NS)
         jc_xsb.grid(row=1, column=0, sticky=tk.EW)
+        _attach_auto_scrollbars(self.job_cmds_text, y_sb=jc_sb, x_sb=jc_xsb)
 
         self.job_audit_lbl = ttk.Label(
             info_tab, text=_("Audit Validation RegEx"), font=("Segoe UI", 9, "bold")
@@ -2798,10 +2998,10 @@ class PsshApp:
         ttk.Button(
             hdr, text="+ " + _("Add Snippet"), style="Accent.TButton", command=self._new_snippet
         ).pack(side=tk.RIGHT)
-        ttk.Button(hdr, text=_("Export XML..."), command=self._export_snippet_xml).pack(
+        ttk.Button(hdr, text=_("Export Snippet"), command=self._export_snippet_xml).pack(
             side=tk.RIGHT, padx=(0, 6)
         )
-        ttk.Button(hdr, text=_("Import XML..."), command=self._import_snippet_xml).pack(
+        ttk.Button(hdr, text=_("Import Snippet"), command=self._import_snippet_xml).pack(
             side=tk.RIGHT, padx=(0, 6)
         )
 
@@ -2821,11 +3021,16 @@ class PsshApp:
         e_sn.grid(row=0, column=1, sticky=tk.EW, padx=(0, 8))
         e_sn.bind("<KeyRelease>", lambda _e: self._refresh_snippets_table())
 
+        self._snip_type_filter_map = {
+            "All": "All",
+            _snippet_type_label(SnippetType.CONFIG): SnippetType.CONFIG.value,
+            _snippet_type_label(SnippetType.AUDIT): SnippetType.AUDIT.value,
+        }
         ttk.Label(flt, text=_("Snippet Type:")).grid(row=0, column=2, padx=(0, 4))
         cb_st = ttk.Combobox(
             flt,
             textvariable=self.snip_flt_type,
-            values=["All", SnippetType.CONFIG.value, SnippetType.AUDIT.value],
+            values=list(self._snip_type_filter_map.keys()),
             state="readonly",
             width=18,
         )
@@ -3050,6 +3255,12 @@ class PsshApp:
         ttk.Button(
             hdr, text="+ " + _("Add Model"), style="Accent.TButton", command=self._new_model
         ).pack(side=tk.RIGHT)
+        ttk.Button(hdr, text=_("Export Device Model"), command=self._export_model_xml).pack(
+            side=tk.RIGHT, padx=(0, 6)
+        )
+        ttk.Button(hdr, text=_("Import Device Model"), command=self._import_model_xml).pack(
+            side=tk.RIGHT, padx=(0, 6)
+        )
 
         flt = ttk.Frame(card)
         flt.grid(row=1, column=0, columnspan=2, sticky=tk.EW, pady=(0, 6))
@@ -3150,7 +3361,7 @@ class PsshApp:
 
     def _refresh_jobs_tree(self) -> None:
         name_q = self.job_flt_name.get().strip().lower()
-        type_q = self.job_flt_type.get()
+        type_q = self._job_type_filter_map.get(self.job_flt_type.get(), self.job_flt_type.get())
         os_q = self.job_flt_os.get()
         status_q = self.job_flt_status.get()
 
@@ -3185,7 +3396,7 @@ class PsshApp:
                 tags=(job.status,),
                 values=(
                     job.name,
-                    job.job_type.value,
+                    _snippet_type_label(job.job_type),
                     job.device_type.value,
                     status_disp,
                     job.creation_time,
@@ -3351,7 +3562,7 @@ class PsshApp:
 
     def _refresh_snippets_table(self) -> None:
         name_q = self.snip_flt_name.get().strip().lower()
-        type_q = self.snip_flt_type.get()
+        type_q = self._snip_type_filter_map.get(self.snip_flt_type.get(), self.snip_flt_type.get())
         sev_q = self.snip_flt_sev.get()
         os_q = self.snip_flt_os.get()
         desc_q = self.snip_flt_desc.get().strip().lower()
@@ -3380,7 +3591,7 @@ class PsshApp:
                 iid=str(idx),
                 values=(
                     s.name,
-                    s.snippet_type.value,
+                    _snippet_type_label(s.snippet_type),
                     s.severity.value,
                     s.device_type.value,
                     s.created_at or "-",
@@ -3963,6 +4174,49 @@ class PsshApp:
     # ------------------------------------------------------------------
     # Actions: Device Models
     # ------------------------------------------------------------------
+    def _get_selected_model(self) -> Optional[DeviceModel]:
+        sel = self.models_tree.selection()
+        if not sel:
+            return None
+        idx = int(sel[0])
+        if 0 <= idx < len(getattr(self, "_table_models", [])):
+            return self._table_models[idx]
+        return None
+
+    def _import_model_xml(self) -> None:
+        path_str = filedialog.askopenfilename(
+            title=_("Import Device Model"),
+            filetypes=[(_("XML files"), "*.xml"), (_("All files"), "*.*")],
+        )
+        if not path_str:
+            return
+        try:
+            imported = self.model_store.import_model(path_str)
+            self._reload_models_data()
+            self._refresh_all_views()
+            messagebox.showinfo(
+                _("Import"),
+                _("Imported device model '{name}'.").format(name=imported.name),
+            )
+        except Exception as exc:
+            messagebox.showerror(_("Import Error"), str(exc))
+
+    def _export_model_xml(self) -> None:
+        mdl = self._get_selected_model()
+        if not mdl:
+            messagebox.showinfo(_("Export"), _("Select a device model row to export."))
+            return
+        path_str = filedialog.asksaveasfilename(
+            title=_("Export Device Model"),
+            defaultextension=".xml",
+            initialfile=f"{mdl.name}.xml",
+            filetypes=[(_("XML files"), "*.xml"), (_("All files"), "*.*")],
+        )
+        if not path_str:
+            return
+        self.model_store.export_model(mdl, path_str)
+        messagebox.showinfo(_("Export"), _("Exported to {path}").format(path=path_str))
+
     def _new_model(self) -> None:
         dlg = DeviceModelEditorDialog(
             self.root,

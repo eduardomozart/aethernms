@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import configparser
+import hashlib
+import json
 import os
 from pathlib import Path
+import shutil
 import sys
-from typing import Optional
+from typing import List, Optional
 
 from pssh_ui import __repo_url__
 
@@ -67,28 +70,96 @@ def get_locales_dir() -> Path:
     return bundle_root() / "locales"
 
 
-def get_snippets_dir() -> Path:
-    """Return path to snippets directory distributed with the application/executable."""
+def bundled_snippets_dir() -> Path:
+    """Return read-only bundled default snippets directory (repo root or PyInstaller _MEIPASS)."""
     return bundle_root() / "snippets"
 
 
-def get_models_dir() -> Path:
-    """Return path to device models directory distributed with the application/executable."""
+def bundled_models_dir() -> Path:
+    """Return read-only bundled default device models directory (repo root or PyInstaller _MEIPASS)."""
     return bundle_root() / "model"
 
 
-def get_external_snippets_dir() -> Optional[Path]:
-    """When frozen, also allow drop-in user snippet XMLs beside the executable."""
+def get_snippets_dir() -> Path:
+    """Return persistent snippets directory (%APPDATA%\\pssh-ui\\snippets or ~/.config/pssh-ui/snippets when frozen)."""
     if is_frozen():
-        return Path(sys.executable).resolve().parent / "snippets"
-    return None
+        return get_config_dir() / "snippets"
+    return PROJECT_ROOT / "snippets"
 
 
-def get_external_models_dir() -> Optional[Path]:
-    """When frozen, also allow drop-in user model XMLs beside the executable."""
+def get_models_dir() -> Path:
+    """Return persistent device models directory (%APPDATA%\\pssh-ui\\model or ~/.config/pssh-ui/model when frozen)."""
     if is_frozen():
-        return Path(sys.executable).resolve().parent / "model"
-    return None
+        return get_config_dir() / "model"
+    return PROJECT_ROOT / "model"
+
+
+def _normalized_sha256(path: Path) -> str:
+    """Hash file contents with normalized LF line endings so CRLF/LF differences stay transparent."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def seed_bundled_templates(
+    source_dir: Path,
+    target_dir: Path,
+    manifest_name: str = ".seed_manifest.json",
+) -> List[str]:
+    """
+    Synchronize bundled XML defaults into a user-writable target directory using SHA-256 tracking:
+      - Newly added defaults are copied and recorded in .seed_manifest.json.
+      - Unmodified local copies automatically receive upstream updates across upgrades.
+      - Deleted built-in files remain deleted across restarts and upgrades.
+      - User-edited files with upstream changes remain intact alongside a `.xml.new` sidecar.
+    Returns relative POSIX paths that produced `.xml.new` conflict sidecars.
+    """
+    target_dir.mkdir(parents=True, exist_ok=True)
+    if not source_dir.is_dir() or source_dir.resolve() == target_dir.resolve():
+        return []
+
+    manifest_path = target_dir / manifest_name
+    manifest: dict[str, str] = {}
+    if manifest_path.is_file():
+        try:
+            loaded = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                manifest = {str(k): str(v) for k, v in loaded.items()}
+        except Exception:
+            manifest = {}
+
+    sidecars: List[str] = []
+    for src in sorted(source_dir.rglob("*.xml")):
+        rel = src.relative_to(source_dir).as_posix()
+        src_hash = _normalized_sha256(src)
+        dest = target_dir / rel
+        prev_hash = manifest.get(rel)
+
+        if prev_hash is None:
+            if not dest.exists():
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
+            manifest[rel] = src_hash
+            continue
+
+        if not dest.is_file():
+            # Previously seeded file was intentionally deleted by the user; respect deletion.
+            continue
+
+        local_hash = _normalized_sha256(dest)
+        if local_hash == src_hash:
+            manifest[rel] = src_hash
+        elif local_hash == prev_hash:
+            # Unedited bundled file: safe to update cleanly.
+            shutil.copy2(src, dest)
+            manifest[rel] = src_hash
+        elif src_hash != prev_hash:
+            # User customized local copy AND bundled default changed in new release.
+            sidecar = dest.with_name(dest.name + ".new")
+            shutil.copy2(src, sidecar)
+            manifest[rel] = src_hash
+            sidecars.append(rel)
+
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    return sidecars
 
 
 def get_settings_path() -> Path:

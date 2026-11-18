@@ -38,7 +38,11 @@ jobs:
 
     - name: Inject Version & Repository Metadata
       run: |
-        (Get-Content pssh_ui/__init__.py) -replace '__version__ = "DEV_BUILD"', "__version__ = `"${{ github.ref_name }}`"" -replace '__repo_url__ = ".*"', "__repo_url__ = `"https://github.com/${{ github.repository }}`"" | Set-Content pssh_ui/__init__.py
+        $tag = "${{ github.ref_name }}".Trim()
+        if ($tag -match '^\d') { $tag = "v$tag" }
+        $shortSha = if ($env:GITHUB_SHA) { $env:GITHUB_SHA.Substring(0, [Math]::Min(7, $env:GITHUB_SHA.Length)) } else { "" }
+        $releaseVer = if ($tag -and $tag -ne "DEV_BUILD") { if ($shortSha) { "$tag-$shortSha" } else { $tag } } elseif ($shortSha) { $shortSha } else { "DEV_BUILD" }
+        (Get-Content pssh_ui/__init__.py) -replace '__version__ = "DEV_BUILD"', "__version__ = `"$releaseVer`"" -replace '__repo_url__ = ".*"', "__repo_url__ = `"https://github.com/${{ github.repository }}`"" | Set-Content pssh_ui/__init__.py
 
     - name: Build executable
       run: |
