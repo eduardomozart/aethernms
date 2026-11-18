@@ -1,0 +1,33 @@
+# Publishes the wiki/ folder to the GitHub Wiki on every push to main that modifies it
+# (.github/scripts/publish-wiki.sh). Edit documentation in wiki/, not directly on the wiki.
+name: Publish Wiki
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'wiki/**'
+      - '.github/workflows/wiki.yml'
+      - '.github/scripts/publish-wiki.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wiki
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish wiki/ to GitHub Wiki
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Publish wiki
+        env:
+          WIKI_TOKEN: ${{ secrets.WIKI_TOKEN || github.token }}
+        run: sh .github/scripts/publish-wiki.sh
