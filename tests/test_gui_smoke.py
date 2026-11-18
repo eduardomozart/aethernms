@@ -23,6 +23,7 @@ from pssh_ui.models import (
     HostEntry,
     HostExecutionResult,
     JobRecord,
+    ScheduleSequence,
     SnippetType,
     SwitchOS,
 )
@@ -340,6 +341,7 @@ def test_gui_smoke_lifecycle(tmp_path: Path, monkeypatch, tk_root: tk.Tk):
         assert str(app.job_cmds_text.cget("relief")) == "flat"
         assert "show snmpv3 users" in app.job_cmds_text.get("1.0", "end-1c")
         assert "snmpv3 user" in app.job_audit_text.get("1.0", "end-1c")
+        assert "↻" in app.jobs_tree.item("j1", "values")[-1]
         assert "🗑" in app.jobs_tree.item("j1", "values")[-1]
         assert app.job_devices_tree.item(host_s.unique_key, "values")[-1] == "📄"
 
@@ -832,6 +834,220 @@ def test_pagination_page_ping_offline_warning_and_status_separation(
         aw_dlg._set_all_visible(True)
         assert len(aw_dlg.checked_host_keys) == 13  # Applies across both pages
         aw_dlg.destroy()
+    finally:
+        if app is not None:
+            app._stop_devices_ping_timer()
+        for child in list(tk_root.winfo_children()):
+            child.destroy()
+        set_language(prev_lang)
+
+
+def test_replay_job_prefill_and_sequential_checkbox(tmp_path: Path, monkeypatch, tk_root: tk.Tk):
+    import threading
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(ping_checker, "ping_host", lambda ip, timeout_ms=1000: True)
+    monkeypatch.setattr(messagebox, "askokcancel", lambda *a, **kw: True)
+    prev_lang = get_language()
+    root = tk_root
+    app = None
+    try:
+        app = PsshApp(
+            root,
+            session_path=tmp_path / "session.xml",
+            settings_path=tmp_path / "settings.xml",
+            os_theme_override="light",
+            os_lang_override="en",
+        )
+        host_target = HostEntry(
+            name="SW-TARGET",
+            ip="10.10.1.1",
+            port=2222,
+            os_type=SwitchOS.AOS_S,
+            model="Aruba 2930F",
+            ping_status="Up",
+        )
+        host_other = HostEntry(
+            name="SW-OTHER",
+            ip="10.10.1.2",
+            port=22,
+            os_type=SwitchOS.AOS_S,
+            model="Aruba 2930F",
+            ping_status="Up",
+        )
+        host_cx = HostEntry(
+            name="SW-CX-01",
+            ip="10.10.2.1",
+            port=22,
+            os_type=SwitchOS.AOS_CX,
+            model="Aruba 6300M",
+            ping_status="Up",
+        )
+        app.session.hosts = [host_target, host_other, host_cx]
+
+        aoss_model = next(m for m in app.device_models if m.device_type == SwitchOS.AOS_S)
+        write_cmd = aoss_model.write_command.strip() or "write memory"
+        raw_cfg = 'ntp server ${NTP Server}\nsnmpv3 auth ${Auth Password}\nbanner motd "custom"'
+        rendered_cfg = (
+            f'configure terminal\nntp server 10.0.0.50\nsnmpv3 auth ********\n'
+            f'banner motd "custom"\nend\n{write_cmd}'
+        )
+        cfg_job = JobRecord(
+            job_id="job-cfg",
+            name="NTP + Custom Banner",
+            job_type=SnippetType.CONFIG,
+            device_type=SwitchOS.AOS_S,
+            status="Success",
+            description="Apply NTP with custom banner",
+            snippet_name="ArubaOS-S NTP",
+            model_name=aoss_model.name,
+            commands_raw=raw_cfg,
+            commands_rendered=rendered_cfg,
+            max_parallel=1,
+            schedule_sequence=ScheduleSequence.SEQUENTIAL,
+            parameters_masked={"NTP Server": "10.0.0.50", "Auth Password": "••••••••"},
+            results=[
+                HostExecutionResult(host=host_target, status="Success", operation_result="OK")
+            ],
+        )
+        audit_job = JobRecord(
+            job_id="job-audit",
+            name="SNMPv3 Audit",
+            job_type=SnippetType.AUDIT,
+            device_type=SwitchOS.AOS_CX,
+            status="Failed",
+            description="Check SNMPv3 users",
+            snippet_name="ArubaOS-CX SNMPv3 Audit",
+            commands_raw="show snmpv3 users",
+            commands_rendered="show snmpv3 users",
+            audit_regex="snmpv3 user.*auth",
+            max_parallel=4,
+            schedule_sequence=ScheduleSequence.CONCURRENT,
+            results=[
+                HostExecutionResult(host=host_cx, status="Failed", operation_result="Audit failed")
+            ],
+        )
+        app.session.jobs = [cfg_job, audit_job]
+        app.running_jobs["job-audit"] = threading.Event()
+        app._refresh_jobs_tree()
+
+        assert app.jobs_tree.item("job-cfg", "values")[-1] == "↻   🗑"
+        assert app.jobs_tree.item("job-audit", "values")[-1] == "↻   ⏹   🗑"
+
+        # Verify Action column hit-testing for finished and running jobs
+        clicked: list[tuple[str, str]] = []
+        orig_replay = app._replay_job_by_id
+        monkeypatch.setattr(app, "_replay_job_by_id", lambda jid: clicked.append(("replay", jid)))
+        monkeypatch.setattr(app, "_stop_job_by_id", lambda jid: clicked.append(("stop", jid)))
+        monkeypatch.setattr(app, "_delete_job_by_id", lambda jid, **_kw: clicked.append(("delete", jid)))
+
+        cur_jid = ["job-cfg"]
+        monkeypatch.setattr(app.jobs_tree, "identify", lambda *_a: "cell")
+        monkeypatch.setattr(app.jobs_tree, "identify_column", lambda _x: "#8")
+        monkeypatch.setattr(app.jobs_tree, "identify_row", lambda _y: cur_jid[0])
+        monkeypatch.setattr(app.jobs_tree, "bbox", lambda _iid, _col: (100, 20, 90, 20))
+
+        bx, by, bw, bh = 100, 20, 90, 20
+        cy = by + (bh // 2)
+        for jid, zones in (
+            ("job-cfg", [(0.2, "replay"), (0.8, "delete")]),
+            ("job-audit", [(0.15, "replay"), (0.5, "stop"), (0.85, "delete")]),
+        ):
+            cur_jid[0] = jid
+            for frac, expected_action in zones:
+                clicked.clear()
+                ev = SimpleNamespace(x=int(bx + (bw * frac)), y=cy)
+                assert app._on_jobs_tree_click(ev) == "break"
+                assert clicked == [(expected_action, jid)]
+
+        # Verify _replay_job_by_id passes the selected JobRecord into _open_add_job_dialog
+        opened_replay: list[JobRecord] = []
+        monkeypatch.setattr(
+            app,
+            "_open_add_job_dialog",
+            lambda replay_job=None: opened_replay.append(replay_job),
+        )
+        orig_replay("job-cfg")
+        assert opened_replay == [cfg_job]
+
+        # Verify AddJobDialog pre-fills Config replay job & preserves Sequential checkbox
+        dlg = AddJobDialog(
+            root,
+            session=app.session,
+            snippets=app.snippets,
+            settings=app.settings,
+            ssh_password="secret",
+            dark_mode=False,
+            device_models=app.device_models,
+            replay_job=cfg_job,
+        )
+        dlg.withdraw()
+        assert dlg.sequential_var.get() is True
+        assert str(dlg.parallel_spin.cget("state")) == "disabled"
+        assert dlg.job_type_var.get() == SnippetType.CONFIG.value
+        assert dlg.device_os_var.get() == "AOS-S"
+        assert dlg.job_name_var.get() == "NTP + Custom Banner"
+        assert dlg.job_desc_var.get() == "Apply NTP with custom banner"
+        assert dlg.model_choice_var.get() == aoss_model.name
+        assert dlg.snippet_choice_var.get() == "ArubaOS-S NTP"
+        assert dlg.cmd_text.get("1.0", "end-1c") == raw_cfg
+        assert len(dlg.step_circles) == 4
+
+        # Step 2 restores non-secret parameter and leaves masked secret blank
+        dlg._on_next()
+        assert dlg.current_step_key == AddJobDialog.STEP_PARAMS
+        assert dlg.param_entry_vars["NTP Server"].get() == "10.0.0.50"
+        assert dlg.param_entry_vars["Auth Password"].get() == ""
+        dlg.param_entry_vars["Auth Password"].set("FreshPass!123")
+
+        # Step 3 pre-selects only the replayed job's target host
+        dlg._on_next()
+        assert dlg.current_step_key == AddJobDialog.STEP_DEVICES
+        assert dlg.selected_host_keys == {host_target.unique_key}
+
+        # Step 4 restores max_parallel, ssh_port, and write command; max_parallel == 1 -> SEQUENTIAL
+        dlg._on_next()
+        assert dlg.current_step_key == AddJobDialog.STEP_CONFIRM
+        assert dlg.max_parallel_var.get() == 1
+        assert dlg.ssh_port_var.get() == 2222
+        assert dlg.save_write_var.get() is True
+        assert dlg.confirm_cmds_text.get("1.0", "end-1c").endswith(f"\n{write_cmd}")
+        dlg.ssh_user_var.set("admin")
+        dlg._on_run()
+        assert dlg.launch_payload is not None
+        assert dlg.launch_payload["max_parallel"] == 1
+        assert dlg.launch_payload["schedule_sequence"] == ScheduleSequence.SEQUENTIAL
+        assert dlg.launch_payload["include_write"] is True
+        assert [h.unique_key for h in dlg.launch_payload["hosts"]] == [host_target.unique_key]
+
+        # Verify Audit replay job restores Audit RegEx & derives CONCURRENT when max_parallel > 1
+        adlg = AddJobDialog(
+            root,
+            session=app.session,
+            snippets=app.snippets,
+            settings=app.settings,
+            ssh_password="secret",
+            dark_mode=False,
+            device_models=app.device_models,
+            replay_job=audit_job,
+        )
+        adlg.withdraw()
+        assert adlg.job_type_var.get() == SnippetType.AUDIT.value
+        assert adlg.device_os_var.get() == "AOS-CX"
+        assert adlg.snippet_choice_var.get() == "ArubaOS-CX SNMPv3 Audit"
+        assert adlg.audit_regex_text.get("1.0", "end-1c") == "snmpv3 user.*auth"
+        assert adlg.selected_host_keys == {host_cx.unique_key}
+        adlg._go_to_step_key(AddJobDialog.STEP_CONFIRM)
+        assert adlg.sequential_var.get() is False
+        assert str(adlg.parallel_spin.cget("state")) == "normal"
+        assert adlg.max_parallel_var.get() == 4
+        assert adlg.save_write_var.get() is False
+        adlg.ssh_user_var.set("admin")
+        adlg._on_run()
+        assert adlg.launch_payload is not None
+        assert adlg.launch_payload["max_parallel"] == 4
+        assert adlg.launch_payload["schedule_sequence"] == ScheduleSequence.CONCURRENT
+        assert adlg.launch_payload["audit_regex"] == "snmpv3 user.*auth"
     finally:
         if app is not None:
             app._stop_devices_ping_timer()

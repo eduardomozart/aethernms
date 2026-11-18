@@ -19,6 +19,7 @@ from pssh_ui.models import (
     AppSettings,
     DeviceModel,
     HostEntry,
+    JobRecord,
     ScheduleSequence,
     SessionData,
     Snippet,
@@ -67,6 +68,7 @@ class AddJobDialog(tk.Toplevel):
         ssh_password: str = "",
         dark_mode: bool = False,
         device_models: Optional[List[DeviceModel]] = None,
+        replay_job: Optional[JobRecord] = None,
     ) -> None:
         super().__init__(parent)
         self.session = session
@@ -74,6 +76,7 @@ class AddJobDialog(tk.Toplevel):
         self.snippets = snippets
         self.device_models = device_models if device_models is not None else ModelStore().load_all_models()
         self.dark_mode = dark_mode
+        self._replay_job = replay_job
         self.launch_payload: Optional[Dict[str, Any]] = None
         self.current_step_key: str = self.STEP_COMMAND
         self._step_ring_cache: Dict[str, Any] = {}
@@ -133,7 +136,88 @@ class AddJobDialog(tk.Toplevel):
         self._snippet_map: Dict[str, Snippet] = {}
         self._build_ui()
         self._populate_snippets_for_os()
+        if replay_job is not None:
+            self._apply_replay_job(replay_job)
         self._go_to_step_key(self.STEP_COMMAND)
+
+    def _apply_replay_job(self, job: JobRecord) -> None:
+        """Pre-fill Step 1-4 wizard fields from a previously saved JobRecord."""
+        self.job_type_var.set(job.job_type.value)
+        os_val = job.device_type.value
+        if os_val and os_val not in self._os_choices:
+            self._os_choices = [*self._os_choices, os_val]
+            self.job_os_combo.configure(values=self._os_choices)
+        if os_val:
+            self.device_os_var.set(os_val)
+
+        self._populate_snippets_for_os()
+        self._toggle_audit_regex_field()
+
+        self.job_name_var.set(job.name or "")
+        self.job_desc_var.set(job.description or "")
+
+        model_values = list(self.job_model_combo.cget("values"))
+        if job.model_name and job.model_name in model_values:
+            self.model_choice_var.set(job.model_name)
+
+        if job.snippet_name and job.snippet_name in self._snippet_map:
+            self.snippet_choice_var.set(job.snippet_name)
+            self.snippet_desc_lbl.configure(
+                text=self._snippet_map[job.snippet_name].description or ""
+            )
+        else:
+            self.snippet_choice_var.set("")
+            if self._snippet_map:
+                self.snippet_desc_lbl.configure(text="")
+
+        raw_cmds = job.commands_raw or job.commands_rendered or ""
+        if raw_cmds:
+            self.cmd_text.insert("1.0", raw_cmds)
+            apply_cli_syntax_highlighting(self.cmd_text)
+
+        if job.audit_regex:
+            self.audit_regex_text.insert("1.0", job.audit_regex)
+            apply_cli_syntax_highlighting(self.audit_regex_text)
+
+        for k, v in (job.parameters_masked or {}).items():
+            if v != "••••••••":
+                self.param_values[k] = v
+                self._initial_saved_params[k] = v
+
+        result_keys = {res.host.unique_key for res in job.results if res.host}
+        result_ips = {
+            res.host.ip.strip() for res in job.results if res.host and res.host.ip.strip()
+        }
+        self.selected_host_keys = {
+            h.unique_key
+            for h in self.session.hosts
+            if h.os_type == job.device_type
+            and (h.unique_key in result_keys or h.ip.strip() in result_ips)
+        }
+
+        self.max_parallel_var.set(max(1, int(job.max_parallel or 10)))
+        self.sequential_var.set(job.schedule_sequence == ScheduleSequence.SEQUENTIAL)
+        self._on_seq_toggled()
+        if job.results and job.results[0].host and job.results[0].host.port:
+            try:
+                self.ssh_port_var.set(int(job.results[0].host.port))
+            except (ValueError, TypeError):
+                pass
+
+        active_model = self._get_active_model()
+        write_cmd = (
+            active_model.write_command.strip()
+            if active_model and active_model.write_command.strip()
+            else "write memory"
+        )
+        should_save_write = (
+            job.job_type == SnippetType.CONFIG
+            and bool(write_cmd)
+            and (job.commands_rendered or "").strip().endswith(write_cmd)
+            and not (job.commands_raw or "").strip().endswith(write_cmd)
+        )
+        self.save_write_var.set(should_save_write)
+        self._refresh_stepper_header()
 
     @property
     def current_step(self) -> int:

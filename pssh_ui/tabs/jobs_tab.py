@@ -8,7 +8,7 @@ import queue
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import uuid
 
 from pssh_ui.i18n import _
@@ -145,7 +145,7 @@ class JobsTabMixin:
             "created": 140,
             "start": 140,
             "end": 140,
-            "action": 80,
+            "action": 95,
         }
         for col in cols:
             self.jobs_tree.heading(col, text=j_heads[col])
@@ -400,7 +400,7 @@ class JobsTabMixin:
             else:
                 status_disp = f"⟳ {_('Running')}"
 
-            action_disp = "⏹   🗑" if job.job_id in self.running_jobs else "🗑"
+            action_disp = "↻   ⏹   🗑" if job.job_id in self.running_jobs else "↻   🗑"
 
             self.jobs_tree.insert(
                 "",
@@ -443,14 +443,19 @@ class JobsTabMixin:
 
         self.selected_job_id = job_id
         self.jobs_tree.selection_set(job_id)
+        bbox = self.jobs_tree.bbox(job_id, col)
         if job_id in self.running_jobs:
-            bbox = self.jobs_tree.bbox(job_id, col)
-            if bbox and event.x < bbox[0] + (bbox[2] / 2):
+            if bbox and event.x < bbox[0] + (bbox[2] / 3):
+                self._replay_job_by_id(job_id)
+            elif bbox and event.x < bbox[0] + ((2 * bbox[2]) / 3):
                 self._stop_job_by_id(job_id)
             else:
                 self._delete_job_by_id(job_id)
         else:
-            self._delete_job_by_id(job_id)
+            if bbox and event.x < bbox[0] + (bbox[2] / 2):
+                self._replay_job_by_id(job_id)
+            else:
+                self._delete_job_by_id(job_id)
         return "break"
 
     def _refresh_job_details(self, reset_page: bool = False) -> None:
@@ -572,7 +577,13 @@ class JobsTabMixin:
             return "break"
         return None
 
-    def _open_add_job_dialog(self) -> None:
+    def _replay_job_by_id(self, job_id: str) -> None:
+        job = next((j for j in self.session.jobs if j.job_id == job_id), None)
+        if not job:
+            return
+        self._open_add_job_dialog(replay_job=job)
+
+    def _open_add_job_dialog(self, replay_job: Optional[JobRecord] = None) -> None:
         if hasattr(self, "_stop_devices_ping_timer"):
             self._stop_devices_ping_timer()
         dlg = AddJobDialog(
@@ -583,6 +594,7 @@ class JobsTabMixin:
             ssh_password=self.ssh_password,
             dark_mode=self._is_dark(),
             device_models=self.device_models,
+            replay_job=replay_job,
         )
         self.root.wait_window(dlg)
         if hasattr(self, "_refresh_devices_tree"):

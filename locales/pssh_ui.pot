@@ -1,14 +1,14 @@
-# Translations template for PROJECT.
+# Translations template for pssh-ui.
 # Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# This file is distributed under the same license as the pssh-ui project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: pssh-ui 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 14:56-0300\n"
+"POT-Creation-Date: 2026-11-18 15:25-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -154,8 +154,8 @@ msgid "Unexpected worker error"
 msgstr ""
 
 #: pssh_ui/common.py:182 pssh_ui/common.py:196 pssh_ui/common.py:218
-#: pssh_ui/dialogs/add_job_dialog.py:105 pssh_ui/dialogs/add_job_dialog.py:107
-#: pssh_ui/dialogs/add_job_dialog.py:697 pssh_ui/dialogs/add_job_dialog.py:699
+#: pssh_ui/dialogs/add_job_dialog.py:108 pssh_ui/dialogs/add_job_dialog.py:110
+#: pssh_ui/dialogs/add_job_dialog.py:781 pssh_ui/dialogs/add_job_dialog.py:783
 #: pssh_ui/dialogs/airwave_dialog.py:71 pssh_ui/dialogs/airwave_dialog.py:74
 #: pssh_ui/dialogs/airwave_dialog.py:75 pssh_ui/dialogs/airwave_dialog.py:85
 #: pssh_ui/dialogs/airwave_dialog.py:124 pssh_ui/dialogs/airwave_dialog.py:143
@@ -215,7 +215,7 @@ msgstr ""
 msgid "Page {cur} of {total}"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1241 pssh_ui/job_builder.py:153
+#: pssh_ui/dialogs/add_job_dialog.py:1325 pssh_ui/job_builder.py:153
 msgid "Select at least one target switch matching this snippet OS."
 msgstr ""
 
@@ -231,7 +231,7 @@ msgstr ""
 msgid "No executable commands found (check script contents or '!' comments)."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1214 pssh_ui/dialogs/snippet_dialog.py:200
+#: pssh_ui/dialogs/add_job_dialog.py:1298 pssh_ui/dialogs/snippet_dialog.py:200
 #: pssh_ui/job_builder.py:171
 msgid "Commands cannot be empty."
 msgstr ""
@@ -274,278 +274,278 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:81 pssh_ui/tabs/jobs_tab.py:63
+#: pssh_ui/dialogs/add_job_dialog.py:84 pssh_ui/tabs/jobs_tab.py:63
 msgid "Add Job"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:170
+#: pssh_ui/dialogs/add_job_dialog.py:254
 msgid "Config Command"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:171
+#: pssh_ui/dialogs/add_job_dialog.py:255
 msgid "Parameters"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:172
+#: pssh_ui/dialogs/add_job_dialog.py:256
 msgid "Select Device"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:173
+#: pssh_ui/dialogs/add_job_dialog.py:257
 msgid "Confirm"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:227 pssh_ui/dialogs/airwave_dialog.py:233
+#: pssh_ui/dialogs/add_job_dialog.py:311 pssh_ui/dialogs/airwave_dialog.py:233
 #: pssh_ui/dialogs/device_dialogs.py:148 pssh_ui/dialogs/device_dialogs.py:333
 #: pssh_ui/dialogs/settings_dialog.py:104 pssh_ui/dialogs/snippet_dialog.py:157
 msgid "Cancel"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:232
+#: pssh_ui/dialogs/add_job_dialog.py:316
 msgid "< Back"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:236
+#: pssh_ui/dialogs/add_job_dialog.py:320
 msgid "Next >"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:241
+#: pssh_ui/dialogs/add_job_dialog.py:325
 msgid "Run Job"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:254
+#: pssh_ui/dialogs/add_job_dialog.py:338
 msgid "Job Type *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:268
+#: pssh_ui/dialogs/add_job_dialog.py:352
 msgid "Job Name *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:273
+#: pssh_ui/dialogs/add_job_dialog.py:357
 msgid "Job Description"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:280
+#: pssh_ui/dialogs/add_job_dialog.py:364
 msgid "Device Type *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:298
+#: pssh_ui/dialogs/add_job_dialog.py:382
 msgid "Device Model:"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:304
+#: pssh_ui/dialogs/add_job_dialog.py:388
 msgid "Snippets *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:316
+#: pssh_ui/dialogs/add_job_dialog.py:400
 msgid "Config Commands *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:335
+#: pssh_ui/dialogs/add_job_dialog.py:419
 msgid "Audit Validation RegEx (1 pattern per line)"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:420
+#: pssh_ui/dialogs/add_job_dialog.py:504
 #, python-brace-format
 msgid "No {job_type} snippets available for {os}."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:471
+#: pssh_ui/dialogs/add_job_dialog.py:555
 msgid "Fill in the snippet variables below."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:511
+#: pssh_ui/dialogs/add_job_dialog.py:595
 msgid "No variables required by this snippet. Click Next to select devices."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:515
+#: pssh_ui/dialogs/add_job_dialog.py:599
 msgid "Variable"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:518
+#: pssh_ui/dialogs/add_job_dialog.py:602
 msgid "Value"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:521 pssh_ui/dialogs/add_job_dialog.py:640
+#: pssh_ui/dialogs/add_job_dialog.py:605 pssh_ui/dialogs/add_job_dialog.py:724
 #: pssh_ui/dialogs/airwave_dialog.py:187 pssh_ui/tabs/devices_tab.py:74
 #: pssh_ui/tabs/jobs_tab.py:134 pssh_ui/tabs/jobs_tab.py:323
 msgid "Status"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:561
+#: pssh_ui/dialogs/add_job_dialog.py:645
 msgid "Show"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:609 pssh_ui/dialogs/airwave_dialog.py:167
+#: pssh_ui/dialogs/add_job_dialog.py:693 pssh_ui/dialogs/airwave_dialog.py:167
 msgid "Select All"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:613 pssh_ui/dialogs/airwave_dialog.py:171
+#: pssh_ui/dialogs/add_job_dialog.py:697 pssh_ui/dialogs/airwave_dialog.py:171
 msgid "Deselect All"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:617
+#: pssh_ui/dialogs/add_job_dialog.py:701
 msgid "Clear Filters"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:639 pssh_ui/dialogs/airwave_dialog.py:186
+#: pssh_ui/dialogs/add_job_dialog.py:723 pssh_ui/dialogs/airwave_dialog.py:186
 #: pssh_ui/tabs/devices_tab.py:73 pssh_ui/tabs/jobs_tab.py:321
 msgid "Device"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:641 pssh_ui/dialogs/airwave_dialog.py:188
+#: pssh_ui/dialogs/add_job_dialog.py:725 pssh_ui/dialogs/airwave_dialog.py:188
 #: pssh_ui/tabs/devices_tab.py:75 pssh_ui/tabs/jobs_tab.py:322
 msgid "IP Address"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:642
+#: pssh_ui/dialogs/add_job_dialog.py:726
 msgid "OS"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:643 pssh_ui/dialogs/airwave_dialog.py:190
+#: pssh_ui/dialogs/add_job_dialog.py:727 pssh_ui/dialogs/airwave_dialog.py:190
 #: pssh_ui/dialogs/device_dialogs.py:313 pssh_ui/tabs/devices_tab.py:77
 msgid "Model"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:644 pssh_ui/dialogs/device_dialogs.py:323
+#: pssh_ui/dialogs/add_job_dialog.py:728 pssh_ui/dialogs/device_dialogs.py:323
 #: pssh_ui/tabs/devices_tab.py:78
 msgid "Group"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:645 pssh_ui/dialogs/airwave_dialog.py:192
+#: pssh_ui/dialogs/add_job_dialog.py:729 pssh_ui/dialogs/airwave_dialog.py:192
 #: pssh_ui/tabs/devices_tab.py:79
 msgid "Firmware"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:804
+#: pssh_ui/dialogs/add_job_dialog.py:888
 #, python-brace-format
 msgid ""
 "Device '{name}' ({ip}) is currently Down (offline).\n"
 "Do you want to continue anyway?"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:815
+#: pssh_ui/dialogs/add_job_dialog.py:899
 #, python-format
 msgid "... and %d more device"
 msgid_plural "... and %d more devices"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:819
+#: pssh_ui/dialogs/add_job_dialog.py:903
 #, python-format
 msgid "%d selected device is currently Down (offline):"
 msgid_plural "%d selected devices are currently Down (offline):"
 msgstr[0] ""
 msgstr[1] ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:829
+#: pssh_ui/dialogs/add_job_dialog.py:913
 msgid "Do you want to continue anyway?"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:833
+#: pssh_ui/dialogs/add_job_dialog.py:917
 msgid "Offline Device"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:844
+#: pssh_ui/dialogs/add_job_dialog.py:928
 #, python-brace-format
 msgid "Snippet Target OS: {os}"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:893
+#: pssh_ui/dialogs/add_job_dialog.py:977
 #, python-brace-format
 msgid "Total Records: {shown}   |   Selected ({os}): {chosen}"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:968
+#: pssh_ui/dialogs/add_job_dialog.py:1052
 msgid "SSH Credentials & Execution Settings"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:973
+#: pssh_ui/dialogs/add_job_dialog.py:1057
 msgid "SSH Username *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:977
+#: pssh_ui/dialogs/add_job_dialog.py:1061
 msgid "SSH Password *"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:982 pssh_ui/dialogs/device_dialogs.py:324
+#: pssh_ui/dialogs/add_job_dialog.py:1066 pssh_ui/dialogs/device_dialogs.py:324
 msgid "SSH Port"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:988
+#: pssh_ui/dialogs/add_job_dialog.py:1072
 msgid "Max Parallel Executions"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:999
+#: pssh_ui/dialogs/add_job_dialog.py:1083
 msgid "Sequential (1 switch at a time)"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1005
+#: pssh_ui/dialogs/add_job_dialog.py:1089
 msgid "Enable Password"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1013
+#: pssh_ui/dialogs/add_job_dialog.py:1097
 msgid "Save configuration"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1019
+#: pssh_ui/dialogs/add_job_dialog.py:1103
 msgid "Resulting Commands (Read-Only)"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1063
+#: pssh_ui/dialogs/add_job_dialog.py:1147
 #, python-brace-format
 msgid "Run write command ({cmd})"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1080
+#: pssh_ui/dialogs/add_job_dialog.py:1164
 msgid "1 selected"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1082
+#: pssh_ui/dialogs/add_job_dialog.py:1166
 #, python-brace-format
 msgid "{count} selected"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1085
+#: pssh_ui/dialogs/add_job_dialog.py:1169
 msgid "Job Name"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1086
+#: pssh_ui/dialogs/add_job_dialog.py:1170
 msgid "Snippet"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1087 pssh_ui/tabs/jobs_tab.py:133
+#: pssh_ui/dialogs/add_job_dialog.py:1171 pssh_ui/tabs/jobs_tab.py:133
 #: pssh_ui/tabs/models_tab.py:77 pssh_ui/tabs/snippets_tab.py:117
 msgid "Device Type"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1093
+#: pssh_ui/dialogs/add_job_dialog.py:1177
 msgid "(No commands)"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1204
-#: pssh_ui/dialogs/add_job_dialog.py:1209
-#: pssh_ui/dialogs/add_job_dialog.py:1214
-#: pssh_ui/dialogs/add_job_dialog.py:1225
-#: pssh_ui/dialogs/add_job_dialog.py:1240
-#: pssh_ui/dialogs/add_job_dialog.py:1282 pssh_ui/dialogs/airwave_dialog.py:268
+#: pssh_ui/dialogs/add_job_dialog.py:1288
+#: pssh_ui/dialogs/add_job_dialog.py:1293
+#: pssh_ui/dialogs/add_job_dialog.py:1298
+#: pssh_ui/dialogs/add_job_dialog.py:1309
+#: pssh_ui/dialogs/add_job_dialog.py:1324
+#: pssh_ui/dialogs/add_job_dialog.py:1366 pssh_ui/dialogs/airwave_dialog.py:268
 #: pssh_ui/dialogs/device_dialogs.py:156 pssh_ui/dialogs/device_dialogs.py:353
 #: pssh_ui/dialogs/snippet_dialog.py:197 pssh_ui/dialogs/snippet_dialog.py:200
 msgid "Validation"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1204
+#: pssh_ui/dialogs/add_job_dialog.py:1288
 msgid "Please select a Snippet."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1209
+#: pssh_ui/dialogs/add_job_dialog.py:1293
 msgid "Job Name is required."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1226
+#: pssh_ui/dialogs/add_job_dialog.py:1310
 msgid "Please correct the parameter values:"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1283
+#: pssh_ui/dialogs/add_job_dialog.py:1367
 msgid "Please resolve the following before running:"
 msgstr ""
 
@@ -904,7 +904,7 @@ msgid "Action"
 msgstr ""
 
 #: pssh_ui/tabs/devices_tab.py:237 pssh_ui/tabs/jobs_tab.py:429
-#: pssh_ui/tabs/jobs_tab.py:474 pssh_ui/tabs/jobs_tab.py:562
+#: pssh_ui/tabs/jobs_tab.py:479 pssh_ui/tabs/jobs_tab.py:567
 #, python-brace-format
 msgid "Total Records: {total}"
 msgstr ""
@@ -928,18 +928,18 @@ msgstr ""
 
 #: pssh_ui/tabs/jobs_tab.py:111 pssh_ui/tabs/jobs_tab.py:211
 #: pssh_ui/tabs/jobs_tab.py:295 pssh_ui/tabs/jobs_tab.py:397
-#: pssh_ui/tabs/jobs_tab.py:535
+#: pssh_ui/tabs/jobs_tab.py:540
 msgid "Success"
 msgstr ""
 
 #: pssh_ui/tabs/jobs_tab.py:112 pssh_ui/tabs/jobs_tab.py:219
 #: pssh_ui/tabs/jobs_tab.py:296 pssh_ui/tabs/jobs_tab.py:399
-#: pssh_ui/tabs/jobs_tab.py:537
+#: pssh_ui/tabs/jobs_tab.py:542
 msgid "Failed"
 msgstr ""
 
 #: pssh_ui/tabs/jobs_tab.py:113 pssh_ui/tabs/jobs_tab.py:297
-#: pssh_ui/tabs/jobs_tab.py:401 pssh_ui/tabs/jobs_tab.py:539
+#: pssh_ui/tabs/jobs_tab.py:401 pssh_ui/tabs/jobs_tab.py:544
 msgid "Running"
 msgstr ""
 
@@ -964,7 +964,7 @@ msgstr ""
 msgid "End Time"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:181 pssh_ui/tabs/jobs_tab.py:462
+#: pssh_ui/tabs/jobs_tab.py:181 pssh_ui/tabs/jobs_tab.py:467
 msgid "Job Details"
 msgstr ""
 
@@ -984,7 +984,7 @@ msgstr ""
 msgid "Audit Validation RegEx"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:298 pssh_ui/tabs/jobs_tab.py:541
+#: pssh_ui/tabs/jobs_tab.py:298 pssh_ui/tabs/jobs_tab.py:546
 msgid "Pending"
 msgstr ""
 
@@ -1000,28 +1000,28 @@ msgstr ""
 msgid "Log"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:481
+#: pssh_ui/tabs/jobs_tab.py:486
 #, python-brace-format
 msgid "Job Details ({name})"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:646
+#: pssh_ui/tabs/jobs_tab.py:658
 msgid "Queued"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:718
+#: pssh_ui/tabs/jobs_tab.py:730
 msgid "Job Running"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:718
+#: pssh_ui/tabs/jobs_tab.py:730
 msgid "Stop the running job before deleting it."
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:721
+#: pssh_ui/tabs/jobs_tab.py:733
 msgid "Confirm Delete"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:722
+#: pssh_ui/tabs/jobs_tab.py:734
 #, python-brace-format
 msgid "Remove job '{name}' from history?"
 msgstr ""
