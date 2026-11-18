@@ -1,21 +1,25 @@
-# Portuguese (Brazil) translations for pssh-ui.
-# Copyright (C) 2026 eduardomozart
+# Translations template for pssh-ui.
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the pssh-ui project.
-#
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+# 
+# Translators:
+# Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>, 2026
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: pssh-ui 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-17 20:55-0300\n"
-"PO-Revision-Date: 2026-11-17 16:50-0300\n"
-"Last-Translator: pssh-ui maintainers\n"
-"Language: pt_BR\n"
-"Language-Team: pt_BR\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"PO-Revision-Date: 2026-11-17 22:03+0000\n"
+"Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>, 2026\n"
+"Language-Team: Portuguese (Brazil) (https://app.transifex.com/eduardomozart/teams/311730/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: pssh_ui/gui.py:154
 msgid "Config"
@@ -143,8 +147,7 @@ msgstr "Comando de Gravação / Save"
 #: pssh_ui/gui.py:497
 msgid "Automation Prompt Detection RegEx (Credentials, Enable & Paging)"
 msgstr ""
-"RegEx de Detecção de Prompts na Automação (Credenciais, Enable e "
-"Paginação)"
+"RegEx de Detecção de Prompts na Automação (Credenciais, Enable e Paginação)"
 
 #: pssh_ui/gui.py:503
 msgid "CLI Prompt RegEx"
@@ -965,8 +968,8 @@ msgstr "Entrada CLI inválida"
 
 #: pssh_ui/parser.py:39
 msgid ""
-"Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration "
-"context (e.g., configure terminal)."
+"Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration context"
+" (e.g., configure terminal)."
 msgstr ""
 "Verifique a sintaxe, o SO do switch (AOS-S vs AOS-CX) e o contexto de "
 "configuração (ex.: configure terminal)."
@@ -980,8 +983,8 @@ msgid ""
 "Verify ArubaOS-CX syntax and confirm the switch is in the required "
 "configuration context."
 msgstr ""
-"Verifique a sintaxe do ArubaOS-CX e confirme se o switch está no contexto"
-" de configuração correto."
+"Verifique a sintaxe do ArubaOS-CX e confirme se o switch está no contexto de"
+" configuração correto."
 
 #: pssh_ui/parser.py:46
 msgid "Ambiguous command"
@@ -1005,7 +1008,8 @@ msgstr "Comando desconhecido"
 
 #: pssh_ui/parser.py:55
 msgid "Verify this command is supported by the target firmware and switch OS."
-msgstr "Verifique se este comando é suportado pelo firmware e SO do switch alvo."
+msgstr ""
+"Verifique se este comando é suportado pelo firmware e SO do switch alvo."
 
 #: pssh_ui/parser.py:58
 msgid "Execution error"
@@ -1045,11 +1049,9 @@ msgstr "Comando rejeitado pelo switch"
 
 #: pssh_ui/parser.py:71
 msgid ""
-"Check switch state or prerequisites required before executing this "
-"command."
+"Check switch state or prerequisites required before executing this command."
 msgstr ""
-"Verifique o estado do switch ou pré-requisitos necessários antes do "
-"comando."
+"Verifique o estado do switch ou pré-requisitos necessários antes do comando."
 
 #: pssh_ui/parser.py:74
 msgid "SSH communication error"
@@ -1057,9 +1059,10 @@ msgstr "Erro de comunicação SSH"
 
 #: pssh_ui/parser.py:75
 msgid ""
-"Verify reachability, SSH service status on the switch, or increase "
-"timeout settings."
-msgstr "Verifique a conectividade, o serviço SSH no switch ou aumente os timeouts."
+"Verify reachability, SSH service status on the switch, or increase timeout "
+"settings."
+msgstr ""
+"Verifique a conectividade, o serviço SSH no switch ou aumente os timeouts."
 
 #: pssh_ui/parser.py:78
 msgid "CLI error"
@@ -1076,7 +1079,8 @@ msgstr "RegEx de auditoria inválida: {err}"
 
 #: pssh_ui/parser.py:155
 msgid "Correct the regular expression syntax in Audit Validation RegEx."
-msgstr "Corrija a sintaxe da expressão regular na RegEx de Validação de Auditoria."
+msgstr ""
+"Corrija a sintaxe da expressão regular na RegEx de Validação de Auditoria."
 
 #: pssh_ui/parser.py:165
 msgid "Expected audit RegEx not found in output"
@@ -1085,7 +1089,8 @@ msgstr "RegEx esperada da auditoria não encontrada na saída"
 #: pssh_ui/parser.py:166
 #, python-brace-format
 msgid "Switch output did not match the required audit pattern: {pat}"
-msgstr "A saída do switch não correspondeu ao padrão de auditoria exigido: {pat}"
+msgstr ""
+"A saída do switch não correspondeu ao padrão de auditoria exigido: {pat}"
 
 #: pssh_ui/ssh_runner.py:251
 #, python-brace-format
@@ -1164,4 +1169,3 @@ msgstr "O valor de '{name}' deve corresponder à regex: {regex}"
 #, python-brace-format
 msgid "Value for '{name}' is required."
 msgstr "O valor de '{name}' é obrigatório."
-
