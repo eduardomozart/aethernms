@@ -16,7 +16,6 @@ from pssh_ui.common import (
     _canonical_device_status,
     _bind_tree_action_cursor,
     _status_label,
-    attach_status_orb_column,
     build_device_filter_bar,
     filter_device_hosts,
 )
@@ -95,17 +94,10 @@ class DevicesTabMixin:
                 col, width=h_widths[col], anchor=tk.CENTER if col == "action" else tk.W
             )
 
-        self._devices_orb_overlay = attach_status_orb_column(
-            self.devices_tree, "status", dark_mode=self._is_dark()
-        )
         h_sb = ttk.Scrollbar(card, orient=tk.VERTICAL, command=self.devices_tree.yview)
         self.devices_tree.grid(row=2, column=0, sticky=tk.NSEW)
         h_sb.grid(row=2, column=1, sticky=tk.NS)
-        _attach_auto_scrollbars(
-            self.devices_tree,
-            y_sb=h_sb,
-            on_y_scroll=self._devices_orb_overlay.schedule_refresh,
-        )
+        _attach_auto_scrollbars(self.devices_tree, y_sb=h_sb)
         self.devices_tree.bind("<Button-1>", self._on_devices_tree_click)
         self.devices_tree.bind("<Double-1>", lambda _e: self._edit_selected_device())
         _bind_tree_action_cursor(self.devices_tree, f"#{len(cols)}")
@@ -164,7 +156,6 @@ class DevicesTabMixin:
             return
         if hasattr(self, "devices_tree") and not self.devices_tree.winfo_exists():
             return
-        updated = False
         needs_refilter = False
         active_sid = self._ping_monitor.sweep_id
         st_q = _canonical_device_status(
@@ -187,13 +178,10 @@ class DevicesTabMixin:
                         row_iid, _ = self._visible_device_rows[key]
                         if self.devices_tree.exists(row_iid):
                             self.devices_tree.set(row_iid, "status", _status_label(host.ping_status))
-                        updated = True
         except queue.Empty:
             pass
         if needs_refilter:
             self._refresh_devices_tree(reset_page=False, trigger_ping=False)
-        elif updated and hasattr(self, "_devices_orb_overlay"):
-            self._devices_orb_overlay.schedule_refresh()
 
     def _refresh_devices_tree(
         self, reset_page: bool = False, trigger_ping: bool = True
@@ -236,8 +224,6 @@ class DevicesTabMixin:
         self.devices_tab_footer_lbl.configure(
             text=_("Total Records: {total}").format(total=len(matched))
         )
-        if hasattr(self, "_devices_orb_overlay"):
-            self._devices_orb_overlay.schedule_refresh()
         if trigger_ping and self._is_devices_tab_active():
             self._trigger_devices_ping_sweep()
 

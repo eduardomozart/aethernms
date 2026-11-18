@@ -23,7 +23,6 @@ from pssh_ui.common import (
     _canonical_device_status,
     _is_all_filter,
     _status_label,
-    attach_status_orb_column,
     device_status_filter_map,
 )
 
@@ -209,17 +208,10 @@ class AirWaveImportDialog(tk.Toplevel):
                 self.tree.heading(col, text=headings[col])
                 self.tree.column(col, width=widths[col], anchor=tk.W)
 
-        self._orb_overlay = attach_status_orb_column(
-            self.tree, "status", dark_mode=self.dark_mode
-        )
         y_sb = ttk.Scrollbar(table_box, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.grid(row=0, column=0, sticky=tk.NSEW)
         y_sb.grid(row=0, column=1, sticky=tk.NS)
-        _attach_auto_scrollbars(
-            self.tree,
-            y_sb=y_sb,
-            on_y_scroll=self._orb_overlay.schedule_refresh,
-        )
+        _attach_auto_scrollbars(self.tree, y_sb=y_sb)
         self.tree.bind("<Button-1>", self._on_tree_click)
 
         self.paginator = TablePaginator(
@@ -396,7 +388,6 @@ class AirWaveImportDialog(tk.Toplevel):
                     h.firmware,
                 ),
             )
-        self._orb_overlay.schedule_refresh()
         self._refresh_state_label(
             len(self.preview_hosts),
             getattr(self, "_total_records", len(self.preview_hosts)),
@@ -419,7 +410,6 @@ class AirWaveImportDialog(tk.Toplevel):
         if vals:
             vals[0] = mark
             self.tree.item(row_id, values=vals)
-        self._orb_overlay.schedule_refresh()
         self._refresh_state_label(len(self.preview_hosts), getattr(self, "_total_records", len(self.preview_hosts)))
         return "break"
 

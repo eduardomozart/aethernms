@@ -1100,6 +1100,13 @@ def test_replay_job_prefill_and_sequential_checkbox(tmp_path: Path, monkeypatch,
         assert adlg.snippet_choice_var.get() == "ArubaOS-CX SNMPv3 Audit"
         assert adlg.audit_regex_text.get("1.0", "end-1c") == "snmpv3 user.*auth"
         assert adlg.selected_host_keys == {host_cx.unique_key}
+        # Step 3 places supported (matching OS) devices ahead of unsupported ones
+        adlg._go_to_step_key(AddJobDialog.STEP_DEVICES)
+        assert list(adlg.device_tree.get_children()) == [
+            host_cx.unique_key,
+            host_target.unique_key,
+            host_other.unique_key,
+        ]
         adlg._go_to_step_key(AddJobDialog.STEP_CONFIRM)
         assert adlg.sequential_var.get() is False
         assert str(adlg.parallel_spin.cget("state")) == "normal"

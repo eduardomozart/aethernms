@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import math
 import os
 from pathlib import Path
 import re
 import subprocess
 import sys
 import tkinter as tk
-from tkinter import font as tkfont
 from tkinter import ttk
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, TypeVar
 
@@ -329,14 +327,11 @@ def _attach_auto_scrollbars(
     widget: Any,
     y_sb: Optional[ttk.Scrollbar] = None,
     x_sb: Optional[ttk.Scrollbar] = None,
-    on_y_scroll: Optional[Callable[[], None]] = None,
 ) -> Callable[[], None]:
     """Toggle grid scrollbars so they show only when content overflows the widget bounds."""
 
     def _sync(sb: ttk.Scrollbar, first: str, last: str) -> None:
         sb.set(first, last)
-        if sb is y_sb and on_y_scroll is not None:
-            on_y_scroll()
         # Skip grid activation while widget is still unlaid out at 1x1 pixels
         if widget.winfo_height() <= 2 or widget.winfo_width() <= 2:
             if sb.winfo_manager() == "grid":
@@ -434,190 +429,6 @@ def _bind_tree_action_cursor(tree: ttk.Treeview, action_col_id: str) -> None:
         tree.configure(cursor="hand2" if (region == "cell" and row and col == action_col_id) else "")
 
     tree.bind("<Motion>", _on_motion)
-
-
-def _hex_to_rgb(hex_color: str, fallback: Tuple[int, int, int] = (250, 250, 250)) -> Tuple[int, int, int]:
-    raw = (hex_color or "").strip().lstrip("#")
-    if len(raw) == 6:
-        try:
-            return int(raw[0:2], 16), int(raw[2:4], 16), int(raw[4:6], 16)
-        except ValueError:
-            pass
-    return fallback
-
-
-def _make_status_orb_photo(
-    master: tk.Misc,
-    status: str,
-    bg_hex: str,
-    size: int = 15,
-    scale: int = 6,
-) -> Optional[Any]:
-    """Render an anti-aliased glowing status orb icon (Up/Down/Unknown) composited on bg_hex."""
-    if not _HAS_PIL:
-        return None
-    norm = _canonical_device_status(status).lower()
-    if norm == "up":
-        core, hi_c, rim_c, glow_c = (74, 184, 52), (146, 238, 120), (36, 118, 26), (95, 205, 70)
-    elif norm == "down":
-        core, hi_c, rim_c, glow_c = (224, 54, 54), (255, 138, 138), (148, 24, 24), (244, 96, 96)
-    else:
-        core, hi_c, rim_c, glow_c = (148, 163, 184), (212, 222, 234), (78, 92, 110), (148, 163, 184)
-
-    br, bg, bb = _hex_to_rgb(bg_hex)
-    hi = size * scale
-    cx = (hi - 1) / 2.0
-    cy = (hi - 1) / 2.0
-    r_glow = hi * 0.47
-    r_body = hi * 0.34
-    hx = cx - r_body * 0.30
-    hy = cy - r_body * 0.32
-
-    img = Image.new("RGBA", (hi, hi), (br, bg, bb, 255))
-    px = img.load()
-    for py in range(hi):
-        dy = py - cy
-        for px_i in range(hi):
-            dx = px_i - cx
-            dist = math.hypot(dx, dy)
-            if dist > r_glow:
-                continue
-            if dist <= r_body:
-                edge_t = dist / r_body
-                hl_dist = math.hypot(px_i - hx, py - hy) / r_body
-                spec = max(0.0, 1.0 - hl_dist / 0.85) ** 2.2
-                rim_t = max(0.0, (edge_t - 0.72) / 0.28)
-                r_v = core[0] * (1.0 - rim_t) + rim_c[0] * rim_t
-                g_v = core[1] * (1.0 - rim_t) + rim_c[1] * rim_t
-                b_v = core[2] * (1.0 - rim_t) + rim_c[2] * rim_t
-                r_v = r_v + (hi_c[0] - r_v) * (0.68 * spec)
-                g_v = g_v + (hi_c[1] - g_v) * (0.68 * spec)
-                b_v = b_v + (hi_c[2] - b_v) * (0.68 * spec)
-                px[px_i, py] = (int(r_v), int(g_v), int(b_v), 255)
-            else:
-                fade = max(0.0, 1.0 - (dist - r_body) / max(1e-6, r_glow - r_body))
-                alpha = 0.42 * (fade ** 1.6)
-                r_v = br + (glow_c[0] - br) * alpha
-                g_v = bg + (glow_c[1] - bg) * alpha
-                b_v = bb + (glow_c[2] - bb) * alpha
-                px[px_i, py] = (int(r_v), int(g_v), int(b_v), 255)
-
-    resized = img.resize((size, size), Image.Resampling.LANCZOS)
-    return ImageTk.PhotoImage(resized, master=master)
-
-
-class StatusOrbOverlay:
-    """Places status orb icons to the right of Status text inside ttk.Treeview cells."""
-
-    def __init__(self, tree: ttk.Treeview, col_id: str = "status", dark_mode: bool = False) -> None:
-        self.tree = tree
-        self.col_id = col_id
-        self.dark_mode = dark_mode
-        self._photo_cache: Dict[Tuple[str, bool, bool], Optional[Any]] = {}
-        self._labels: List[tk.Label] = []
-        self._after_id: Optional[str] = None
-        try:
-            self._font = tkfont.nametofont("SunValleyBodyFont", root=tree)
-        except tk.TclError:
-            self._font = tkfont.Font(root=tree, font=("Segoe UI", 10))
-
-        tree.bind("<Configure>", lambda _e: self.schedule_refresh(), add="+")
-        tree.bind("<Expose>", lambda _e: self.schedule_refresh(), add="+")
-        tree.bind("<Map>", lambda _e: self.schedule_refresh(), add="+")
-        tree.bind("<<TreeviewSelect>>", lambda _e: self.schedule_refresh(), add="+")
-        tree.bind("<MouseWheel>", lambda _e: self.schedule_refresh(), add="+")
-        tree.bind("<KeyRelease>", lambda _e: self.schedule_refresh(), add="+")
-
-    def set_dark_mode(self, dark_mode: bool) -> None:
-        """Update theme polarity and re-render cached orbs."""
-        self.dark_mode = dark_mode
-        self.schedule_refresh()
-
-    def _row_colors(self, selected: bool) -> str:
-        style = ttk.Style(self.tree)
-        if selected:
-            bg = style.lookup("Treeview", "background", ("selected",))
-            return bg or ("#292929" if self.dark_mode else "#e7e7e7")
-        bg = style.lookup("Treeview", "background")
-        return bg or ("#1c1c1c" if self.dark_mode else "#fafafa")
-
-    def _get_orb(self, status: str, selected: bool) -> Tuple[Optional[Any], str]:
-        bg_hex = self._row_colors(selected)
-        canon = _canonical_device_status(status or "Unknown")
-        key = (canon.lower(), bool(selected), bool(self.dark_mode))
-        if key not in self._photo_cache:
-            self._photo_cache[key] = _make_status_orb_photo(self.tree, canon, bg_hex)
-        return self._photo_cache[key], bg_hex
-
-    def _acquire_label(self, pool_idx: int) -> tk.Label:
-        while len(self._labels) <= pool_idx:
-            lbl = tk.Label(self.tree, bd=0, highlightthickness=0, padx=0, pady=0)
-            self._labels.append(lbl)
-        return self._labels[pool_idx]
-
-    def schedule_refresh(self) -> None:
-        """Coalesce repeated geometry/scroll events into one idle orb reposition pass."""
-        if self._after_id or not self.tree.winfo_exists():
-            return
-        self._after_id = self.tree.after_idle(self.refresh)
-
-    def refresh(self) -> None:
-        """Reposition visible status orb icons immediately to the right of Status text."""
-        self._after_id = None
-        if not self.tree.winfo_exists():
-            return
-        cols = tuple(self.tree.cget("columns") or ())
-        if self.col_id not in cols or not self.tree.winfo_ismapped():
-            for lbl in self._labels:
-                lbl.place_forget()
-            return
-
-        col_idx = cols.index(self.col_id)
-        sel_set = set(self.tree.selection())
-        tree_h = self.tree.winfo_height()
-        used = 0
-
-        for iid in self.tree.get_children(""):
-            bbox = self.tree.bbox(iid, self.col_id)
-            if not bbox or len(bbox) != 4:
-                continue
-            bx, by, bw, bh = bbox
-            if by < 16 or by + bh > tree_h + 2 or bw < 26:
-                continue
-            vals = self.tree.item(iid, "values")
-            st_text = str(vals[col_idx]) if col_idx < len(vals) else ""
-            if not st_text:
-                continue
-
-            photo, bg_hex = self._get_orb(st_text, iid in sel_set)
-            if photo is None:
-                continue
-
-            text_w = self._font.measure(st_text)
-            orb_x = bx + min(bw - 17, text_w + 16)
-            orb_y = by + max(1, (bh - 15) // 2)
-            lbl = self._acquire_label(used)
-            used += 1
-            lbl.configure(image=photo, bg=bg_hex)
-            lbl.bind("<Button-1>", lambda _e, r_id=iid: self._select_row(r_id))
-            lbl.place(x=orb_x, y=orb_y, width=15, height=15)
-
-        for idx in range(used, len(self._labels)):
-            self._labels[idx].place_forget()
-
-    def _select_row(self, row_iid: str) -> None:
-        if self.tree.exists(row_iid):
-            self.tree.selection_set(row_iid)
-            self.tree.focus(row_iid)
-
-
-def attach_status_orb_column(
-    tree: ttk.Treeview,
-    col_id: str = "status",
-    dark_mode: bool = False,
-) -> StatusOrbOverlay:
-    """Attach right-of-text status orb rendering to a Treeview's Status column."""
-    return StatusOrbOverlay(tree, col_id=col_id, dark_mode=dark_mode)
 
 
 class TablePaginator(ttk.Frame):

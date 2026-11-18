@@ -37,7 +37,6 @@ from pssh_ui.common import (
     _snippet_type_label,
     _status_label,
     apply_cli_syntax_highlighting,
-    attach_status_orb_column,
     build_device_filter_bar,
     configure_editor_tags,
     filter_device_hosts,
@@ -750,18 +749,11 @@ class AddJobDialog(tk.Toplevel):
             )
 
         self.device_tree.tag_configure("disabled_os", foreground="#94a3b8")
-        self._step3_orb_overlay = attach_status_orb_column(
-            self.device_tree, "status", dark_mode=self.dark_mode
-        )
 
         d_sb = ttk.Scrollbar(card, orient=tk.VERTICAL, command=self.device_tree.yview)
         self.device_tree.grid(row=2, column=0, sticky=tk.NSEW)
         d_sb.grid(row=2, column=1, sticky=tk.NS)
-        _attach_auto_scrollbars(
-            self.device_tree,
-            y_sb=d_sb,
-            on_y_scroll=self._step3_orb_overlay.schedule_refresh,
-        )
+        _attach_auto_scrollbars(self.device_tree, y_sb=d_sb)
         self.device_tree.bind("<Button-1>", self._on_device_tree_click)
 
         total_fg = "#ffffff" if self.dark_mode else "#000000"
@@ -864,11 +856,9 @@ class AddJobDialog(tk.Toplevel):
         self._poll_ping_after_id = None
         if not self.winfo_exists() or self.current_step_key != self.STEP_DEVICES:
             return
-        updated, needs_refilter = self._drain_step3_ping_queue()
+        _updated, needs_refilter = self._drain_step3_ping_queue()
         if needs_refilter:
             self._refresh_devices_table(reset_page=False, trigger_ping=False)
-        elif updated and hasattr(self, "_step3_orb_overlay"):
-            self._step3_orb_overlay.schedule_refresh()
         self._poll_ping_after_id = self.after(100, self._poll_step3_ping_queue)
 
     def _resolve_unknown_hosts(self, hosts: List[HostEntry]) -> None:
@@ -938,7 +928,10 @@ class AddJobDialog(tk.Toplevel):
             group_q=self.col_flt_group.get(),
             status_q=self.col_flt_status.get(),
         )
-        self.filtered_hosts = [h for _idx, h in matched]
+        self.filtered_hosts = sorted(
+            (h for _idx, h in matched),
+            key=lambda h: 0 if h.os_type == target_os else 1,
+        )
 
         for item in self.device_tree.get_children():
             self.device_tree.delete(item)
@@ -982,8 +975,6 @@ class AddJobDialog(tk.Toplevel):
                 chosen=total_chosen,
             )
         )
-        if hasattr(self, "_step3_orb_overlay"):
-            self._step3_orb_overlay.schedule_refresh()
         if trigger_ping and self.current_step_key == self.STEP_DEVICES:
             self._trigger_step3_ping_sweep()
 
