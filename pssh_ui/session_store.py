@@ -121,6 +121,7 @@ def save_session_xml(
             model_name=job.model_name,
             max_parallel=str(job.max_parallel),
             schedule_sequence=job.schedule_sequence.value,
+            include_write="true" if job.include_write else "false",
             log_dir=job.log_dir,
         )
         ET.SubElement(j_el, "Description").text = job.description or ""
@@ -285,6 +286,7 @@ def load_session_xml(file_path: Path | str = DEFAULT_SESSION_PATH) -> SessionDat
                         attrs.get("schedule_sequence"),
                         ScheduleSequence.CONCURRENT,
                     ),
+                    include_write=_parse_bool(attrs.get("include_write"), False),
                     log_dir=attrs.get("log_dir", ""),
                     parameters_masked=pm,
                     results=res_list,

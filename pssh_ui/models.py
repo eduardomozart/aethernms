@@ -220,6 +220,7 @@ class JobRecord:
     audit_regex: str = ""
     max_parallel: int = 10
     schedule_sequence: ScheduleSequence = ScheduleSequence.CONCURRENT
+    include_write: bool = False
     log_dir: str = ""
     parameters_masked: Dict[str, str] = field(default_factory=dict)
     results: List[HostExecutionResult] = field(default_factory=list)

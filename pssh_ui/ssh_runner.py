@@ -22,7 +22,7 @@ from pssh_ui.models import (
     ScheduleSequence,
     SwitchOS,
 )
-from pssh_ui.parser import detect_output_errors, validate_audit_regex
+from pssh_ui.parser import detect_output_errors, parse_commands, validate_audit_regex
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*\x07|\x1b[=>]")
@@ -68,6 +68,77 @@ def _timestamp_str() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _count_template_commands(
+    commands: List[str],
+    device_model: Optional[DeviceModel] = None,
+) -> int:
+    """Count user/template commands excluding DeviceModel session wrappers."""
+    items = [c.strip() for c in commands if c.strip()]
+    if not items:
+        return 0
+
+    disable_paging = (
+        device_model.disable_paging_command.strip().lower()
+        if device_model is not None
+        else "no page"
+    )
+    if disable_paging and items and items[0].lower() == disable_paging:
+        items = items[1:]
+
+    pre_seqs = [
+        [
+            c.strip().lower()
+            for c in parse_commands(
+                device_model.pre_config_commands if device_model is not None else "configure terminal"
+            )
+        ],
+        [
+            c.strip().lower()
+            for c in parse_commands(
+                device_model.pre_audit_commands if device_model is not None else ""
+            )
+        ],
+    ]
+    for seq in pre_seqs:
+        if seq and len(items) >= len(seq) and [x.lower() for x in items[: len(seq)]] == seq:
+            items = items[len(seq) :]
+            break
+
+    write_seq = [
+        c.strip().lower()
+        for c in parse_commands(
+            device_model.write_command if device_model is not None else "write memory"
+        )
+    ]
+    if (
+        write_seq
+        and len(items) >= len(write_seq)
+        and [x.lower() for x in items[-len(write_seq) :]] == write_seq
+    ):
+        items = items[: -len(write_seq)]
+
+    post_seqs = [
+        [
+            c.strip().lower()
+            for c in parse_commands(
+                device_model.post_config_commands if device_model is not None else "end"
+            )
+        ],
+        [
+            c.strip().lower()
+            for c in parse_commands(
+                device_model.post_audit_commands if device_model is not None else ""
+            )
+        ],
+    ]
+    for seq in post_seqs:
+        if seq and len(items) >= len(seq) and [x.lower() for x in items[-len(seq) :]] == seq:
+            items = items[: -len(seq)]
+            break
+
+    return len(items) if items else len(commands)
+
+
 def _compile_optional_regex(
     expr: str,
     default: Optional[re.Pattern[str]] = None,
@@ -106,8 +177,8 @@ def _strip_trailing_prompt(text: str, prompt_re: re.Pattern[str]) -> str:
     return "\n".join(lines).rstrip("\n")
 
 
-class ArubaSSHClient:
-    """Executes CLI command batches over an interactive Paramiko shell on Aruba switches."""
+class PSSHClient:
+    """Executes CLI command batches over an interactive Paramiko shell using a DeviceModel."""
 
     def __init__(
         self,
@@ -265,6 +336,7 @@ class ArubaSSHClient:
         audit_regex: str = "",
         enable_password: str = "",
         device_model: Optional[DeviceModel] = None,
+        template_command_count: Optional[int] = None,
     ) -> HostExecutionResult:
         """Connect to a switch via SSH, handle enable/paging/credentials, run commands, and audit."""
         result = HostExecutionResult(
@@ -476,8 +548,13 @@ class ArubaSSHClient:
                     )
             else:
                 result.status = "Success"
-                cmd_word = "command" if len(exec_commands) == 1 else "commands"
-                result.operation_result = f"Completed ({len(exec_commands)} {cmd_word})"
+                counted = (
+                    template_command_count
+                    if (template_command_count is not None and template_command_count > 0)
+                    else _count_template_commands(commands, device_model)
+                )
+                cmd_word = "command" if counted == 1 else "commands"
+                result.operation_result = f"Completed ({counted} {cmd_word})"
 
         except paramiko.AuthenticationException as exc:
             result.status = "Failed"
@@ -521,7 +598,7 @@ class BatchSSHExecutor:
 
     def __init__(
         self,
-        client_factory: Optional[Callable[[], ArubaSSHClient]] = None,
+        client_factory: Optional[Callable[[], PSSHClient]] = None,
         logs_base_dir: Optional[Path | str] = None,
     ) -> None:
         self._client_factory = client_factory
@@ -544,6 +621,7 @@ class BatchSSHExecutor:
         audit_regex_by_host: Optional[Dict[str, str]] = None,
         enable_password: str = "",
         device_model: Optional[DeviceModel] = None,
+        template_counts_by_host: Optional[Dict[str, int]] = None,
     ) -> tuple[Path, List[HostExecutionResult]]:
         """
         Execute commands across `hosts` and write logs to `logs/YYYY-MM-DD_HH-MM-SS/`.
@@ -586,7 +664,7 @@ class BatchSSHExecutor:
             client = (
                 self._client_factory()
                 if self._client_factory is not None
-                else ArubaSSHClient(
+                else PSSHClient(
                     connect_timeout=connect_timeout,
                     command_timeout=command_timeout,
                 )
@@ -600,6 +678,9 @@ class BatchSSHExecutor:
                 exec_kwargs["enable_password"] = enable_password
             if device_model is not None:
                 exec_kwargs["device_model"] = device_model
+            host_tmpl_count = (template_counts_by_host or {}).get(host.unique_key)
+            if host_tmpl_count is not None:
+                exec_kwargs["template_command_count"] = host_tmpl_count
             res = client.execute_commands(
                 host=host,
                 username=username,

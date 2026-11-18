@@ -63,6 +63,7 @@ def test_session_xml_roundtrip_excludes_password_fields(tmp_path: Path):
         commands_rendered='configure terminal\nsnmpv3 user "monitoring_ro" auth sha "********" priv aes "********"',
         max_parallel=15,
         schedule_sequence=ScheduleSequence.CONCURRENT,
+        include_write=True,
         parameters_masked={
             "SNMPv3 Username": "monitoring_ro",
             "Auth Password": "TOP_SECRET_AUTH_123!",
@@ -105,6 +106,7 @@ def test_session_xml_roundtrip_excludes_password_fields(tmp_path: Path):
     assert len(restored.hosts) == 2
     assert len(restored.jobs) == 1
     assert restored.jobs[0].description == "Deploy SNMPv3 across buildings"
+    assert restored.jobs[0].include_write is True
     assert 'monitoring_ro' in restored.jobs[0].commands_rendered
     assert restored.jobs[0].parameters_masked["Auth Password"] == "••••••••"
     assert restored.jobs[0].results[0].host.name == "SW-A-01"

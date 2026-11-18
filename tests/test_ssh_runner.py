@@ -1,4 +1,4 @@
-"""Tests for Paramiko ArubaSSHClient and parallel BatchSSHExecutor."""
+"""Tests for Paramiko PSSHClient and parallel BatchSSHExecutor."""
 
 from datetime import datetime
 from pathlib import Path
@@ -10,10 +10,11 @@ import paramiko
 
 from pssh_ui.common import format_operation_result_ui
 from pssh_ui.i18n import get_language, set_language
+from pssh_ui.job_builder import build_commands_for_job
 from pssh_ui.logger import write_host_log
 from pssh_ui.model_store import ModelStore
 from pssh_ui.models import DeviceModel, HostEntry, ScheduleSequence, SwitchOS
-from pssh_ui.ssh_runner import ArubaSSHClient, BatchSSHExecutor
+from pssh_ui.ssh_runner import BatchSSHExecutor, PSSHClient
 
 
 class FakeChannel:
@@ -84,7 +85,7 @@ class FakeSSHClient:
         self.closed = True
 
 
-def test_aruba_ssh_client_handles_aoss_banner_no_page_and_errors():
+def test_pssh_client_handles_aoss_banner_no_page_and_errors():
     chan = FakeChannel(
         responses={
             "bad command": "bad command\nInvalid input: bad\nSwitch-Aruba(config)# ",
@@ -92,7 +93,7 @@ def test_aruba_ssh_client_handles_aoss_banner_no_page_and_errors():
         }
     )
     fake_ssh = FakeSSHClient(channel=chan)
-    client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
+    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
 
     host = HostEntry(name="SW-AOSS-01", ip="10.0.0.1", os_type=SwitchOS.AOS_S)
     res = client.execute_commands(
@@ -119,7 +120,7 @@ def test_aruba_ssh_client_handles_aoss_banner_no_page_and_errors():
     assert fake_ssh.closed is True
 
 
-def test_aruba_ssh_client_handles_snmpv3_init_prompts():
+def test_pssh_client_handles_snmpv3_init_prompts():
     class InitWizardChannel(FakeChannel):
         def send(self, data: str) -> int:
             self.sent_data.append(data)
@@ -135,7 +136,7 @@ def test_aruba_ssh_client_handles_snmpv3_init_prompts():
             return len(data)
 
     chan = InitWizardChannel(responses={}, banner="", prompt="Switch-Aruba(config)# ")
-    client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
+    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
     host = HostEntry(name="SW-INIT", ip="10.0.0.9", os_type=SwitchOS.AOS_S)
 
     res = client.execute_commands(host, "admin", "dummy_pw", ["snmpv3 enable"])
@@ -143,8 +144,8 @@ def test_aruba_ssh_client_handles_snmpv3_init_prompts():
     assert "n\n" in chan.sent_data
 
 
-def test_aruba_ssh_client_reports_authentication_failure():
-    client = ArubaSSHClient(
+def test_pssh_client_reports_authentication_failure():
+    client = PSSHClient(
         poll_interval=0.005,
         ssh_client_factory=lambda: FakeSSHClient(auth_fail=True),
     )
@@ -160,7 +161,7 @@ def test_batch_executor_respects_max_parallel_and_writes_logs(tmp_path: Path):
     active_count = 0
     peak_active = 0
 
-    class TrackingClient(ArubaSSHClient):
+    class TrackingClient(PSSHClient):
         def execute_commands(self, host, username, password, commands, cancel_event=None):
             nonlocal active_count, peak_active
             with active_lock:
@@ -232,7 +233,7 @@ def test_ssh_client_handles_enable_credentials_and_audit_regex():
             return len(data)
 
     chan = EnableAndAuditChannel(responses={}, banner="Switch-Aruba> ", prompt="Switch-Aruba> ")
-    client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
+    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
     host = HostEntry(name="SW-AUD", ip="10.0.0.15", os_type=SwitchOS.AOS_S)
     mdl = DeviceModel(name="ArubaOS-S", device_type=SwitchOS.AOS_S)
 
@@ -250,7 +251,7 @@ def test_ssh_client_handles_enable_credentials_and_audit_regex():
     assert ok_res.status == "Success"
 
     chan2 = EnableAndAuditChannel(responses={}, banner="Switch-Aruba> ", prompt="Switch-Aruba> ")
-    client2 = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan2))
+    client2 = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan2))
     fail_res = client2.execute_commands(
         host=host,
         username="admin",
@@ -297,7 +298,7 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
         )
         chan = SplitBannerCXChannel()
         fake_ssh = FakeSSHClient(channel=chan)
-        client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
+        client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
         host = HostEntry(name="SW-CX-01", ip="10.0.0.20", os_type=SwitchOS.AOS_CX)
 
         ok_res = client.execute_commands(
@@ -311,7 +312,9 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
         assert ok_res.status == "Success"
         assert ok_res.step_results[0].command == "no page"
         assert ok_res.step_results[0].result == "Succeeded"
-        assert ok_res.operation_result == "Completed (5 commands)"
+        assert len(ok_res.step_results) == 5
+        assert ok_res.operation_result == "Completed (2 commands)"
+        assert format_operation_result_ui(ok_res.operation_result) == "Concluído (2 comandos)"
         raw_lines = ok_res.raw_output.splitlines()
         assert "SW-CX-01# no page" in raw_lines
         assert "SW-CX-01# configure terminal" in raw_lines
@@ -319,12 +322,52 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
         assert raw_lines[-1] == "SW-CX-01(config)# end"  # No dangling trailing bare prompt
         assert chan.closed is True and fake_ssh.closed is True
 
+        # Verify optional 'write memory' executes in SSH stream but counts only the 2 template commands
+        write_chan = SplitBannerCXChannel()
+        write_client = PSSHClient(
+            poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=write_chan)
+        )
+        cmd_map = build_commands_for_job(
+            "ntp server 1.1.1.1\nntp enable",
+            {},
+            [host],
+            device_model=cx_model,
+            include_write_command=True,
+        )
+        write_res = write_client.execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=cmd_map[host.unique_key],
+            device_model=cx_model,
+            template_command_count=2,
+        )
+        assert write_res.status == "Success"
+        assert len(write_res.step_results) == 6
+        assert write_res.step_results[-1].command == "write memory"
+        assert write_res.step_results[-1].result == "Succeeded"
+        assert "write memory\n" in write_chan.sent_data
+        assert write_res.operation_result == "Completed (2 commands)"
+
+        # Verify _count_template_commands also strips 'write memory' when template_command_count is omitted
+        write_res_auto = PSSHClient(
+            poll_interval=0.005,
+            ssh_client_factory=lambda: FakeSSHClient(channel=SplitBannerCXChannel()),
+        ).execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=cmd_map[host.unique_key],
+            device_model=cx_model,
+        )
+        assert write_res_auto.operation_result == "Completed (2 commands)"
+
         # Failed step stays English in .log while UI display helper translates in pt_BR
         fail_chan = SplitBannerCXChannel(
             responses={"bad cmd": "bad cmd\r\n% Invalid input detected.\r\nSW-CX-01(config)# "}
         )
         fail_ssh = FakeSSHClient(channel=fail_chan)
-        fail_client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fail_ssh)
+        fail_client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fail_ssh)
         fail_res = fail_client.execute_commands(
             host=host,
             username="admin",
@@ -349,7 +392,7 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
         nopage_fail_chan = SplitBannerCXChannel(
             responses={"no page": "no page\r\nInvalid input: no page\r\nSW-CX-01# "}
         )
-        nopage_fail_client = ArubaSSHClient(
+        nopage_fail_client = PSSHClient(
             poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=nopage_fail_chan)
         )
         nopage_fail_res = nopage_fail_client.execute_commands(

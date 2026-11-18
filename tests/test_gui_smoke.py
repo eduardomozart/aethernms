@@ -301,9 +301,20 @@ def test_gui_smoke_lifecycle(tmp_path: Path, monkeypatch, tk_root: tk.Tk):
         assert "no page" not in rendered_preview
         assert rendered_preview.endswith('banner motd "Core"')
         assert "write memory" in dlg.write_cmd_check.cget("text")
+        assert dlg.write_cmd_check.winfo_manager() != ""
         dlg.save_write_var.set(True)
         dlg._refresh_confirm_view()
-        assert dlg.confirm_cmds_text.get("1.0", "end-1c").endswith("\nwrite memory")
+        assert "write memory" not in dlg.confirm_cmds_text.get("1.0", "end-1c")
+        # Hide write checkbox completely when selected DeviceModel defines no write_command
+        orig_write_cmd = app.device_models[0].write_command
+        target_mdl = dlg._get_active_model()
+        saved_wc = target_mdl.write_command
+        target_mdl.write_command = ""
+        dlg._refresh_confirm_view()
+        assert dlg.write_cmd_check.winfo_manager() == ""
+        assert dlg.save_write_var.get() is False
+        target_mdl.write_command = saved_wc
+        app.device_models[0].write_command = orig_write_cmd
         assert 'snmpv3 user "netmon_v3" auth sha "ExampleAuth!123" priv aes "ExamplePriv!456"' in rendered_preview
         assert 'banner motd "Core"' in rendered_preview
         dlg.destroy()
@@ -1062,7 +1073,7 @@ def test_replay_job_prefill_and_sequential_checkbox(tmp_path: Path, monkeypatch,
         confirm_preview = dlg.confirm_cmds_text.get("1.0", "end-1c")
         assert "ntp server 10.0.0.50" in confirm_preview
         assert "${NTP Server" not in confirm_preview
-        assert confirm_preview.endswith(f"\n{write_cmd}")
+        assert write_cmd not in confirm_preview
         dlg.ssh_user_var.set("admin")
         dlg._on_run()
         assert dlg.launch_payload is not None

@@ -209,7 +209,7 @@ class AddJobDialog(tk.Toplevel):
             if active_model and active_model.write_command.strip()
             else "write memory"
         )
-        should_save_write = (
+        should_save_write = bool(getattr(job, "include_write", False)) or (
             job.job_type == SnippetType.CONFIG
             and bool(write_cmd)
             and (job.commands_rendered or "").strip().endswith(write_cmd)
@@ -1158,10 +1158,6 @@ class AddJobDialog(tk.Toplevel):
 
         rendered = render_template(self._get_raw_commands(), self.param_values)
         exec_cmds = parse_commands(rendered)
-        if can_write and self.save_write_var.get() and active_model:
-            for wc in parse_commands(active_model.write_command):
-                if not exec_cmds or exec_cmds[-1].strip().lower() != wc.strip().lower():
-                    exec_cmds.append(wc)
 
         sel_count = len(selected_hosts)
         sel_disp = (

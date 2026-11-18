@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from pssh_ui.i18n import _
-from pssh_ui.job_builder import build_commands_for_job, wrap_commands_with_model
+from pssh_ui.job_builder import build_commands_for_job
 from pssh_ui.model_store import ModelStore
 from pssh_ui.models import (
     HostEntry,
@@ -629,6 +629,10 @@ class JobsTabMixin:
             device_model=active_model,
             include_write_command=include_write,
         )
+        template_counts_map = {
+            h.unique_key: len(parse_commands(render_template(raw_commands, values, host=h)))
+            for h in hosts
+        }
         audit_regex_map = (
             {h.unique_key: render_template(raw_audit_regex, values, host=h) for h in hosts}
             if raw_audit_regex.strip()
@@ -641,12 +645,7 @@ class JobsTabMixin:
             k: ("********" if k in secret_names else v) for k, v in values.items()
         }
         commands_rendered = "\n".join(
-            wrap_commands_with_model(
-                parse_commands(render_template(raw_commands, display_values)),
-                job_type=job_type,
-                device_model=active_model,
-                include_write_command=include_write,
-            )
+            parse_commands(render_template(raw_commands, display_values))
         )
         audit_rendered = render_template(raw_audit_regex, display_values) if raw_audit_regex else ""
 
@@ -677,6 +676,7 @@ class JobsTabMixin:
             audit_regex=audit_rendered,
             max_parallel=payload["max_parallel"],
             schedule_sequence=payload["schedule_sequence"],
+            include_write=include_write,
             parameters_masked=masked_params,
             results=initial_results,
         )
@@ -713,6 +713,7 @@ class JobsTabMixin:
                 audit_regex_by_host=audit_regex_map,
                 enable_password=enable_pwd,
                 device_model=active_model,
+                template_counts_by_host=template_counts_map,
             )
             self.ui_queue.put(("job_done", (job_id, run_dir, results)))
 
