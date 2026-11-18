@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pssh-ui 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-18 11:03-0300\n"
+"POT-Creation-Date: 2026-11-18 14:56-0300\n"
 "PO-Revision-Date: 2026-11-17 22:03+0000\n"
 "Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>,"
 " 2026\n"
@@ -27,7 +27,7 @@ msgstr ""
 msgid "Config & Audit Automation"
 msgstr "Automação de Configuração e Auditoria"
 
-#: pssh_ui/app.py:236 pssh_ui/tabs/jobs_tab.py:59
+#: pssh_ui/app.py:236 pssh_ui/tabs/jobs_tab.py:60
 msgid "Jobs"
 msgstr "Tarefas"
 
@@ -36,7 +36,7 @@ msgid "Snippets"
 msgstr "Snippets"
 
 #: pssh_ui/app.py:238 pssh_ui/tabs/devices_tab.py:40
-#: pssh_ui/tabs/jobs_tab.py:194 pssh_ui/tabs/jobs_tab.py:274
+#: pssh_ui/tabs/jobs_tab.py:195 pssh_ui/tabs/jobs_tab.py:275
 msgid "Devices"
 msgstr "Dispositivos"
 
@@ -44,15 +44,125 @@ msgstr "Dispositivos"
 msgid "Device Models"
 msgstr "Modelos de Dispositivo"
 
-#: pssh_ui/common.py:96
+#: pssh_ui/common.py:97
 msgid "Config"
 msgstr "Configuração"
 
-#: pssh_ui/common.py:98
+#: pssh_ui/common.py:99
 msgid "Audit and Remediate"
 msgstr "Auditoria e Remediação"
 
-#: pssh_ui/common.py:104 pssh_ui/common.py:118 pssh_ui/common.py:140
+#: pssh_ui/common.py:113
+msgid "Invalid CLI input"
+msgstr "Entrada CLI inválida"
+
+#: pssh_ui/common.py:114
+msgid "Invalid command or parameter"
+msgstr "Comando ou parâmetro inválido"
+
+#: pssh_ui/common.py:115
+msgid "Ambiguous command"
+msgstr "Comando ambíguo"
+
+#: pssh_ui/common.py:116
+msgid "Incomplete command"
+msgstr "Comando incompleto"
+
+#: pssh_ui/common.py:117
+msgid "Unknown command"
+msgstr "Comando desconhecido"
+
+#: pssh_ui/common.py:118
+msgid "Execution error"
+msgstr "Erro de execução"
+
+#: pssh_ui/common.py:119
+msgid "Target entity not found"
+msgstr "Entidade não encontrada"
+
+#: pssh_ui/common.py:120
+msgid "Authentication / Authorization failure"
+msgstr "Falha de Autenticação / Autorização"
+
+#: pssh_ui/common.py:121
+msgid "Command rejected by switch"
+msgstr "Comando rejeitado pelo switch"
+
+#: pssh_ui/common.py:122
+msgid "SSH communication error"
+msgstr "Erro de comunicação SSH"
+
+#: pssh_ui/common.py:123
+msgid "CLI error"
+msgstr "Erro de CLI"
+
+#: pssh_ui/common.py:124
+msgid "Expected audit RegEx not found in output"
+msgstr "RegEx esperada da auditoria não encontrada na saída"
+
+#: pssh_ui/common.py:130
+#, python-brace-format
+msgid "Invalid audit RegEx: {err}"
+msgstr "RegEx de auditoria inválida: {err}"
+
+#: pssh_ui/common.py:143 pssh_ui/dialogs/device_dialogs.py:217
+#, python-format
+msgid "%d error detected"
+msgid_plural "%d errors detected"
+msgstr[0] "%d erro detectado"
+msgstr[1] "%d erros detectados"
+msgstr[2] "%d erros detectados"
+
+#: pssh_ui/common.py:152
+#, python-format
+msgid "Audit failed (%d RegEx pattern not matched)"
+msgid_plural "Audit failed (%d RegEx patterns not matched)"
+msgstr[0] "Falha na auditoria (%d padrão RegEx não encontrado)"
+msgstr[1] "Falha na auditoria (%d padrões RegEx não encontrados)"
+msgstr[2] "Falha na auditoria (%d padrões RegEx não encontrados)"
+
+#: pssh_ui/common.py:162
+#, python-format
+msgid "Completed (%d command)"
+msgid_plural "Completed (%d commands)"
+msgstr[0] "Concluído (%d comando)"
+msgstr[1] "Concluído (%d comandos)"
+msgstr[2] "Concluído (%d comandos)"
+
+#: pssh_ui/common.py:166
+#, python-brace-format
+msgid "Skipped (no commands for {os})"
+msgstr "Ignorado (sem comandos para {os})"
+
+#: pssh_ui/common.py:169
+msgid "Audit failed"
+msgstr "Falha na auditoria"
+
+#: pssh_ui/common.py:170
+msgid "Executing..."
+msgstr "Executando..."
+
+#: pssh_ui/common.py:171
+msgid "Cancelled by operator"
+msgstr "Cancelado pelo operador"
+
+#: pssh_ui/common.py:172
+msgid "Cancelled before start"
+msgstr "Cancelado antes de iniciar"
+
+#: pssh_ui/common.py:173
+msgid "Authentication failed"
+msgstr "Falha de autenticação"
+
+#: pssh_ui/common.py:174
+msgid "SSH connection error"
+msgstr "Erro de conexão SSH"
+
+#: pssh_ui/common.py:175
+msgid "Unexpected worker error"
+msgstr "Erro inesperado na execução"
+
+#: pssh_ui/common.py:182 pssh_ui/common.py:196 pssh_ui/common.py:218
 #: pssh_ui/dialogs/add_job_dialog.py:105 pssh_ui/dialogs/add_job_dialog.py:107
 #: pssh_ui/dialogs/add_job_dialog.py:697 pssh_ui/dialogs/add_job_dialog.py:699
 #: pssh_ui/dialogs/airwave_dialog.py:71 pssh_ui/dialogs/airwave_dialog.py:74
@@ -60,11 +170,11 @@ msgstr "Auditoria e Remediação"
 #: pssh_ui/dialogs/airwave_dialog.py:124 pssh_ui/dialogs/airwave_dialog.py:143
 #: pssh_ui/dialogs/airwave_dialog.py:307 pssh_ui/dialogs/airwave_dialog.py:312
 #: pssh_ui/dialogs/airwave_dialog.py:321 pssh_ui/tabs/devices_tab.py:51
-#: pssh_ui/tabs/devices_tab.py:53 pssh_ui/tabs/jobs_tab.py:72
-#: pssh_ui/tabs/jobs_tab.py:73 pssh_ui/tabs/jobs_tab.py:74
-#: pssh_ui/tabs/jobs_tab.py:82 pssh_ui/tabs/jobs_tab.py:101
-#: pssh_ui/tabs/jobs_tab.py:109 pssh_ui/tabs/jobs_tab.py:280
-#: pssh_ui/tabs/jobs_tab.py:293 pssh_ui/tabs/models_tab.py:53
+#: pssh_ui/tabs/devices_tab.py:53 pssh_ui/tabs/jobs_tab.py:73
+#: pssh_ui/tabs/jobs_tab.py:74 pssh_ui/tabs/jobs_tab.py:75
+#: pssh_ui/tabs/jobs_tab.py:83 pssh_ui/tabs/jobs_tab.py:102
+#: pssh_ui/tabs/jobs_tab.py:110 pssh_ui/tabs/jobs_tab.py:281
+#: pssh_ui/tabs/jobs_tab.py:294 pssh_ui/tabs/models_tab.py:53
 #: pssh_ui/tabs/models_tab.py:64 pssh_ui/tabs/snippets_tab.py:56
 #: pssh_ui/tabs/snippets_tab.py:57 pssh_ui/tabs/snippets_tab.py:58
 #: pssh_ui/tabs/snippets_tab.py:67 pssh_ui/tabs/snippets_tab.py:86
@@ -72,49 +182,49 @@ msgstr "Auditoria e Remediação"
 msgid "All"
 msgstr "Todos"
 
-#: pssh_ui/common.py:119
+#: pssh_ui/common.py:197
 msgid "Up"
 msgstr "Online"
 
-#: pssh_ui/common.py:120
+#: pssh_ui/common.py:198
 msgid "Down"
 msgstr "Offline"
 
-#: pssh_ui/common.py:123 pssh_ui/common.py:145 pssh_ui/common.py:156
+#: pssh_ui/common.py:201 pssh_ui/common.py:223 pssh_ui/common.py:234
 msgid "Unknown"
 msgstr "Desconhecido"
 
-#: pssh_ui/common.py:214 pssh_ui/tabs/jobs_tab.py:282
+#: pssh_ui/common.py:292 pssh_ui/tabs/jobs_tab.py:283
 msgid "Device:"
 msgstr "Dispositivo:"
 
-#: pssh_ui/common.py:219 pssh_ui/tabs/jobs_tab.py:287
+#: pssh_ui/common.py:297 pssh_ui/tabs/jobs_tab.py:288
 msgid "IP Address:"
 msgstr "Endereço IP:"
 
-#: pssh_ui/common.py:224 pssh_ui/dialogs/airwave_dialog.py:139
+#: pssh_ui/common.py:302 pssh_ui/dialogs/airwave_dialog.py:139
 msgid "OS Type:"
 msgstr "Tipo de SO:"
 
-#: pssh_ui/common.py:232
+#: pssh_ui/common.py:310
 msgid "Group:"
 msgstr "Grupo:"
 
-#: pssh_ui/common.py:237 pssh_ui/dialogs/airwave_dialog.py:150
-#: pssh_ui/tabs/jobs_tab.py:114 pssh_ui/tabs/jobs_tab.py:299
+#: pssh_ui/common.py:315 pssh_ui/dialogs/airwave_dialog.py:150
+#: pssh_ui/tabs/jobs_tab.py:115 pssh_ui/tabs/jobs_tab.py:300
 msgid "Status:"
 msgstr "Status:"
 
-#: pssh_ui/common.py:574
+#: pssh_ui/common.py:652
 msgid "Rows:"
 msgstr "Linhas:"
 
-#: pssh_ui/common.py:639
+#: pssh_ui/common.py:717
 #, python-brace-format
 msgid "Page {cur} of {total}"
 msgstr "Página {cur} de {total}"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1220 pssh_ui/job_builder.py:153
+#: pssh_ui/dialogs/add_job_dialog.py:1241 pssh_ui/job_builder.py:153
 msgid "Select at least one target switch matching this snippet OS."
 msgstr "Selecione ao menos um switch alvo compatível com o SO deste snippet."
 
@@ -132,191 +242,10 @@ msgstr ""
 "Nenhum comando executável encontrado (verifique o script ou comentários "
 "'!')."
 
-#: pssh_ui/dialogs/add_job_dialog.py:1193 pssh_ui/dialogs/snippet_dialog.py:200
+#: pssh_ui/dialogs/add_job_dialog.py:1214 pssh_ui/dialogs/snippet_dialog.py:200
 #: pssh_ui/job_builder.py:171
 msgid "Commands cannot be empty."
 msgstr "Os Comandos não podem estar vazios."
-
-#: pssh_ui/parser.py:38
-msgid "Invalid CLI input"
-msgstr "Entrada CLI inválida"
-
-#: pssh_ui/parser.py:39
-msgid ""
-"Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration "
-"context (e.g., configure terminal)."
-msgstr ""
-"Verifique a sintaxe, o SO do switch (AOS-S vs AOS-CX) e o contexto de "
-"configuração (ex.: configure terminal)."
-
-#: pssh_ui/parser.py:42
-msgid "Invalid command or parameter"
-msgstr "Comando ou parâmetro inválido"
-
-#: pssh_ui/parser.py:43
-msgid ""
-"Verify ArubaOS-CX syntax and confirm the switch is in the required "
-"configuration context."
-msgstr ""
-"Verifique a sintaxe do ArubaOS-CX e confirme se o switch está no contexto"
-" de configuração correto."
-
-#: pssh_ui/parser.py:46
-msgid "Ambiguous command"
-msgstr "Comando ambíguo"
-
-#: pssh_ui/parser.py:47
-msgid "Spell out the full command keyword so it is unambiguous."
-msgstr "Escreva o comando por extenso para evitar ambiguidade."
-
-#: pssh_ui/parser.py:50
-msgid "Incomplete command"
-msgstr "Comando incompleto"
-
-#: pssh_ui/parser.py:51
-msgid "Provide all required command parameters on the same line."
-msgstr "Informe todos os parâmetros obrigatórios na mesma linha."
-
-#: pssh_ui/parser.py:54
-msgid "Unknown command"
-msgstr "Comando desconhecido"
-
-#: pssh_ui/parser.py:55
-msgid "Verify this command is supported by the target firmware and switch OS."
-msgstr "Verifique se este comando é suportado pelo firmware e SO do switch alvo."
-
-#: pssh_ui/parser.py:58
-msgid "Execution error"
-msgstr "Erro de execução"
-
-#: pssh_ui/parser.py:59
-msgid ""
-"Review the switch output around this line and check configuration "
-"prerequisites."
-msgstr ""
-"Revise a saída do switch próxima a esta linha e os pré-requisitos de "
-"configuração."
-
-#: pssh_ui/parser.py:62
-msgid "Target entity not found"
-msgstr "Entidade não encontrada"
-
-#: pssh_ui/parser.py:63
-msgid "The referenced user, VLAN, or object does not exist on this switch."
-msgstr "O usuário, VLAN ou objeto referenciado não existe neste switch."
-
-#: pssh_ui/parser.py:66
-msgid "Authentication / Authorization failure"
-msgstr "Falha de Autenticação / Autorização"
-
-#: pssh_ui/parser.py:67
-msgid ""
-"Verify SSH credentials and confirm the account has Manager / admin "
-"privileges."
-msgstr ""
-"Verifique as credenciais SSH e confirme se a conta possui privilégios de "
-"Manager / admin."
-
-#: pssh_ui/parser.py:70
-msgid "Command rejected by switch"
-msgstr "Comando rejeitado pelo switch"
-
-#: pssh_ui/parser.py:71
-msgid ""
-"Check switch state or prerequisites required before executing this "
-"command."
-msgstr ""
-"Verifique o estado do switch ou pré-requisitos necessários antes do "
-"comando."
-
-#: pssh_ui/parser.py:74
-msgid "SSH communication error"
-msgstr "Erro de comunicação SSH"
-
-#: pssh_ui/parser.py:75
-msgid ""
-"Verify reachability, SSH service status on the switch, or increase "
-"timeout settings."
-msgstr "Verifique a conectividade, o serviço SSH no switch ou aumente os timeouts."
-
-#: pssh_ui/parser.py:78
-msgid "CLI error"
-msgstr "Erro de CLI"
-
-#: pssh_ui/parser.py:78
-msgid "Check device output for details."
-msgstr "Verifique a saída do dispositivo para mais detalhes."
-
-#: pssh_ui/parser.py:154
-#, python-brace-format
-msgid "Invalid audit RegEx: {err}"
-msgstr "RegEx de auditoria inválida: {err}"
-
-#: pssh_ui/parser.py:155
-msgid "Correct the regular expression syntax in Audit Validation RegEx."
-msgstr "Corrija a sintaxe da expressão regular na RegEx de Validação de Auditoria."
-
-#: pssh_ui/parser.py:165
-msgid "Expected audit RegEx not found in output"
-msgstr "RegEx esperada da auditoria não encontrada na saída"
-
-#: pssh_ui/parser.py:166
-#, python-brace-format
-msgid "Switch output did not match the required audit pattern: {pat}"
-msgstr "A saída do switch não correspondeu ao padrão de auditoria exigido: {pat}"
-
-#: pssh_ui/ssh_runner.py:251
-#, python-brace-format
-msgid "Skipped (no commands for {os})"
-msgstr "Ignorado (sem comandos para {os})"
-
-#: pssh_ui/ssh_runner.py:309
-msgid "Timed out waiting for initial switch CLI prompt."
-msgstr "Tempo esgotado aguardando o prompt inicial do switch."
-
-#: pssh_ui/ssh_runner.py:357
-msgid "Cancelled by operator."
-msgstr "Cancelado pelo operador."
-
-#: pssh_ui/ssh_runner.py:383
-#, python-brace-format
-msgid "Timed out waiting for switch prompt after {sec:.0f}s."
-msgstr "Tempo esgotado aguardando prompt após {sec:.0f}s."
-
-#: pssh_ui/ssh_runner.py:414
-msgid "Cancelled by operator"
-msgstr "Cancelado pelo operador"
-
-#: pssh_ui/ssh_runner.py:419
-#, python-brace-format
-msgid "Audit failed ({count} RegEx pattern(s) not matched)"
-msgstr "Falha na auditoria ({count} padrão(ões) RegEx não encontrado(s))"
-
-#: pssh_ui/ssh_runner.py:423
-#, python-brace-format
-msgid "{count} error(s) detected"
-msgstr "{count} erro(s) detectado(s)"
-
-#: pssh_ui/ssh_runner.py:426
-#, python-brace-format
-msgid "Completed ({count} commands)"
-msgstr "Concluído ({count} comandos)"
-
-#: pssh_ui/ssh_runner.py:433
-msgid "Authentication failed"
-msgstr "Falha de autenticação"
-
-#: pssh_ui/ssh_runner.py:441
-msgid "SSH connection error"
-msgstr "Erro de conexão SSH"
-
-#: pssh_ui/ssh_runner.py:510
-msgid "Cancelled before start"
-msgstr "Cancelado antes de iniciar"
-
-#: pssh_ui/ssh_runner.py:565
-msgid "Unexpected worker error"
-msgstr "Erro inesperado na execução"
 
 #: pssh_ui/variables.py:184
 #, python-brace-format
@@ -352,11 +281,11 @@ msgstr "Sobre {app}"
 msgid "Repository:"
 msgstr "Repositório:"
 
-#: pssh_ui/dialogs/about_dialog.py:56 pssh_ui/dialogs/device_dialogs.py:260
+#: pssh_ui/dialogs/about_dialog.py:56 pssh_ui/dialogs/device_dialogs.py:263
 msgid "Close"
 msgstr "Fechar"
 
-#: pssh_ui/dialogs/add_job_dialog.py:81 pssh_ui/tabs/jobs_tab.py:62
+#: pssh_ui/dialogs/add_job_dialog.py:81 pssh_ui/tabs/jobs_tab.py:63
 msgid "Add Job"
 msgstr "Nova Tarefa"
 
@@ -377,7 +306,7 @@ msgid "Confirm"
 msgstr "Confirmar"
 
 #: pssh_ui/dialogs/add_job_dialog.py:227 pssh_ui/dialogs/airwave_dialog.py:233
-#: pssh_ui/dialogs/device_dialogs.py:146 pssh_ui/dialogs/device_dialogs.py:330
+#: pssh_ui/dialogs/device_dialogs.py:148 pssh_ui/dialogs/device_dialogs.py:333
 #: pssh_ui/dialogs/settings_dialog.py:104 pssh_ui/dialogs/snippet_dialog.py:157
 msgid "Cancel"
 msgstr "Cancelar"
@@ -451,7 +380,7 @@ msgstr "Valor"
 
 #: pssh_ui/dialogs/add_job_dialog.py:521 pssh_ui/dialogs/add_job_dialog.py:640
 #: pssh_ui/dialogs/airwave_dialog.py:187 pssh_ui/tabs/devices_tab.py:74
-#: pssh_ui/tabs/jobs_tab.py:133 pssh_ui/tabs/jobs_tab.py:322
+#: pssh_ui/tabs/jobs_tab.py:134 pssh_ui/tabs/jobs_tab.py:323
 msgid "Status"
 msgstr "Status"
 
@@ -472,12 +401,12 @@ msgid "Clear Filters"
 msgstr "Limpar Filtros"
 
 #: pssh_ui/dialogs/add_job_dialog.py:639 pssh_ui/dialogs/airwave_dialog.py:186
-#: pssh_ui/tabs/devices_tab.py:73 pssh_ui/tabs/jobs_tab.py:320
+#: pssh_ui/tabs/devices_tab.py:73 pssh_ui/tabs/jobs_tab.py:321
 msgid "Device"
 msgstr "Dispositivo"
 
 #: pssh_ui/dialogs/add_job_dialog.py:641 pssh_ui/dialogs/airwave_dialog.py:188
-#: pssh_ui/tabs/devices_tab.py:75 pssh_ui/tabs/jobs_tab.py:321
+#: pssh_ui/tabs/devices_tab.py:75 pssh_ui/tabs/jobs_tab.py:322
 msgid "IP Address"
 msgstr "Endereço IP"
 
@@ -486,11 +415,11 @@ msgid "OS"
 msgstr "SO"
 
 #: pssh_ui/dialogs/add_job_dialog.py:643 pssh_ui/dialogs/airwave_dialog.py:190
-#: pssh_ui/dialogs/device_dialogs.py:310 pssh_ui/tabs/devices_tab.py:77
+#: pssh_ui/dialogs/device_dialogs.py:313 pssh_ui/tabs/devices_tab.py:77
 msgid "Model"
 msgstr "Modelo"
 
-#: pssh_ui/dialogs/add_job_dialog.py:644 pssh_ui/dialogs/device_dialogs.py:320
+#: pssh_ui/dialogs/add_job_dialog.py:644 pssh_ui/dialogs/device_dialogs.py:323
 #: pssh_ui/tabs/devices_tab.py:78
 msgid "Group"
 msgstr "Grupo"
@@ -509,120 +438,131 @@ msgstr ""
 "O dispositivo '{name}' ({ip}) está atualmente Offline.\n"
 "Deseja continuar mesmo assim?"
 
-#: pssh_ui/dialogs/add_job_dialog.py:808
-#, python-brace-format
-msgid ""
-"{count} selected device(s) are currently Down (offline).\n"
-"Do you want to continue anyway?"
-msgstr ""
-"{count} dispositivo(s) selecionado(s) está(ão) atualmente Offline.\n"
-"Deseja continuar mesmo assim?"
+#: pssh_ui/dialogs/add_job_dialog.py:815
+#, python-format
+msgid "... and %d more device"
+msgid_plural "... and %d more devices"
+msgstr[0] "... e mais %d dispositivo"
+msgstr[1] "... e mais %d dispositivos"
+msgstr[2] "... e mais %d dispositivos"
 
-#: pssh_ui/dialogs/add_job_dialog.py:812
+#: pssh_ui/dialogs/add_job_dialog.py:819
+#, python-format
+msgid "%d selected device is currently Down (offline):"
+msgid_plural "%d selected devices are currently Down (offline):"
+msgstr[0] "%d dispositivo selecionado está atualmente Offline:"
+msgstr[1] "%d dispositivos selecionados estão atualmente Offline:"
+msgstr[2] "%d dispositivos selecionados estão atualmente Offline:"
+
+#: pssh_ui/dialogs/add_job_dialog.py:829
+msgid "Do you want to continue anyway?"
+msgstr "Deseja continuar mesmo assim?"
+
+#: pssh_ui/dialogs/add_job_dialog.py:833
 msgid "Offline Device"
 msgstr "Dispositivo Offline"
 
-#: pssh_ui/dialogs/add_job_dialog.py:823
+#: pssh_ui/dialogs/add_job_dialog.py:844
 #, python-brace-format
 msgid "Snippet Target OS: {os}"
 msgstr "SO Alvo do Snippet: {os}"
 
-#: pssh_ui/dialogs/add_job_dialog.py:872
+#: pssh_ui/dialogs/add_job_dialog.py:893
 #, python-brace-format
 msgid "Total Records: {shown}   |   Selected ({os}): {chosen}"
 msgstr "Total de Registros: {shown}   |   Selecionados ({os}): {chosen}"
 
-#: pssh_ui/dialogs/add_job_dialog.py:947
+#: pssh_ui/dialogs/add_job_dialog.py:968
 msgid "SSH Credentials & Execution Settings"
 msgstr "Credenciais SSH e Configurações de Execução"
 
-#: pssh_ui/dialogs/add_job_dialog.py:952
+#: pssh_ui/dialogs/add_job_dialog.py:973
 msgid "SSH Username *"
 msgstr "Usuário SSH *"
 
-#: pssh_ui/dialogs/add_job_dialog.py:956
+#: pssh_ui/dialogs/add_job_dialog.py:977
 msgid "SSH Password *"
 msgstr "Senha SSH *"
 
-#: pssh_ui/dialogs/add_job_dialog.py:961 pssh_ui/dialogs/device_dialogs.py:321
+#: pssh_ui/dialogs/add_job_dialog.py:982 pssh_ui/dialogs/device_dialogs.py:324
 msgid "SSH Port"
 msgstr "Porta SSH"
 
-#: pssh_ui/dialogs/add_job_dialog.py:967
+#: pssh_ui/dialogs/add_job_dialog.py:988
 msgid "Max Parallel Executions"
 msgstr "Máx. Execuções em Paralelo"
 
-#: pssh_ui/dialogs/add_job_dialog.py:978
+#: pssh_ui/dialogs/add_job_dialog.py:999
 msgid "Sequential (1 switch at a time)"
 msgstr "Sequencial (1 switch por vez)"
 
-#: pssh_ui/dialogs/add_job_dialog.py:984
+#: pssh_ui/dialogs/add_job_dialog.py:1005
 msgid "Enable Password"
 msgstr "Senha Enable"
 
-#: pssh_ui/dialogs/add_job_dialog.py:992
+#: pssh_ui/dialogs/add_job_dialog.py:1013
 msgid "Save configuration"
 msgstr "Salvar configuração"
 
-#: pssh_ui/dialogs/add_job_dialog.py:998
+#: pssh_ui/dialogs/add_job_dialog.py:1019
 msgid "Resulting Commands (Read-Only)"
 msgstr "Comandos Resultantes (Somente Leitura)"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1042
+#: pssh_ui/dialogs/add_job_dialog.py:1063
 #, python-brace-format
 msgid "Run write command ({cmd})"
 msgstr "Executar comando de gravação ({cmd})"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1059
+#: pssh_ui/dialogs/add_job_dialog.py:1080
 msgid "1 selected"
 msgstr "1 selecionado"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1061
+#: pssh_ui/dialogs/add_job_dialog.py:1082
 #, python-brace-format
 msgid "{count} selected"
 msgstr "{count} selecionados"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1064
+#: pssh_ui/dialogs/add_job_dialog.py:1085
 msgid "Job Name"
 msgstr "Nome da Tarefa"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1065
+#: pssh_ui/dialogs/add_job_dialog.py:1086
 msgid "Snippet"
 msgstr "Snippet"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1066 pssh_ui/tabs/jobs_tab.py:132
+#: pssh_ui/dialogs/add_job_dialog.py:1087 pssh_ui/tabs/jobs_tab.py:133
 #: pssh_ui/tabs/models_tab.py:77 pssh_ui/tabs/snippets_tab.py:117
 msgid "Device Type"
 msgstr "Tipo de Dispositivo"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1072
+#: pssh_ui/dialogs/add_job_dialog.py:1093
 msgid "(No commands)"
 msgstr "(Sem comandos)"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1183
-#: pssh_ui/dialogs/add_job_dialog.py:1188
-#: pssh_ui/dialogs/add_job_dialog.py:1193
 #: pssh_ui/dialogs/add_job_dialog.py:1204
-#: pssh_ui/dialogs/add_job_dialog.py:1219
-#: pssh_ui/dialogs/add_job_dialog.py:1261 pssh_ui/dialogs/airwave_dialog.py:268
-#: pssh_ui/dialogs/device_dialogs.py:154 pssh_ui/dialogs/device_dialogs.py:350
+#: pssh_ui/dialogs/add_job_dialog.py:1209
+#: pssh_ui/dialogs/add_job_dialog.py:1214
+#: pssh_ui/dialogs/add_job_dialog.py:1225
+#: pssh_ui/dialogs/add_job_dialog.py:1240
+#: pssh_ui/dialogs/add_job_dialog.py:1282 pssh_ui/dialogs/airwave_dialog.py:268
+#: pssh_ui/dialogs/device_dialogs.py:156 pssh_ui/dialogs/device_dialogs.py:353
 #: pssh_ui/dialogs/snippet_dialog.py:197 pssh_ui/dialogs/snippet_dialog.py:200
 msgid "Validation"
 msgstr "Validação"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1183
+#: pssh_ui/dialogs/add_job_dialog.py:1204
 msgid "Please select a Snippet."
 msgstr "Selecione um Snippet."
 
-#: pssh_ui/dialogs/add_job_dialog.py:1188
+#: pssh_ui/dialogs/add_job_dialog.py:1209
 msgid "Job Name is required."
 msgstr "O Nome da Tarefa é obrigatório."
 
-#: pssh_ui/dialogs/add_job_dialog.py:1205
+#: pssh_ui/dialogs/add_job_dialog.py:1226
 msgid "Please correct the parameter values:"
 msgstr "Corrija os valores dos parâmetros:"
 
-#: pssh_ui/dialogs/add_job_dialog.py:1262
+#: pssh_ui/dialogs/add_job_dialog.py:1283
 msgid "Please resolve the following before running:"
 msgstr "Corrija os itens abaixo antes de executar:"
 
@@ -666,7 +606,7 @@ msgstr "Filtros de Dispositivos"
 msgid "Folder:"
 msgstr "Pasta:"
 
-#: pssh_ui/dialogs/airwave_dialog.py:129 pssh_ui/tabs/jobs_tab.py:76
+#: pssh_ui/dialogs/airwave_dialog.py:129 pssh_ui/tabs/jobs_tab.py:77
 #: pssh_ui/tabs/models_tab.py:55 pssh_ui/tabs/snippets_tab.py:61
 msgid "Name:"
 msgstr "Nome:"
@@ -735,140 +675,135 @@ msgstr "Nenhum dispositivo disponível para importação."
 msgid "Select at least one row to import."
 msgstr "Selecione pelo menos uma linha para importar."
 
-#: pssh_ui/dialogs/device_dialogs.py:37
+#: pssh_ui/dialogs/device_dialogs.py:39
 msgid "Edit Device Model"
 msgstr "Editar Modelo de Dispositivo"
 
-#: pssh_ui/dialogs/device_dialogs.py:37
+#: pssh_ui/dialogs/device_dialogs.py:39
 msgid "Add Device Model"
 msgstr "Adicionar Modelo de Dispositivo"
 
-#: pssh_ui/dialogs/device_dialogs.py:68
+#: pssh_ui/dialogs/device_dialogs.py:70
 msgid "Model Name *"
 msgstr "Nome do Modelo *"
 
-#: pssh_ui/dialogs/device_dialogs.py:70 pssh_ui/dialogs/device_dialogs.py:312
+#: pssh_ui/dialogs/device_dialogs.py:72 pssh_ui/dialogs/device_dialogs.py:315
 msgid "Switch OS *"
 msgstr "SO do Switch *"
 
-#: pssh_ui/dialogs/device_dialogs.py:77 pssh_ui/tabs/models_tab.py:78
+#: pssh_ui/dialogs/device_dialogs.py:79 pssh_ui/tabs/models_tab.py:78
 msgid "Vendor"
 msgstr "Fabricante"
 
-#: pssh_ui/dialogs/device_dialogs.py:78 pssh_ui/dialogs/snippet_dialog.py:92
-#: pssh_ui/tabs/jobs_tab.py:227 pssh_ui/tabs/models_tab.py:192
+#: pssh_ui/dialogs/device_dialogs.py:80 pssh_ui/dialogs/snippet_dialog.py:92
+#: pssh_ui/tabs/jobs_tab.py:228 pssh_ui/tabs/models_tab.py:192
 #: pssh_ui/tabs/snippets_tab.py:119
 msgid "Description"
 msgstr "Descrição"
 
-#: pssh_ui/dialogs/device_dialogs.py:79 pssh_ui/tabs/models_tab.py:79
+#: pssh_ui/dialogs/device_dialogs.py:81 pssh_ui/tabs/models_tab.py:79
 #: pssh_ui/tabs/models_tab.py:193
 msgid "Enable Command"
 msgstr "Comando Enable"
 
-#: pssh_ui/dialogs/device_dialogs.py:80 pssh_ui/tabs/models_tab.py:193
+#: pssh_ui/dialogs/device_dialogs.py:82 pssh_ui/tabs/models_tab.py:193
 msgid "Disable Paging Command"
 msgstr "Comando para Desativar Paginação"
 
-#: pssh_ui/dialogs/device_dialogs.py:81
+#: pssh_ui/dialogs/device_dialogs.py:83
 msgid "Write / Save Command"
 msgstr "Comando de Gravação / Save"
 
-#: pssh_ui/dialogs/device_dialogs.py:88
+#: pssh_ui/dialogs/device_dialogs.py:90
 msgid "Automation Prompt Detection RegEx (Credentials, Enable & Paging)"
 msgstr ""
 "RegEx de Detecção de Prompts na Automação (Credenciais, Enable e "
 "Paginação)"
 
-#: pssh_ui/dialogs/device_dialogs.py:94
+#: pssh_ui/dialogs/device_dialogs.py:96
 msgid "CLI Prompt RegEx"
 msgstr "RegEx do Prompt CLI"
 
-#: pssh_ui/dialogs/device_dialogs.py:95 pssh_ui/tabs/models_tab.py:194
+#: pssh_ui/dialogs/device_dialogs.py:97 pssh_ui/tabs/models_tab.py:194
 msgid "Username Prompt RegEx"
 msgstr "RegEx do Prompt de Usuário"
 
-#: pssh_ui/dialogs/device_dialogs.py:96 pssh_ui/tabs/models_tab.py:195
+#: pssh_ui/dialogs/device_dialogs.py:98 pssh_ui/tabs/models_tab.py:195
 msgid "Password Prompt RegEx"
 msgstr "RegEx do Prompt de Senha"
 
-#: pssh_ui/dialogs/device_dialogs.py:97
+#: pssh_ui/dialogs/device_dialogs.py:99
 msgid "Enable Prompt RegEx"
 msgstr "RegEx do Prompt Enable"
 
-#: pssh_ui/dialogs/device_dialogs.py:98 pssh_ui/tabs/models_tab.py:196
+#: pssh_ui/dialogs/device_dialogs.py:100 pssh_ui/tabs/models_tab.py:196
 msgid "Enable Password Prompt RegEx"
 msgstr "RegEx do Prompt de Senha Enable"
 
-#: pssh_ui/dialogs/device_dialogs.py:99
+#: pssh_ui/dialogs/device_dialogs.py:101
 msgid "Pager / Banner RegEx"
 msgstr "RegEx de Paginação / Banner"
 
-#: pssh_ui/dialogs/device_dialogs.py:107
+#: pssh_ui/dialogs/device_dialogs.py:109
 msgid "Common Task Commands"
 msgstr "Comandos Comuns da Tarefa"
 
-#: pssh_ui/dialogs/device_dialogs.py:114
+#: pssh_ui/dialogs/device_dialogs.py:116
 msgid "Pre-Config Commands (e.g. configure terminal)"
 msgstr "Comandos Pré-Configuração (ex.: configure terminal)"
 
-#: pssh_ui/dialogs/device_dialogs.py:117
+#: pssh_ui/dialogs/device_dialogs.py:119
 msgid "Post-Config Commands (e.g. end / write memory)"
 msgstr "Comandos Pós-Configuração (ex.: end / write memory)"
 
-#: pssh_ui/dialogs/device_dialogs.py:128
+#: pssh_ui/dialogs/device_dialogs.py:130
 msgid "Pre-Audit Commands"
 msgstr "Comandos Pré-Auditoria"
 
-#: pssh_ui/dialogs/device_dialogs.py:131
+#: pssh_ui/dialogs/device_dialogs.py:133
 msgid "Post-Audit Commands"
 msgstr "Comandos Pós-Auditoria"
 
-#: pssh_ui/dialogs/device_dialogs.py:147 pssh_ui/dialogs/device_dialogs.py:331
+#: pssh_ui/dialogs/device_dialogs.py:149 pssh_ui/dialogs/device_dialogs.py:334
 #: pssh_ui/dialogs/settings_dialog.py:105
 msgid "Save"
 msgstr "Salvar"
 
-#: pssh_ui/dialogs/device_dialogs.py:154
+#: pssh_ui/dialogs/device_dialogs.py:156
 msgid "Model Name is required."
 msgstr "O Nome do Modelo é obrigatório."
 
-#: pssh_ui/dialogs/device_dialogs.py:194
+#: pssh_ui/dialogs/device_dialogs.py:196
 #, python-brace-format
 msgid "Device Log — {name} ({ip})"
 msgstr "Log do Dispositivo — {name} ({ip})"
 
-#: pssh_ui/dialogs/device_dialogs.py:215
-#, python-brace-format
-msgid "⚠ {count} error(s) detected: {summary}"
-msgstr "⚠ {count} erro(s) detectado(s): {summary}"
-
-#: pssh_ui/dialogs/device_dialogs.py:220
+#: pssh_ui/dialogs/device_dialogs.py:223
 #, python-brace-format
 msgid "Operation Result: {msg}"
 msgstr "Resultado da Operação: {msg}"
 
-#: pssh_ui/dialogs/device_dialogs.py:257
+#: pssh_ui/dialogs/device_dialogs.py:260
 msgid "Open External Log"
 msgstr "Abrir Log Externo"
 
-#: pssh_ui/dialogs/device_dialogs.py:277
+#: pssh_ui/dialogs/device_dialogs.py:280
 msgid "Edit Device"
 msgstr "Editar Dispositivo"
 
-#: pssh_ui/dialogs/device_dialogs.py:277 pssh_ui/tabs/devices_tab.py:43
+#: pssh_ui/dialogs/device_dialogs.py:280 pssh_ui/tabs/devices_tab.py:43
 msgid "Add Device"
 msgstr "Adicionar Dispositivo"
 
-#: pssh_ui/dialogs/device_dialogs.py:308
+#: pssh_ui/dialogs/device_dialogs.py:311
 msgid "Device Name"
 msgstr "Nome do Dispositivo"
 
-#: pssh_ui/dialogs/device_dialogs.py:309
+#: pssh_ui/dialogs/device_dialogs.py:312
 msgid "IP Address *"
 msgstr "Endereço IP *"
 
-#: pssh_ui/dialogs/device_dialogs.py:350
+#: pssh_ui/dialogs/device_dialogs.py:353
 msgid "IP Address is required."
 msgstr "O Endereço IP é obrigatório."
 
@@ -990,13 +925,13 @@ msgstr "O Nome do Snippet é obrigatório."
 msgid "Import from AirWave..."
 msgstr "Importar do AirWave..."
 
-#: pssh_ui/tabs/devices_tab.py:80 pssh_ui/tabs/jobs_tab.py:137
+#: pssh_ui/tabs/devices_tab.py:80 pssh_ui/tabs/jobs_tab.py:138
 #: pssh_ui/tabs/models_tab.py:82 pssh_ui/tabs/snippets_tab.py:120
 msgid "Action"
 msgstr "Ação"
 
-#: pssh_ui/tabs/devices_tab.py:237 pssh_ui/tabs/jobs_tab.py:428
-#: pssh_ui/tabs/jobs_tab.py:473 pssh_ui/tabs/jobs_tab.py:561
+#: pssh_ui/tabs/devices_tab.py:237 pssh_ui/tabs/jobs_tab.py:429
+#: pssh_ui/tabs/jobs_tab.py:474 pssh_ui/tabs/jobs_tab.py:562
 #, python-brace-format
 msgid "Total Records: {total}"
 msgstr "Total de Registros: {total}"
@@ -1010,117 +945,113 @@ msgstr "Excluir Dispositivo"
 msgid "Remove device '{name}'?"
 msgstr "Remover o dispositivo '{name}'?"
 
-#: pssh_ui/tabs/jobs_tab.py:86
+#: pssh_ui/tabs/jobs_tab.py:87
 msgid "Job Type:"
 msgstr "Tipo de Tarefa:"
 
-#: pssh_ui/tabs/jobs_tab.py:97 pssh_ui/tabs/snippets_tab.py:93
+#: pssh_ui/tabs/jobs_tab.py:98 pssh_ui/tabs/snippets_tab.py:93
 msgid "Device Type:"
 msgstr "Tipo de Dispositivo:"
 
-#: pssh_ui/tabs/jobs_tab.py:110 pssh_ui/tabs/jobs_tab.py:210
-#: pssh_ui/tabs/jobs_tab.py:294 pssh_ui/tabs/jobs_tab.py:396
-#: pssh_ui/tabs/jobs_tab.py:534
+#: pssh_ui/tabs/jobs_tab.py:111 pssh_ui/tabs/jobs_tab.py:211
+#: pssh_ui/tabs/jobs_tab.py:295 pssh_ui/tabs/jobs_tab.py:397
+#: pssh_ui/tabs/jobs_tab.py:535
 msgid "Success"
 msgstr "Sucesso"
 
-#: pssh_ui/tabs/jobs_tab.py:111 pssh_ui/tabs/jobs_tab.py:218
-#: pssh_ui/tabs/jobs_tab.py:295 pssh_ui/tabs/jobs_tab.py:398
-#: pssh_ui/tabs/jobs_tab.py:536
+#: pssh_ui/tabs/jobs_tab.py:112 pssh_ui/tabs/jobs_tab.py:219
+#: pssh_ui/tabs/jobs_tab.py:296 pssh_ui/tabs/jobs_tab.py:399
+#: pssh_ui/tabs/jobs_tab.py:537
 msgid "Failed"
 msgstr "Falhou"
 
-#: pssh_ui/tabs/jobs_tab.py:112 pssh_ui/tabs/jobs_tab.py:296
-#: pssh_ui/tabs/jobs_tab.py:400 pssh_ui/tabs/jobs_tab.py:538
+#: pssh_ui/tabs/jobs_tab.py:113 pssh_ui/tabs/jobs_tab.py:297
+#: pssh_ui/tabs/jobs_tab.py:401 pssh_ui/tabs/jobs_tab.py:539
 msgid "Running"
 msgstr "Executando"
 
-#: pssh_ui/tabs/jobs_tab.py:130 pssh_ui/tabs/models_tab.py:76
+#: pssh_ui/tabs/jobs_tab.py:131 pssh_ui/tabs/models_tab.py:76
 #: pssh_ui/tabs/snippets_tab.py:114
 msgid "Name"
 msgstr "Nome"
 
-#: pssh_ui/tabs/jobs_tab.py:131
+#: pssh_ui/tabs/jobs_tab.py:132
 msgid "Job Type"
 msgstr "Tipo de Tarefa"
 
-#: pssh_ui/tabs/jobs_tab.py:134 pssh_ui/tabs/snippets_tab.py:118
+#: pssh_ui/tabs/jobs_tab.py:135 pssh_ui/tabs/snippets_tab.py:118
 msgid "Creation Time"
 msgstr "Data de Criação"
 
-#: pssh_ui/tabs/jobs_tab.py:135 pssh_ui/tabs/jobs_tab.py:323
+#: pssh_ui/tabs/jobs_tab.py:136 pssh_ui/tabs/jobs_tab.py:324
 msgid "Start Time"
 msgstr "Início"
 
-#: pssh_ui/tabs/jobs_tab.py:136 pssh_ui/tabs/jobs_tab.py:324
+#: pssh_ui/tabs/jobs_tab.py:137 pssh_ui/tabs/jobs_tab.py:325
 msgid "End Time"
 msgstr "Término"
 
-#: pssh_ui/tabs/jobs_tab.py:180 pssh_ui/tabs/jobs_tab.py:461
+#: pssh_ui/tabs/jobs_tab.py:181 pssh_ui/tabs/jobs_tab.py:462
 msgid "Job Details"
 msgstr "Detalhes da Tarefa"
 
-#: pssh_ui/tabs/jobs_tab.py:192
+#: pssh_ui/tabs/jobs_tab.py:193
 msgid "Details"
 msgstr "Detalhes"
 
-#: pssh_ui/tabs/jobs_tab.py:202
+#: pssh_ui/tabs/jobs_tab.py:203
 msgid "Total:"
 msgstr "Total:"
 
-#: pssh_ui/tabs/jobs_tab.py:235
+#: pssh_ui/tabs/jobs_tab.py:236
 msgid "Config Commands"
 msgstr "Comandos de Configuração"
 
-#: pssh_ui/tabs/jobs_tab.py:255
+#: pssh_ui/tabs/jobs_tab.py:256
 msgid "Audit Validation RegEx"
 msgstr "RegEx de Validação de Auditoria"
 
-#: pssh_ui/tabs/jobs_tab.py:297 pssh_ui/tabs/jobs_tab.py:540
+#: pssh_ui/tabs/jobs_tab.py:298 pssh_ui/tabs/jobs_tab.py:541
 msgid "Pending"
 msgstr "Pendente"
 
-#: pssh_ui/tabs/jobs_tab.py:311
+#: pssh_ui/tabs/jobs_tab.py:312
 msgid "Open Logs Folder"
 msgstr "Abrir Pasta de Logs"
 
-#: pssh_ui/tabs/jobs_tab.py:325
+#: pssh_ui/tabs/jobs_tab.py:326
 msgid "Operation Result"
 msgstr "Resultado da Operação"
 
-#: pssh_ui/tabs/jobs_tab.py:326
+#: pssh_ui/tabs/jobs_tab.py:327
 msgid "Log"
 msgstr "Log"
 
-#: pssh_ui/tabs/jobs_tab.py:480
+#: pssh_ui/tabs/jobs_tab.py:481
 #, python-brace-format
 msgid "Job Details ({name})"
 msgstr "Detalhes da Tarefa ({name})"
 
-#: pssh_ui/tabs/jobs_tab.py:645
+#: pssh_ui/tabs/jobs_tab.py:646
 msgid "Queued"
 msgstr "Na fila"
 
-#: pssh_ui/tabs/jobs_tab.py:717
+#: pssh_ui/tabs/jobs_tab.py:718
 msgid "Job Running"
 msgstr "Tarefa em Execução"
 
-#: pssh_ui/tabs/jobs_tab.py:717
+#: pssh_ui/tabs/jobs_tab.py:718
 msgid "Stop the running job before deleting it."
 msgstr "Pare a tarefa em execução antes de excluí-la."
 
-#: pssh_ui/tabs/jobs_tab.py:720
+#: pssh_ui/tabs/jobs_tab.py:721
 msgid "Confirm Delete"
 msgstr "Confirmar Exclusão"
 
-#: pssh_ui/tabs/jobs_tab.py:721
+#: pssh_ui/tabs/jobs_tab.py:722
 #, python-brace-format
 msgid "Remove job '{name}' from history?"
 msgstr "Remover a tarefa '{name}' do histórico?"
-
-#: pssh_ui/tabs/jobs_tab.py:771
-msgid "Executing..."
-msgstr "Executando..."
 
 #: pssh_ui/tabs/models_tab.py:39
 msgid "Add Model"

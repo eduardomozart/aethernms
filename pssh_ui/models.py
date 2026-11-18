@@ -114,11 +114,13 @@ class DeviceModel:
     folder: str = "aruba"
     description: str = ""
     cli_prompt_regex: str = r"(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?[#>][ \t]*$"
-    username_prompt_regex: str = r"(?:Username|Login|User)\s*:"
-    password_prompt_regex: str = r"(?:Enable\s+password|Password)\s*:"
+    username_prompt_regex: str = r"(?:^|\n)[ \t]*(?:Username|Login|User)\s*:[ \t]*$"
+    password_prompt_regex: str = r"(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$"
     enable_command: str = "enable"
     enable_prompt_regex: str = r"(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?#\s*$"
-    enable_password_prompt_regex: str = r"(?:Enable\s+password|Password)\s*:"
+    enable_password_prompt_regex: str = (
+        r"(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$"
+    )
     pager_prompt_regex: str = (
         r"(?:Press any key to continue|--\s*MORE\s*--|Press <SPACE> to continue)"
     )

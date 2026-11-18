@@ -5,11 +5,11 @@
     <Vendor>Aruba</Vendor>
     <Description>ArubaOS-S / ProCurve switches: handles login banner, paging, enable/credential prompts, and configure terminal context.</Description>
     <CliPromptRegex>(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?[#>][ \t]*$</CliPromptRegex>
-    <UsernamePromptRegex>(?:Username|Login|User)\s*:</UsernamePromptRegex>
-    <PasswordPromptRegex>(?:Enable\s+password|Password)\s*:</PasswordPromptRegex>
+    <UsernamePromptRegex>(?:^|\n)[ \t]*(?:Username|Login|User)\s*:[ \t]*$</UsernamePromptRegex>
+    <PasswordPromptRegex>(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$</PasswordPromptRegex>
     <EnableCommand>enable</EnableCommand>
     <EnablePromptRegex>(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?#\s*$</EnablePromptRegex>
-    <EnablePasswordPromptRegex>(?:Enable\s+password|Password)\s*:</EnablePasswordPromptRegex>
+    <EnablePasswordPromptRegex>(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$</EnablePasswordPromptRegex>
     <PagerPromptRegex>(?:Press any key to continue|--\s*MORE\s*--|Press &lt;SPACE&gt; to continue)</PagerPromptRegex>
     <PagerDismissKey> </PagerDismissKey>
     <DisablePagingCommand>no page</DisablePagingCommand>

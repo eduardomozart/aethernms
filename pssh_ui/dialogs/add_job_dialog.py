@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 from typing import Any, Dict, List, Optional
 
-from pssh_ui.i18n import _
+from pssh_ui.i18n import _, ngettext
 from pssh_ui.job_builder import (
     build_commands_for_job,
     discover_device_types,
@@ -804,9 +804,30 @@ class AddJobDialog(tk.Toplevel):
                 "Device '{name}' ({ip}) is currently Down (offline).\nDo you want to continue anyway?"
             ).format(name=host.display_label, ip=host.ip)
         else:
-            msg = _(
-                "{count} selected device(s) are currently Down (offline).\nDo you want to continue anyway?"
-            ).format(count=len(offline_hosts))
+            max_listed = 10
+            listed = [
+                f"• {h.display_label} ({h.ip})" if (h.name and h.name.strip()) else f"• {h.ip}"
+                for h in offline_hosts[:max_listed]
+            ]
+            extra = len(offline_hosts) - max_listed
+            if extra > 0:
+                listed.append(
+                    ngettext("... and %d more device", "... and %d more devices", extra) % extra
+                )
+            header = (
+                ngettext(
+                    "%d selected device is currently Down (offline):",
+                    "%d selected devices are currently Down (offline):",
+                    len(offline_hosts),
+                )
+                % len(offline_hosts)
+            )
+            msg = (
+                f"{header}\n\n"
+                + "\n".join(listed)
+                + "\n\n"
+                + _("Do you want to continue anyway?")
+            )
         return bool(
             messagebox.askokcancel(
                 _("Offline Device"), msg, icon=messagebox.WARNING, parent=self

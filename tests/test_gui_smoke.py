@@ -792,6 +792,14 @@ def test_pagination_page_ping_offline_warning_and_status_separation(
         dlg._on_next()
         assert dlg.current_step_key == AddJobDialog.STEP_CONFIRM
 
+        # Multiple offline hosts list exact device labels & IPs in confirmation
+        okcancel_calls.clear()
+        fresh_hosts[1].ping_status = "Down"
+        dlg._warn_offline_hosts([fresh_hosts[0], fresh_hosts[1]])
+        assert len(okcancel_calls) == 1
+        assert "SW-01 (10.0.2.1)" in okcancel_calls[0][1]
+        assert "SW-02 (10.0.2.2)" in okcancel_calls[0][1]
+
         # Moving back to Step 1 stops Step 3 ping sweeps cleanly
         ping_calls.clear()
         dlg._go_to_step_key(AddJobDialog.STEP_COMMAND)

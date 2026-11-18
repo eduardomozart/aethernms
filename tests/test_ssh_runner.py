@@ -8,6 +8,10 @@ from typing import List
 
 import paramiko
 
+from pssh_ui.common import format_operation_result_ui
+from pssh_ui.i18n import get_language, set_language
+from pssh_ui.logger import write_host_log
+from pssh_ui.model_store import ModelStore
 from pssh_ui.models import DeviceModel, HostEntry, ScheduleSequence, SwitchOS
 from pssh_ui.ssh_runner import ArubaSSHClient, BatchSSHExecutor
 
@@ -34,6 +38,9 @@ class FakeChannel:
 
     def exit_status_ready(self) -> bool:
         return False
+
+    def close(self) -> None:
+        self.closed = True
 
     def send(self, data: str) -> int:
         self.sent_data.append(data)
@@ -100,9 +107,14 @@ def test_aruba_ssh_client_handles_aoss_banner_no_page_and_errors():
     assert len(res.step_results) == 3
     assert res.step_results[0].result == "Succeeded"
     assert res.step_results[1].result == "Failed"
-    assert res.step_results[2].result == "Succeeded"
+    assert res.step_results[2].result == "Skipped"
+    assert "Aborted" in res.step_results[2].suggestion
+    assert "snmpv3 only\n" not in chan.sent_data
+    assert "1 error detected: Invalid CLI input" in res.operation_result
     assert len(res.error_lines) == 1
     assert "Invalid input: bad" in res.error_lines[0]["text"]
+    assert chan.closed is True
+    assert fake_ssh.closed is True
 
 
 def test_aruba_ssh_client_handles_snmpv3_init_prompts():
@@ -249,3 +261,87 @@ def test_ssh_client_handles_enable_credentials_and_audit_regex():
     assert fail_res.status == "Failed"
     assert "Audit failed" in fail_res.operation_result
     assert fail_res.error_lines[0]["text"] == "User:\\s+missing_user"
+
+
+def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_english_logs(tmp_path: Path):
+    class SplitBannerCXChannel(FakeChannel):
+        def __init__(self, responses=None):
+            super().__init__(responses=responses or {}, banner="", prompt="SW-CX-01# ")
+            self._rx_chunks = [
+                b"Last login: 2026-11-11 20:24:06 from 10.0.0.100\r\n",
+                b'User "admin" has logged in 2 times in the past 30 days\r\n\r\nSW-CX-01# ',
+            ]
+
+        def send(self, data: str) -> int:
+            self.sent_data.append(data)
+            text = data.strip("\r\n")
+            if text == "configure terminal":
+                self._current_prompt = "SW-CX-01(config)# "
+                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
+            elif text == "end":
+                self._current_prompt = "SW-CX-01# "
+                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
+            elif text in self._responses:
+                self._rx_chunks.append(self._responses[text].encode("utf-8"))
+            else:
+                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
+            return len(data)
+
+    prev_lang = get_language()
+    try:
+        set_language("pt_BR")
+        cx_model = next(
+            m for m in ModelStore().load_all_models() if m.device_type == SwitchOS.AOS_CX
+        )
+        chan = SplitBannerCXChannel()
+        fake_ssh = FakeSSHClient(channel=chan)
+        client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
+        host = HostEntry(name="SW-CX-01", ip="10.0.0.20", os_type=SwitchOS.AOS_CX)
+
+        ok_res = client.execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=["configure terminal", "ntp server 1.1.1.1", "ntp enable", "end"],
+            device_model=cx_model,
+        )
+        assert "admin\n" not in chan.sent_data
+        assert ok_res.status == "Success"
+        assert ok_res.operation_result == "Completed (4 commands)"
+        raw_lines = ok_res.raw_output.splitlines()
+        assert "SW-CX-01# configure terminal" in raw_lines
+        assert "SW-CX-01(config)# ntp server 1.1.1.1" in raw_lines
+        assert raw_lines[-1] == "SW-CX-01(config)# end"  # No dangling trailing bare prompt
+        assert chan.closed is True and fake_ssh.closed is True
+
+        # Failed step stays English in .log while UI display helper translates in pt_BR
+        fail_chan = SplitBannerCXChannel(
+            responses={"bad cmd": "bad cmd\r\n% Invalid input detected.\r\nSW-CX-01(config)# "}
+        )
+        fail_ssh = FakeSSHClient(channel=fail_chan)
+        fail_client = ArubaSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fail_ssh)
+        fail_res = fail_client.execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=["configure terminal", "bad cmd", "ntp enable", "end"],
+            device_model=cx_model,
+        )
+        assert fail_res.step_results[1].result == "Failed"
+        assert fail_res.step_results[2].result == "Skipped"
+        assert fail_res.step_results[3].result == "Skipped"
+        assert "ntp enable\n" not in fail_chan.sent_data
+        assert "end\n" not in fail_chan.sent_data
+        assert fail_res.operation_result == "1 error detected: Invalid command or parameter"
+        assert format_operation_result_ui(fail_res.operation_result) == (
+            "1 erro detectado: Comando ou parâmetro inválido"
+        )
+
+        log_path = Path(write_host_log(fail_res, tmp_path))
+        log_txt = log_path.read_text(encoding="utf-8")
+        assert "Operation Result: 1 error detected: Invalid command or parameter" in log_txt
+        assert "Aborted due to earlier command failure." in log_txt
+        assert "Comando ou parâmetro inválido" not in log_txt
+        assert "erro(s)" not in log_txt
+    finally:
+        set_language(prev_lang)

@@ -88,9 +88,13 @@ def model_from_xml_file(xml_path: Path, base_dir: Optional[Path] = None) -> Devi
             "CliPromptRegex",
             r"(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?[#>][ \t]*$",
         ),
-        username_prompt_regex=_txt("UsernamePromptRegex", r"(?:Username|Login|User)\s*:"),
+        username_prompt_regex=_txt(
+            "UsernamePromptRegex",
+            r"(?:^|\n)[ \t]*(?:Username|Login|User)\s*:[ \t]*$",
+        ),
         password_prompt_regex=_txt(
-            "PasswordPromptRegex", r"(?:Enable\s+password|Password)\s*:"
+            "PasswordPromptRegex",
+            r"(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$",
         ),
         enable_command=_txt("EnableCommand", "enable").strip(),
         enable_prompt_regex=_txt(
@@ -98,7 +102,8 @@ def model_from_xml_file(xml_path: Path, base_dir: Optional[Path] = None) -> Devi
             r"(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?#\s*$",
         ),
         enable_password_prompt_regex=_txt(
-            "EnablePasswordPromptRegex", r"(?:Enable\s+password|Password)\s*:"
+            "EnablePasswordPromptRegex",
+            r"(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$",
         ),
         pager_prompt_regex=_txt(
             "PagerPromptRegex",

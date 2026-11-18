@@ -32,6 +32,7 @@ from pssh_ui.common import (
     _make_readonly_text,
     _snippet_type_label,
     configure_editor_tags,
+    format_operation_result_ui,
     open_path_in_os,
 )
 from pssh_ui.dialogs.device_dialogs import DeviceLogDialog
@@ -552,7 +553,7 @@ class JobsTabMixin:
                     st_disp,
                     res.started_at or "-",
                     res.finished_at or "-",
-                    res.operation_result,
+                    format_operation_result_ui(res.operation_result),
                     log_icon,
                 ),
             )
@@ -768,7 +769,7 @@ class JobsTabMixin:
                         for r in job.results:
                             if r.host.unique_key == host.unique_key:
                                 r.status = "Running"
-                                r.operation_result = _("Executing...")
+                                r.operation_result = "Executing..."
                 elif kind == "host_done":
                     job_id, res = payload
                     job = next((j for j in self.session.jobs if j.job_id == job_id), None)

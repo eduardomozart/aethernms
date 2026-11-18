@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import gettext
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+import re
+from typing import Callable, Dict, List, Optional, Tuple
 
 from babel import Locale, UnknownLocaleError
 
@@ -51,10 +52,24 @@ def _extract_quoted(text: str) -> str:
     return ""
 
 
-def parse_po_file(po_path: Path) -> Tuple[Dict[str, str], Dict[Tuple[str, int], str]]:
-    """Parse a gettext .po file into singular and plural lookup dictionaries."""
+def _compile_plural_fn(header_msgstr: str) -> Callable[[int], int]:
+    """Compile a PO Plural-Forms header expression into a callable plural index selector."""
+    match = re.search(r"plural=([^;\n]+)", header_msgstr or "")
+    if match:
+        try:
+            return gettext.c2py(match.group(1).strip())
+        except Exception:
+            pass
+    return lambda n: 0 if n == 1 else 1
+
+
+def _parse_po_catalog(
+    po_path: Path,
+) -> Tuple[Dict[str, str], Dict[Tuple[str, int], str], str]:
+    """Parse a gettext .po file into singulars, plurals, and the header msgstr."""
     singulars: Dict[str, str] = {}
     plurals: Dict[Tuple[str, int], str] = {}
+    header_msgstr = ""
 
     msgid_parts: List[str] = []
     msgid_plural_parts: List[str] = []
@@ -64,7 +79,7 @@ def parse_po_file(po_path: Path) -> Tuple[Dict[str, str], Dict[Tuple[str, int], 
     is_fuzzy = False
 
     def flush_entry() -> None:
-        nonlocal msgid_parts, msgid_plural_parts, msgstr_parts, current_field, current_plural_idx, is_fuzzy
+        nonlocal msgid_parts, msgid_plural_parts, msgstr_parts, current_field, current_plural_idx, is_fuzzy, header_msgstr
         if is_fuzzy:
             msgid_parts = []
             msgid_plural_parts = []
@@ -86,6 +101,8 @@ def parse_po_file(po_path: Path) -> Tuple[Dict[str, str], Dict[Tuple[str, int], 
                 val = "".join(msgstr_parts.get(None, []))
                 if val:
                     singulars[msgid] = val
+        elif msgstr_parts.get(None):
+            header_msgstr = "".join(msgstr_parts[None])
 
         msgid_parts = []
         msgid_plural_parts = []
@@ -138,6 +155,12 @@ def parse_po_file(po_path: Path) -> Tuple[Dict[str, str], Dict[Tuple[str, int], 
                     msgstr_parts.setdefault(current_plural_idx, []).append(piece)
 
     flush_entry()
+    return singulars, plurals, header_msgstr
+
+
+def parse_po_file(po_path: Path) -> Tuple[Dict[str, str], Dict[Tuple[str, int], str]]:
+    """Parse a gettext .po file into singular and plural lookup dictionaries."""
+    singulars, plurals, _header = _parse_po_catalog(po_path)
     return singulars, plurals
 
 
@@ -146,13 +169,14 @@ class _POTranslations(gettext.NullTranslations):
 
     def __init__(self, po_path: Path) -> None:
         super().__init__()
-        self._singulars, self._plurals = parse_po_file(po_path)
+        self._singulars, self._plurals, header = _parse_po_catalog(po_path)
+        self._plural_fn = _compile_plural_fn(header)
 
     def gettext(self, message: str) -> str:
         return self._singulars.get(message, message)
 
     def ngettext(self, msgid1: str, msgid2: str, n: int) -> str:
-        idx = 0 if n == 1 else 1
+        idx = int(self._plural_fn(n))
         translated = self._plurals.get((msgid1, idx))
         if translated is not None:
             return translated

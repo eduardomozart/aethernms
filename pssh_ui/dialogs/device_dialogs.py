@@ -8,15 +8,17 @@ from tkinter import messagebox, ttk
 from typing import List, Optional
 
 from pssh_ui.airwave_importer import infer_switch_os
-from pssh_ui.i18n import _
+from pssh_ui.i18n import _, ngettext
 from pssh_ui.job_builder import get_assigned_groups, get_assigned_models
 from pssh_ui.models import DeviceModel, HostEntry, HostExecutionResult, SwitchOS, parse_device_type
 from pssh_ui.parser import detect_output_errors
 from pssh_ui.common import (
     _attach_auto_scrollbars,
     _create_int_spinbox,
+    _translate_error_reason,
     apply_cli_syntax_highlighting,
     configure_editor_tags,
+    format_operation_result_ui,
     open_path_in_os,
 )
 
@@ -211,13 +213,14 @@ class DeviceLogDialog(tk.Toplevel):
         errs = result.error_lines or detect_output_errors(content)
         if errs:
             first_err = errs[0]
-            summary = first_err.get("reason") or first_err.get("text", "")
-            banner_txt = _("⚠ {count} error(s) detected: {summary}").format(
-                count=len(errs), summary=summary
-            )
+            raw_reason = str(first_err.get("reason") or first_err.get("text", ""))
+            prefix = ngettext("%d error detected", "%d errors detected", len(errs)) % len(errs)
+            summary = _translate_error_reason(raw_reason)
+            banner_txt = f"⚠ {prefix}: {summary}" if summary else f"⚠ {prefix}"
             banner_fg = "#f87171" if dark_mode else "#b91c1c"
         else:
-            banner_txt = _("Operation Result: {msg}").format(msg=result.operation_result or result.status)
+            disp_res = format_operation_result_ui(result.operation_result or result.status)
+            banner_txt = _("Operation Result: {msg}").format(msg=disp_res)
             banner_fg = "#4ade80" if result.status == "Success" and dark_mode else (
                 "#15803d" if result.status == "Success" else ("#e2e8f0" if dark_mode else "#0f172a")
             )

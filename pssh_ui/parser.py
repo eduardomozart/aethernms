@@ -5,8 +5,6 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Tuple
 
-from pssh_ui.i18n import _
-
 
 ERROR_PATTERNS: List[Tuple[str, re.Pattern[str]]] = [
     ("invalid_input", re.compile(r"(?:^|\s)Invalid input:", re.IGNORECASE)),
@@ -31,51 +29,51 @@ ERROR_PATTERNS: List[Tuple[str, re.Pattern[str]]] = [
 ]
 
 
-def _localized_error_info(code: str) -> Tuple[str, str]:
-    """Return localized (reason, suggestion) for a CLI error rule code."""
+def _error_info(code: str) -> Tuple[str, str]:
+    """Return canonical English (reason, suggestion) for a CLI error rule code."""
     catalog = {
         "invalid_input": (
-            _("Invalid CLI input"),
-            _("Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration context (e.g., configure terminal)."),
+            "Invalid CLI input",
+            "Check command syntax, Switch OS (AOS-S vs AOS-CX), and configuration context (e.g., configure terminal).",
         ),
         "cx_invalid": (
-            _("Invalid command or parameter"),
-            _("Verify ArubaOS-CX syntax and confirm the switch is in the required configuration context."),
+            "Invalid command or parameter",
+            "Verify ArubaOS-CX syntax and confirm the switch is in the required configuration context.",
         ),
         "ambiguous": (
-            _("Ambiguous command"),
-            _("Spell out the full command keyword so it is unambiguous."),
+            "Ambiguous command",
+            "Spell out the full command keyword so it is unambiguous.",
         ),
         "incomplete": (
-            _("Incomplete command"),
-            _("Provide all required command parameters on the same line."),
+            "Incomplete command",
+            "Provide all required command parameters on the same line.",
         ),
         "unknown_cmd": (
-            _("Unknown command"),
-            _("Verify this command is supported by the target firmware and switch OS."),
+            "Unknown command",
+            "Verify this command is supported by the target firmware and switch OS.",
         ),
         "exec_error": (
-            _("Execution error"),
-            _("Review the switch output around this line and check configuration prerequisites."),
+            "Execution error",
+            "Review the switch output around this line and check configuration prerequisites.",
         ),
         "not_found": (
-            _("Target entity not found"),
-            _("The referenced user, VLAN, or object does not exist on this switch."),
+            "Target entity not found",
+            "The referenced user, VLAN, or object does not exist on this switch.",
         ),
         "auth_error": (
-            _("Authentication / Authorization failure"),
-            _("Verify SSH credentials and confirm the account has Manager / admin privileges."),
+            "Authentication / Authorization failure",
+            "Verify SSH credentials and confirm the account has Manager / admin privileges.",
         ),
         "rejected": (
-            _("Command rejected by switch"),
-            _("Check switch state or prerequisites required before executing this command."),
+            "Command rejected by switch",
+            "Check switch state or prerequisites required before executing this command.",
         ),
         "ssh_comm": (
-            _("SSH communication error"),
-            _("Verify reachability, SSH service status on the switch, or increase timeout settings."),
+            "SSH communication error",
+            "Verify reachability, SSH service status on the switch, or increase timeout settings.",
         ),
     }
-    return catalog.get(code, (_("CLI error"), _("Check device output for details.")))
+    return catalog.get(code, ("CLI error", "Check device output for details."))
 
 
 def parse_commands(raw_text: str) -> List[str]:
@@ -112,7 +110,7 @@ def detect_output_errors(output_text: str) -> List[Dict[str, object]]:
             continue
         for code, pattern in ERROR_PATTERNS:
             if pattern.search(cleaned):
-                reason, suggestion = _localized_error_info(code)
+                reason, suggestion = _error_info(code)
                 findings.append(
                     {
                         "line_no": line_no,
@@ -151,8 +149,8 @@ def validate_audit_regex(output_text: str, audit_regex_text: str) -> List[Dict[s
                 {
                     "line_no": last_line_no,
                     "text": pat_str,
-                    "reason": _("Invalid audit RegEx: {err}").format(err=exc),
-                    "suggestion": _("Correct the regular expression syntax in Audit Validation RegEx."),
+                    "reason": f"Invalid audit RegEx: {exc}",
+                    "suggestion": "Correct the regular expression syntax in Audit Validation RegEx.",
                 }
             )
             continue
@@ -162,10 +160,8 @@ def validate_audit_regex(output_text: str, audit_regex_text: str) -> List[Dict[s
                 {
                     "line_no": last_line_no,
                     "text": pat_str,
-                    "reason": _("Expected audit RegEx not found in output"),
-                    "suggestion": _("Switch output did not match the required audit pattern: {pat}").format(
-                        pat=pat_str
-                    ),
+                    "reason": "Expected audit RegEx not found in output",
+                    "suggestion": f"Switch output did not match the required audit pattern: {pat_str}",
                 }
             )
 

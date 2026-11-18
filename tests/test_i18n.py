@@ -5,12 +5,14 @@ from pathlib import Path
 
 from babel.messages import pofile
 
+from pssh_ui.common import format_operation_result_ui
 from pssh_ui.i18n import (
     Translator,
     _,
     available_languages,
     get_language,
     get_language_label,
+    ngettext,
     set_language,
 )
 
@@ -37,6 +39,16 @@ def test_builtin_translations_en_and_pt_br():
         assert _("Devices") == "Dispositivos"
         assert _("Add Job") == "Nova Tarefa"
         assert _("Max Parallel Executions:") == "Máx. Execuções em Paralelo:"
+        assert ngettext("%d error detected", "%d errors detected", 1) % 1 == "1 erro detectado"
+        assert ngettext("%d error detected", "%d errors detected", 2) % 2 == "2 erros detectados"
+        assert (
+            format_operation_result_ui("1 error detected: Invalid CLI input")
+            == "1 erro detectado: Entrada CLI inválida"
+        )
+        assert (
+            format_operation_result_ui("2 errors detected: Invalid CLI input")
+            == "2 erros detectados: Entrada CLI inválida"
+        )
     finally:
         set_language(prev)
 

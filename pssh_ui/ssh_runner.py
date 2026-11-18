@@ -13,7 +13,6 @@ from typing import Callable, Dict, List, Optional
 
 import paramiko
 
-from pssh_ui.i18n import _
 from pssh_ui.logger import create_run_log_dir, write_host_log
 from pssh_ui.models import (
     CommandStepResult,
@@ -33,8 +32,13 @@ CLI_PROMPT_END_RE = re.compile(
 ENABLE_PROMPT_END_RE = re.compile(
     r"(?:^|\n)[ \t]*[A-Za-z0-9_.:-]+(?:\([^)\r\n]+\))?#[ \t]*$"
 )
-USERNAME_PROMPT_RE = re.compile(r"(?:Username|Login|User)\s*:", re.IGNORECASE)
-PASSWORD_PROMPT_RE = re.compile(r"(?:Enable\s+password|Password)\s*:", re.IGNORECASE)
+USERNAME_PROMPT_RE = re.compile(
+    r"(?:^|\n)[ \t]*(?:Username|Login|User)\s*:[ \t]*$", re.IGNORECASE
+)
+PASSWORD_PROMPT_RE = re.compile(
+    r"(?:^|\n)[ \t]*(?:Enable\s+password|Password)\s*:[ \t]*$", re.IGNORECASE
+)
+LAST_LOGIN_LINE_RE = re.compile(r"^\s*Last\s+login\s*:", re.IGNORECASE)
 PRESS_ANY_KEY_RE = re.compile(r"Press any key to continue", re.IGNORECASE)
 MORE_PAGER_RE = re.compile(r"(?:--\s*MORE\s*--|Press <SPACE> to continue)", re.IGNORECASE)
 
@@ -75,6 +79,31 @@ def _compile_optional_regex(
         return re.compile(cleaned, re.IGNORECASE)
     except re.error:
         return default
+
+
+def _matches_auth_prompt(tail: str, pattern: Optional[re.Pattern[str]]) -> bool:
+    """Return True only when the active incomplete trailing line is a credential prompt."""
+    if not pattern or not tail or tail.endswith("\n"):
+        return False
+    last_line = tail.splitlines()[-1]
+    if LAST_LOGIN_LINE_RE.match(last_line):
+        return False
+    if not re.search(r":\s*$", last_line):
+        return False
+    return bool(pattern.search(last_line))
+
+
+def _strip_trailing_prompt(text: str, prompt_re: re.Pattern[str]) -> str:
+    """Strip a final idle CLI prompt line (e.g. 'Switch# ') from raw terminal output."""
+    if not text:
+        return ""
+    stripped = text.rstrip("\n")
+    if not stripped:
+        return ""
+    lines = stripped.splitlines()
+    if lines and prompt_re.match(lines[-1]):
+        lines.pop()
+    return "\n".join(lines).rstrip("\n")
 
 
 class ArubaSSHClient:
@@ -186,14 +215,17 @@ class ArubaSSHClient:
                         deadline = time.monotonic() + timeout
                         continue
 
+                if prompt_re.search(cleaned):
+                    return cleaned, False
+
                 if auth_replies < 4:
-                    if user_re and user_re.search(tail) and username:
+                    if _matches_auth_prompt(tail, user_re) and username:
                         channel.send(username + "\n")
                         auth_replies += 1
                         handled_prompts_len = len(cleaned)
                         deadline = time.monotonic() + timeout
                         continue
-                    if is_enable_phase and en_pwd_re and en_pwd_re.search(tail):
+                    if is_enable_phase and _matches_auth_prompt(tail, en_pwd_re):
                         secret_val = enable_password or password
                         if secret_val:
                             channel.send(secret_val + "\n")
@@ -201,15 +233,12 @@ class ArubaSSHClient:
                             handled_prompts_len = len(cleaned)
                             deadline = time.monotonic() + timeout
                             continue
-                    if pwd_re and pwd_re.search(tail) and password:
+                    if _matches_auth_prompt(tail, pwd_re) and password:
                         channel.send(password + "\n")
                         auth_replies += 1
                         handled_prompts_len = len(cleaned)
                         deadline = time.monotonic() + timeout
                         continue
-
-                if prompt_re.search(cleaned):
-                    return cleaned, False
 
             if getattr(channel, "closed", False) or (
                 hasattr(channel, "exit_status_ready") and channel.exit_status_ready()
@@ -248,12 +277,11 @@ class ArubaSSHClient:
         if not commands:
             result.status = "Success"
             result.finished_at = _timestamp_str()
-            result.operation_result = _("Skipped (no commands for {os})").format(
-                os=host.os_type.value
-            )
+            result.operation_result = f"Skipped (no commands for {host.os_type.value})"
             return result
 
         client = self._ssh_client_factory()
+        channel = None
         transcript_parts: List[str] = []
         prompt_re = (
             _compile_optional_regex(device_model.cli_prompt_regex, CLI_PROMPT_END_RE)
@@ -306,7 +334,7 @@ class ArubaSSHClient:
                 if retry_text:
                     transcript_parts.append(retry_text)
                 if retry_timeout and not prompt_re.search(retry_text):
-                    raise TimeoutError(_("Timed out waiting for initial switch CLI prompt."))
+                    raise TimeoutError("Timed out waiting for initial switch CLI prompt.")
                 banner_text = retry_text
 
             # Escalate to privileged mode ('enable') if model configures it and prompt is not already '#'
@@ -346,17 +374,33 @@ class ArubaSSHClient:
                 if nopage_out:
                     transcript_parts.append(nopage_out)
 
-            # Execute user commands step-by-step
+            # Execute user commands step-by-step; abort remaining commands on first failure
+            abort_reason: Optional[str] = None
             for idx, cmd in enumerate(commands, start=1):
                 if cancel_event is not None and cancel_event.is_set():
+                    now_ts = _timestamp_str()
                     result.step_results.append(
                         CommandStepResult(
                             index=idx,
                             command=cmd,
                             result="Skipped",
-                            suggestion=_("Cancelled by operator."),
-                            begin_time=_timestamp_str(),
-                            finish_time=_timestamp_str(),
+                            suggestion="Cancelled by operator.",
+                            begin_time=now_ts,
+                            finish_time=now_ts,
+                        )
+                    )
+                    continue
+
+                if abort_reason is not None:
+                    now_ts = _timestamp_str()
+                    result.step_results.append(
+                        CommandStepResult(
+                            index=idx,
+                            command=cmd,
+                            result="Skipped",
+                            suggestion=abort_reason,
+                            begin_time=now_ts,
+                            finish_time=now_ts,
                         )
                     )
                     continue
@@ -380,8 +424,9 @@ class ArubaSSHClient:
                 step_errors = detect_output_errors(step_out)
                 if timed_out:
                     step_status = "Failed"
-                    suggestion = _("Timed out waiting for switch prompt after {sec:.0f}s.").format(
-                        sec=self.command_timeout
+                    suggestion = (
+                        f"SSH communication error: Timed out waiting for switch prompt after "
+                        f"{self.command_timeout:.0f}s."
                     )
                 elif step_errors:
                     step_status = "Failed"
@@ -402,8 +447,11 @@ class ArubaSSHClient:
                         output_snippet=step_out,
                     )
                 )
+                if step_status == "Failed":
+                    abort_reason = "Aborted due to earlier command failure."
 
-            result.raw_output = "\n".join(part.rstrip("\n") for part in transcript_parts if part)
+            raw_joined = "".join(transcript_parts)
+            result.raw_output = _strip_trailing_prompt(raw_joined, prompt_re)
             cli_errors = detect_output_errors(result.raw_output)
             audit_errors = validate_audit_regex(result.raw_output, audit_regex)
             result.error_lines = cli_errors + audit_errors
@@ -411,40 +459,62 @@ class ArubaSSHClient:
             failed_steps = [s for s in result.step_results if s.result == "Failed"]
             if cancel_event is not None and cancel_event.is_set():
                 result.status = "Failed"
-                result.operation_result = _("Cancelled by operator")
+                result.operation_result = "Cancelled by operator"
             elif failed_steps or result.error_lines:
                 result.status = "Failed"
                 if audit_errors and not failed_steps and not cli_errors:
-                    result.operation_result = _(
-                        "Audit failed ({count} RegEx pattern(s) not matched)"
-                    ).format(count=len(audit_errors))
+                    cnt = len(audit_errors)
+                    noun = "pattern" if cnt == 1 else "patterns"
+                    result.operation_result = f"Audit failed ({cnt} RegEx {noun} not matched)"
                 else:
                     err_count = max(len(failed_steps), len(cli_errors)) + len(audit_errors)
-                    result.operation_result = _("{count} error(s) detected").format(count=err_count)
+                    err_word = "error" if err_count == 1 else "errors"
+                    brief = ""
+                    if cli_errors:
+                        brief = str(cli_errors[0].get("reason") or "")
+                    elif audit_errors:
+                        brief = str(audit_errors[0].get("reason") or "")
+                    elif failed_steps:
+                        brief = str(failed_steps[0].suggestion or "").split(":", 1)[0].strip()
+                    result.operation_result = (
+                        f"{err_count} {err_word} detected: {brief}"
+                        if brief
+                        else f"{err_count} {err_word} detected"
+                    )
             else:
                 result.status = "Success"
-                result.operation_result = _("Completed ({count} commands)").format(
-                    count=len(commands)
-                )
+                cmd_word = "command" if len(commands) == 1 else "commands"
+                result.operation_result = f"Completed ({len(commands)} {cmd_word})"
 
         except paramiko.AuthenticationException as exc:
             result.status = "Failed"
             result.exception_message = f"Authentication failed: {exc}"
-            result.operation_result = _("Authentication failed")
-            result.raw_output = "\n".join(
-                [p for p in transcript_parts if p] + [result.exception_message]
+            result.operation_result = "Authentication failed"
+            raw_prefix = "".join(transcript_parts).rstrip("\n")
+            result.raw_output = (
+                f"{raw_prefix}\n{result.exception_message}"
+                if raw_prefix
+                else result.exception_message
             )
             result.error_lines = detect_output_errors(result.raw_output)
         except Exception as exc:
             result.status = "Failed"
             result.exception_message = f"SSH connection error: {exc}"
-            result.operation_result = str(exc) or _("SSH connection error")
-            result.raw_output = "\n".join(
-                [p for p in transcript_parts if p] + [result.exception_message]
+            result.operation_result = str(exc) or "SSH connection error"
+            raw_prefix = "".join(transcript_parts).rstrip("\n")
+            result.raw_output = (
+                f"{raw_prefix}\n{result.exception_message}"
+                if raw_prefix
+                else result.exception_message
             )
             result.error_lines = detect_output_errors(result.raw_output)
         finally:
             result.finished_at = _timestamp_str()
+            if channel is not None:
+                try:
+                    channel.close()
+                except Exception:
+                    pass
             try:
                 client.close()
             except Exception:
@@ -507,7 +577,7 @@ class BatchSSHExecutor:
                 cancelled = HostExecutionResult(
                     host=host,
                     status="Failed",
-                    operation_result=_("Cancelled before start"),
+                    operation_result="Cancelled before start",
                     started_at=_timestamp_str(),
                     finished_at=_timestamp_str(),
                 )
@@ -562,7 +632,7 @@ class BatchSSHExecutor:
                         host=host,
                         status="Failed",
                         exception_message=str(exc),
-                        operation_result=str(exc) or _("Unexpected worker error"),
+                        operation_result=str(exc) or "Unexpected worker error",
                         started_at=_timestamp_str(),
                         finished_at=_timestamp_str(),
                     )
