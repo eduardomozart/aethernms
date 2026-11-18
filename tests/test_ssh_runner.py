@@ -104,11 +104,13 @@ def test_aruba_ssh_client_handles_aoss_banner_no_page_and_errors():
 
     assert "no page\n" in chan.sent_data
     assert res.status == "Failed"
-    assert len(res.step_results) == 3
+    assert len(res.step_results) == 4
+    assert res.step_results[0].command == "no page"
     assert res.step_results[0].result == "Succeeded"
-    assert res.step_results[1].result == "Failed"
-    assert res.step_results[2].result == "Skipped"
-    assert "Aborted" in res.step_results[2].suggestion
+    assert res.step_results[1].result == "Succeeded"
+    assert res.step_results[2].result == "Failed"
+    assert res.step_results[3].result == "Skipped"
+    assert "Aborted" in res.step_results[3].suggestion
     assert "snmpv3 only\n" not in chan.sent_data
     assert "1 error detected: Invalid CLI input" in res.operation_result
     assert len(res.error_lines) == 1
@@ -307,8 +309,11 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
         )
         assert "admin\n" not in chan.sent_data
         assert ok_res.status == "Success"
-        assert ok_res.operation_result == "Completed (4 commands)"
+        assert ok_res.step_results[0].command == "no page"
+        assert ok_res.step_results[0].result == "Succeeded"
+        assert ok_res.operation_result == "Completed (5 commands)"
         raw_lines = ok_res.raw_output.splitlines()
+        assert "SW-CX-01# no page" in raw_lines
         assert "SW-CX-01# configure terminal" in raw_lines
         assert "SW-CX-01(config)# ntp server 1.1.1.1" in raw_lines
         assert raw_lines[-1] == "SW-CX-01(config)# end"  # No dangling trailing bare prompt
@@ -327,9 +332,12 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
             commands=["configure terminal", "bad cmd", "ntp enable", "end"],
             device_model=cx_model,
         )
-        assert fail_res.step_results[1].result == "Failed"
-        assert fail_res.step_results[2].result == "Skipped"
+        assert fail_res.step_results[0].command == "no page"
+        assert fail_res.step_results[0].result == "Succeeded"
+        assert fail_res.step_results[1].result == "Succeeded"
+        assert fail_res.step_results[2].result == "Failed"
         assert fail_res.step_results[3].result == "Skipped"
+        assert fail_res.step_results[4].result == "Skipped"
         assert "ntp enable\n" not in fail_chan.sent_data
         assert "end\n" not in fail_chan.sent_data
         assert fail_res.operation_result == "1 error detected: Invalid command or parameter"
@@ -337,10 +345,33 @@ def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_englis
             "1 erro detectado: Comando ou parâmetro inválido"
         )
 
+        # If 'no page' itself fails, abort immediately before running remaining commands
+        nopage_fail_chan = SplitBannerCXChannel(
+            responses={"no page": "no page\r\nInvalid input: no page\r\nSW-CX-01# "}
+        )
+        nopage_fail_client = ArubaSSHClient(
+            poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=nopage_fail_chan)
+        )
+        nopage_fail_res = nopage_fail_client.execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=["configure terminal", "ntp enable"],
+            device_model=cx_model,
+        )
+        assert nopage_fail_res.status == "Failed"
+        assert nopage_fail_res.step_results[0].command == "no page"
+        assert nopage_fail_res.step_results[0].result == "Failed"
+        assert nopage_fail_res.step_results[1].result == "Skipped"
+        assert nopage_fail_res.step_results[2].result == "Skipped"
+        assert "configure terminal\n" not in nopage_fail_chan.sent_data
+
+        assert "Aborted due to earlier command failure." in fail_res.step_results[3].suggestion
         log_path = Path(write_host_log(fail_res, tmp_path))
         log_txt = log_path.read_text(encoding="utf-8")
         assert "Operation Result: 1 error detected: Invalid command or parameter" in log_txt
-        assert "Aborted due to earlier command failure." in log_txt
+        assert "--- Command Execution Summary ---" not in log_txt
+        assert "--- Raw SSH Terminal Output ---" in log_txt
         assert "Comando ou parâmetro inválido" not in log_txt
         assert "erro(s)" not in log_txt
     finally:

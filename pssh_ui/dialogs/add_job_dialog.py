@@ -12,7 +12,6 @@ from pssh_ui.job_builder import (
     build_commands_for_job,
     discover_device_types,
     validate_job_inputs,
-    wrap_commands_with_model,
 )
 from pssh_ui.model_store import ModelStore
 from pssh_ui.models import (
@@ -97,7 +96,7 @@ class AddJobDialog(tk.Toplevel):
         self._os_choices = os_choices
 
         # Step 2 state
-        self._initial_saved_params: Dict[str, str] = dict(session.variable_values)
+        self._initial_saved_params: Dict[str, str] = {}
         self.param_values: Dict[str, str] = {}
         self.param_entry_vars: Dict[str, tk.StringVar] = {}
         self.param_status_labels: Dict[str, ttk.Label] = {}
@@ -495,6 +494,8 @@ class AddJobDialog(tk.Toplevel):
 
         # Reset to blank selection so the operator explicitly picks a matching Snippet
         self.snippet_choice_var.set("")
+        self.param_values.clear()
+        self._initial_saved_params.clear()
         self.cmd_text.delete("1.0", tk.END)
         self.audit_regex_text.delete("1.0", tk.END)
         if names:
@@ -621,6 +622,7 @@ class AddJobDialog(tk.Toplevel):
                 initial_val = ""
             sv = tk.StringVar(value=initial_val)
             self.param_entry_vars[spec.name] = sv
+            self.param_values[spec.name] = initial_val
 
             entry_wrap = ttk.Frame(self.param_inner)
             entry_wrap.grid(row=r_idx, column=1, sticky=tk.EW, padx=6, pady=6)
@@ -1080,7 +1082,7 @@ class AddJobDialog(tk.Toplevel):
         self.parallel_spin.pack(side=tk.LEFT, padx=(0, 10))
         ttk.Checkbutton(
             par_wrap,
-            text=_("Sequential (1 switch at a time)"),
+            text=_("Sequential (1 device at a time)"),
             variable=self.sequential_var,
             command=self._on_seq_toggled,
         ).pack(side=tk.LEFT)
@@ -1151,13 +1153,15 @@ class AddJobDialog(tk.Toplevel):
             self.save_write_var.set(False)
             self.write_cmd_check.grid_remove()
 
+        for k, sv in self.param_entry_vars.items():
+            self.param_values[k] = sv.get()
+
         rendered = render_template(self._get_raw_commands(), self.param_values)
-        exec_cmds = wrap_commands_with_model(
-            parse_commands(rendered),
-            job_type=job_type,
-            device_model=active_model,
-            include_write_command=bool(can_write and self.save_write_var.get()),
-        )
+        exec_cmds = parse_commands(rendered)
+        if can_write and self.save_write_var.get() and active_model:
+            for wc in parse_commands(active_model.write_command):
+                if not exec_cmds or exec_cmds[-1].strip().lower() != wc.strip().lower():
+                    exec_cmds.append(wc)
 
         sel_count = len(selected_hosts)
         sel_disp = (
@@ -1311,6 +1315,7 @@ class AddJobDialog(tk.Toplevel):
                     parent=self,
                 )
                 return
+            self.param_values.update(vals)
         elif self.current_step_key == self.STEP_DEVICES:
             updated, needs_refilter = self._drain_step3_ping_queue()
             target_os = self._target_os_enum()
@@ -1353,6 +1358,9 @@ class AddJobDialog(tk.Toplevel):
         ]
         ssh_user = self.ssh_user_var.get().strip()
         ssh_pwd = self.ssh_pass_var.get()
+
+        for k, sv in self.param_entry_vars.items():
+            self.param_values[k] = sv.get()
 
         errors = validate_job_inputs(
             raw_commands=self._get_all_template_text(),

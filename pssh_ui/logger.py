@@ -40,8 +40,8 @@ def sanitize_log_filename(host: HostEntry) -> str:
 
 def write_host_log(result: HostExecutionResult, run_dir: Path | str) -> str:
     """
-    Write execution metadata, per-command step status, detected errors, and
-    raw SSH transcript to `logs/YYYY-MM-DD_HH-MM-SS/<hostname-or-switch-ip>.log`.
+    Write execution metadata, detected errors, and SSH terminal output
+    to `logs/YYYY-MM-DD_HH-MM-SS/<hostname-or-switch-ip>.log`.
     """
     out_dir = Path(run_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -58,18 +58,7 @@ def write_host_log(result: HostExecutionResult, run_dir: Path | str) -> str:
         f"Started At      : {result.started_at}",
         f"Finished At     : {result.finished_at}",
         "=" * 78,
-        "",
-        "--- Command Execution Summary ---",
     ]
-
-    if result.step_results:
-        for step in result.step_results:
-            lines.append(
-                f"[{step.index:02d}] ({step.result}) {step.command}"
-                + (f"  | {step.suggestion}" if step.suggestion else "")
-            )
-    else:
-        lines.append("(No commands executed)")
 
     if result.exception_message:
         lines.extend(["", "--- Connection / Execution Exception ---", result.exception_message])

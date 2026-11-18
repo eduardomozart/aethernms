@@ -50,4 +50,5 @@ def test_log_directory_uses_yyyy_mm_dd_hh_mm_ss_and_host_filename(tmp_path: Path
     content = log_path.read_text(encoding="utf-8")
     assert "Invalid input: badcmd" in content
     assert "10.0.0.2:22" in content
-    assert "[01] (Failed) badcmd" in content
+    assert "--- Command Execution Summary ---" not in content
+    assert "--- Raw SSH Terminal Output ---" in content

@@ -354,29 +354,22 @@ class ArubaSSHClient:
                 if en_out:
                     transcript_parts.append(en_out)
 
-            # Disable pagination cleanly per DeviceModel (default 'no page')
+            # Disable pagination cleanly per DeviceModel (default 'no page') as a tracked step
             disable_paging = (
                 device_model.disable_paging_command.strip()
                 if device_model is not None
                 else "no page"
             )
-            if disable_paging:
-                channel.send(disable_paging + "\n")
-                nopage_out, _nopage_timed_out = self._read_until_prompt(
-                    channel,
-                    timeout=min(5.0, self.command_timeout),
-                    cancel_event=cancel_event,
-                    username=username,
-                    password=password,
-                    enable_password=enable_password,
-                    device_model=device_model,
-                )
-                if nopage_out:
-                    transcript_parts.append(nopage_out)
+            exec_commands = list(commands)
+            if disable_paging and (
+                not exec_commands or exec_commands[0].strip().lower() != disable_paging.lower()
+            ):
+                exec_commands.insert(0, disable_paging)
+            result.commands_run = list(exec_commands)
 
-            # Execute user commands step-by-step; abort remaining commands on first failure
+            # Execute commands step-by-step; abort remaining commands on first failure
             abort_reason: Optional[str] = None
-            for idx, cmd in enumerate(commands, start=1):
+            for idx, cmd in enumerate(exec_commands, start=1):
                 if cancel_event is not None and cancel_event.is_set():
                     now_ts = _timestamp_str()
                     result.step_results.append(
@@ -483,8 +476,8 @@ class ArubaSSHClient:
                     )
             else:
                 result.status = "Success"
-                cmd_word = "command" if len(commands) == 1 else "commands"
-                result.operation_result = f"Completed ({len(commands)} {cmd_word})"
+                cmd_word = "command" if len(exec_commands) == 1 else "commands"
+                result.operation_result = f"Completed ({len(exec_commands)} {cmd_word})"
 
         except paramiko.AuthenticationException as exc:
             result.status = "Failed"

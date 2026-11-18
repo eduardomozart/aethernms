@@ -296,8 +296,10 @@ def test_gui_smoke_lifecycle(tmp_path: Path, monkeypatch, tk_root: tk.Tk):
         assert dlg.back_btn.winfo_x() < dlg.run_btn.winfo_x()
         assert str(dlg.confirm_cmds_text.cget("state")) == "disabled"
         rendered_preview = dlg.confirm_cmds_text.get("1.0", "end-1c")
-        assert rendered_preview.startswith("configure terminal\n")
-        assert rendered_preview.endswith("\nend")
+        assert rendered_preview.startswith("snmpv3 enable\n")
+        assert "configure terminal" not in rendered_preview
+        assert "no page" not in rendered_preview
+        assert rendered_preview.endswith('banner motd "Core"')
         assert "write memory" in dlg.write_cmd_check.cget("text")
         dlg.save_write_var.set(True)
         dlg._refresh_confirm_view()
@@ -970,6 +972,52 @@ def test_replay_job_prefill_and_sequential_checkbox(tmp_path: Path, monkeypatch,
         orig_replay("job-cfg")
         assert opened_replay == [cfg_job]
 
+        # Opening AddJobDialog without replay_job must NOT pre-fill Parameters from previous session
+        app.session.variable_values["NTP Server"] = "10.0.0.50"
+        fresh_warnings: list[tuple[str, str]] = []
+        monkeypatch.setattr(
+            messagebox,
+            "showwarning",
+            lambda title, msg, **_kw: (fresh_warnings.append((title, msg)), "ok")[1],
+        )
+        fresh_dlg = AddJobDialog(
+            root,
+            session=app.session,
+            snippets=app.snippets,
+            settings=app.settings,
+            ssh_password="secret",
+            dark_mode=False,
+            device_models=app.device_models,
+        )
+        fresh_dlg.withdraw()
+        fresh_dlg.device_os_var.set("AOS-S")
+        fresh_dlg._on_os_changed()
+        fresh_dlg.snippet_choice_var.set("ArubaOS-S NTP")
+        fresh_dlg._on_snippet_chosen()
+        fresh_dlg.job_name_var.set("Fresh Non-Replay Job")
+        fresh_dlg._on_next()
+        assert fresh_dlg.current_step_key == AddJobDialog.STEP_PARAMS
+        assert fresh_dlg.param_entry_vars["NTP Server"].get() == ""
+        fresh_dlg._on_next()
+        assert fresh_dlg.current_step_key == AddJobDialog.STEP_PARAMS
+        assert len(fresh_warnings) == 1
+        fresh_warnings.clear()
+        fresh_dlg.param_entry_vars["NTP Server"].set("172.16.0.10")
+        fresh_dlg._on_next()
+        assert fresh_dlg.current_step_key == AddJobDialog.STEP_DEVICES
+        fresh_dlg.selected_host_keys.add(host_target.unique_key)
+        fresh_dlg._on_next()
+        assert fresh_dlg.current_step_key == AddJobDialog.STEP_CONFIRM
+        fresh_confirm_txt = fresh_dlg.confirm_cmds_text.get("1.0", "end-1c")
+        assert "sntp server priority 1 172.16.0.10" in fresh_confirm_txt
+        assert "${NTP Server" not in fresh_confirm_txt
+        fresh_dlg.ssh_user_var.set("admin")
+        fresh_dlg._on_run()
+        assert fresh_warnings == []
+        assert fresh_dlg.launch_payload is not None
+        assert fresh_dlg.launch_payload["values"]["NTP Server"] == "172.16.0.10"
+        fresh_dlg.destroy()
+
         # Verify AddJobDialog pre-fills Config replay job & preserves Sequential checkbox
         dlg = AddJobDialog(
             root,
@@ -1005,16 +1053,20 @@ def test_replay_job_prefill_and_sequential_checkbox(tmp_path: Path, monkeypatch,
         assert dlg.current_step_key == AddJobDialog.STEP_DEVICES
         assert dlg.selected_host_keys == {host_target.unique_key}
 
-        # Step 4 restores max_parallel, ssh_port, and write command; max_parallel == 1 -> SEQUENTIAL
+        # Step 4 restores max_parallel, ssh_port, write command, and substitutes pre-filled params
         dlg._on_next()
         assert dlg.current_step_key == AddJobDialog.STEP_CONFIRM
         assert dlg.max_parallel_var.get() == 1
         assert dlg.ssh_port_var.get() == 2222
         assert dlg.save_write_var.get() is True
-        assert dlg.confirm_cmds_text.get("1.0", "end-1c").endswith(f"\n{write_cmd}")
+        confirm_preview = dlg.confirm_cmds_text.get("1.0", "end-1c")
+        assert "ntp server 10.0.0.50" in confirm_preview
+        assert "${NTP Server" not in confirm_preview
+        assert confirm_preview.endswith(f"\n{write_cmd}")
         dlg.ssh_user_var.set("admin")
         dlg._on_run()
         assert dlg.launch_payload is not None
+        assert dlg.launch_payload["values"]["NTP Server"] == "10.0.0.50"
         assert dlg.launch_payload["max_parallel"] == 1
         assert dlg.launch_payload["schedule_sequence"] == ScheduleSequence.SEQUENTIAL
         assert dlg.launch_payload["include_write"] is True
