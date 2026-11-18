@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pssh-ui 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-11-18 19:14+0000\n"
+"POT-Creation-Date: 2026-11-18 19:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -215,7 +215,7 @@ msgstr ""
 msgid "Page {cur} of {total}"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1330 pssh_ui/job_builder.py:153
+#: pssh_ui/dialogs/add_job_dialog.py:1326 pssh_ui/job_builder.py:153
 msgid "Select at least one target switch matching this snippet OS."
 msgstr ""
 
@@ -231,7 +231,7 @@ msgstr ""
 msgid "No executable commands found (check script contents or '!' comments)."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1302 pssh_ui/dialogs/snippet_dialog.py:200
+#: pssh_ui/dialogs/add_job_dialog.py:1298 pssh_ui/dialogs/snippet_dialog.py:200
 #: pssh_ui/job_builder.py:171
 msgid "Commands cannot be empty."
 msgstr ""
@@ -496,56 +496,56 @@ msgstr ""
 msgid "Run write command ({cmd})"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1168
+#: pssh_ui/dialogs/add_job_dialog.py:1164
 msgid "1 selected"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1170
+#: pssh_ui/dialogs/add_job_dialog.py:1166
 #, python-brace-format
 msgid "{count} selected"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1173
+#: pssh_ui/dialogs/add_job_dialog.py:1169
 msgid "Job Name"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1174
+#: pssh_ui/dialogs/add_job_dialog.py:1170
 msgid "Snippet"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1175 pssh_ui/tabs/jobs_tab.py:133
+#: pssh_ui/dialogs/add_job_dialog.py:1171 pssh_ui/tabs/jobs_tab.py:133
 #: pssh_ui/tabs/models_tab.py:77 pssh_ui/tabs/snippets_tab.py:117
 msgid "Device Type"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1181
+#: pssh_ui/dialogs/add_job_dialog.py:1177
 msgid "(No commands)"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1292
-#: pssh_ui/dialogs/add_job_dialog.py:1297
-#: pssh_ui/dialogs/add_job_dialog.py:1302
-#: pssh_ui/dialogs/add_job_dialog.py:1313
-#: pssh_ui/dialogs/add_job_dialog.py:1329
-#: pssh_ui/dialogs/add_job_dialog.py:1374 pssh_ui/dialogs/airwave_dialog.py:268
+#: pssh_ui/dialogs/add_job_dialog.py:1288
+#: pssh_ui/dialogs/add_job_dialog.py:1293
+#: pssh_ui/dialogs/add_job_dialog.py:1298
+#: pssh_ui/dialogs/add_job_dialog.py:1309
+#: pssh_ui/dialogs/add_job_dialog.py:1325
+#: pssh_ui/dialogs/add_job_dialog.py:1370 pssh_ui/dialogs/airwave_dialog.py:268
 #: pssh_ui/dialogs/device_dialogs.py:156 pssh_ui/dialogs/device_dialogs.py:353
 #: pssh_ui/dialogs/snippet_dialog.py:197 pssh_ui/dialogs/snippet_dialog.py:200
 msgid "Validation"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1292
+#: pssh_ui/dialogs/add_job_dialog.py:1288
 msgid "Please select a Snippet."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1297
+#: pssh_ui/dialogs/add_job_dialog.py:1293
 msgid "Job Name is required."
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1314
+#: pssh_ui/dialogs/add_job_dialog.py:1310
 msgid "Please correct the parameter values:"
 msgstr ""
 
-#: pssh_ui/dialogs/add_job_dialog.py:1375
+#: pssh_ui/dialogs/add_job_dialog.py:1371
 msgid "Please resolve the following before running:"
 msgstr ""
 
@@ -1005,23 +1005,23 @@ msgstr ""
 msgid "Job Details ({name})"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:658
+#: pssh_ui/tabs/jobs_tab.py:657
 msgid "Queued"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:730
+#: pssh_ui/tabs/jobs_tab.py:731
 msgid "Job Running"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:730
+#: pssh_ui/tabs/jobs_tab.py:731
 msgid "Stop the running job before deleting it."
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:733
+#: pssh_ui/tabs/jobs_tab.py:734
 msgid "Confirm Delete"
 msgstr ""
 
-#: pssh_ui/tabs/jobs_tab.py:734
+#: pssh_ui/tabs/jobs_tab.py:735
 #, python-brace-format
 msgid "Remove job '{name}' from history?"
 msgstr ""
