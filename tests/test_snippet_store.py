@@ -24,6 +24,8 @@ def test_builtin_aruba_snippets_exist_in_subfolders():
     assert "${Privacy Password|password|" in snmp_aoss.commands
     assert "readonly_user" not in snmp_aoss.commands
     assert "%" not in snmp_aoss.commands
+    assert any(s.name == "ArubaOS-S NTP" for s in aoss)
+    assert any(s.name == "ArubaOS-S Syslog" for s in aoss)
     assert any("${SNMPv3 Username|text|" in s.commands for s in aoscx)
     assert any(s.name == "ArubaOS-CX NTP" for s in aoscx)
     assert any(s.name == "ArubaOS-CX Syslog" for s in aoscx)

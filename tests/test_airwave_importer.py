@@ -3,12 +3,15 @@
 from httmock import HTTMock, urlmatch
 
 from pssh_ui.airwave_importer import (
+    build_folder_hierarchy_options,
+    build_folder_options_from_hosts,
     fetch_airwave_inventory,
+    host_matches_airwave_filter,
     infer_switch_os,
     parse_airwave_devices,
     parse_airwave_folders,
 )
-from pssh_ui.models import AirWaveFilter, SwitchOS
+from pssh_ui.models import AirWaveFilter, HostEntry, SwitchOS, is_airwave_host
 
 
 SAMPLE_FOLDER_XML = """<?xml version="1.0" encoding="utf-8"?>
@@ -75,18 +78,43 @@ def test_infer_switch_os():
 
 def test_parse_airwave_filters_and_stack_deduplication():
     folders = parse_airwave_folders(SAMPLE_FOLDER_XML)
-    assert folders["11"]["folder_path"] == "Campus > Building A"
+    assert folders["1"]["folder_path"] == "Top"
+    assert folders["10"]["folder_path"] == "Top > Campus"
+    assert folders["11"]["folder_path"] == "Top > Campus > Building A"
+
+    opts = build_folder_hierarchy_options(folders)
+    assert opts == [
+        ("Top", "1"),
+        ("  Campus", "10"),
+        ("    Building A", "11"),
+        ("    Building B", "12"),
+    ]
 
     # Default filter: category='switch', exclude VSF duplicate SW-A-2930-2
     hosts, total = parse_airwave_devices(
         SAMPLE_AP_XML,
         folders=folders,
-        filters=AirWaveFilter(category="switch", include_stacked=False),
+        filters=AirWaveFilter(folder="Top", category="switch", include_stacked=False),
     )
     assert total == 4
     assert [h.name for h in hosts] == ["SW-A-2930", "SW-B-6300"]
     assert hosts[0].os_type == SwitchOS.AOS_S
     assert hosts[1].os_type == SwitchOS.AOS_CX
+
+    # Name and IP filters
+    by_name, _ = parse_airwave_devices(
+        SAMPLE_AP_XML,
+        folders=folders,
+        filters=AirWaveFilter(name_filter="SW-A"),
+    )
+    assert [h.name for h in by_name] == ["SW-A-2930"]
+
+    by_ip, _ = parse_airwave_devices(
+        SAMPLE_AP_XML,
+        folders=folders,
+        filters=AirWaveFilter(ip_filter="10.1.2."),
+    )
+    assert [h.name for h in by_ip] == ["SW-B-6300"]
 
     # Recursive folder filter on parent "Campus" + OS filter AOS-CX
     cx_hosts, _ = parse_airwave_devices(
@@ -124,3 +152,41 @@ def test_fetch_airwave_inventory_with_httmock():
     assert "11" in folders
     hosts, _ = parse_airwave_devices(ap_xml, folders=folders)
     assert len(hosts) == 2
+
+
+def test_is_airwave_host_and_cached_host_filtering():
+    manual = HostEntry(name="Manual-SW", ip="10.0.0.1", airwave_status="Manual")
+    aw_s = HostEntry(
+        name="SW-A",
+        ip="10.1.1.10",
+        os_type=SwitchOS.AOS_S,
+        model="Aruba 2930F",
+        folder_id="11",
+        folder_path="Top > Campus > Building A",
+        airwave_status="Up",
+    )
+    aw_cx = HostEntry(
+        name="SW-B",
+        ip="10.1.2.10",
+        os_type=SwitchOS.AOS_CX,
+        model="Aruba 6300M",
+        folder_id="12",
+        folder_path="Top > Campus > Building B",
+        airwave_status="Down",
+    )
+    assert not is_airwave_host(manual)
+    assert is_airwave_host(aw_s)
+    assert is_airwave_host(aw_cx)
+
+    assert build_folder_options_from_hosts([aw_s, aw_cx]) == [
+        ("Top", "Top"),
+        ("  Campus", "Top > Campus"),
+        ("    Building A", "Top > Campus > Building A"),
+        ("    Building B", "Top > Campus > Building B"),
+    ]
+
+    assert host_matches_airwave_filter(aw_s, AirWaveFilter(folder="Top > Campus"))
+    assert host_matches_airwave_filter(aw_s, AirWaveFilter(name_filter="SW-A", os_filter="AOS-S"))
+    assert not host_matches_airwave_filter(aw_s, AirWaveFilter(os_filter="AOS-CX"))
+    assert not host_matches_airwave_filter(aw_cx, AirWaveFilter(status_filter="Up"))
+    assert host_matches_airwave_filter(aw_cx, AirWaveFilter(ip_filter="10.1.2."))

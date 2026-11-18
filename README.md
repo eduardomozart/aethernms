@@ -1,18 +1,46 @@
+<img src="assets/pssh-ui.png" width="96" height="96" align="top" alt="pssh-ui logo" />
+
 # pssh-ui
 
-Multiplatform GUI application (`tkinter`/`ttk` + [Sun-Valley-ttk-theme](https://github.com/rdbende/Sun-Valley-ttk-theme) + `paramiko`) for parallel batch SSH configuration and audit automation across managed network switches.
+[![Release Version](https://img.shields.io/github/v/release/eduardomozart/pssh-ui?style=for-the-badge&logo=github)](https://github.com/eduardomozart/pssh-ui/releases/latest)
+
+Multiplatform desktop application for parallel SSH configuration and audit automation across managed network switches.
 
 ## Key Features
 
-- **Native OS Defaults & `settings.xml`**: Automatically defaults to **Auto (OS Default)** for Windows and macOS Light/Dark themes and OS language, storing `settings.xml`, `session.xml`, `logs/`, and upgrade-safe user `snippets/` + `model/` libraries in **`%APPDATA%\pssh-ui`** (Windows) and **`~/.config/pssh-ui`** (Linux/macOS) when packaged.
-- **4-Tab Workspace (`Jobs`, `Snippets`, `Devices`, `Device Models`)**:
-  - **Jobs (Default)**: Dynamic wizard (`Config Command` → `[Parameters]` → `Select Device` → `Confirm`) with inline row actions (`⏹`/`🗑`), bold Job Details metrics (`Total`, `Success`, `Failed`), optional write-command toggle, and per-switch **Devices** log access (`📄`).
-  - **Snippets**: Hierarchical OS-specific XML templates (`snippets/<vendor>/<os>/`) with syntax highlighting, **Audit Validation RegEx**, and **Import/Export Snippet**.
-  - **Devices**: Manage switches, dynamically track assigned hardware models and groups, and run row-level edit/delete actions.
-  - **Device Models**: Distributed `model/<vendor>/*.xml` profiles handling `Username:` / `Password:` / `Enable` automation prompts, `Import/Export Device Model`, and common `Pre-Config` / `Post-Config` / `Write` command wrappers (`configure terminal`, `end`, `write memory`) — supporting new vendors/OSes via drop-in XML files without source code edits.
-- **Parameterized Templates (`${var|type|regex}` & `${var|["Item 1", "Item 2"]}`)**: Supports uppercase letters, spaces, accents, HTML-like types (`text`, `password`, `number`, `email`, `url`, `select`), regex validation, and `!` comments.
-- **Timestamped Logs & Password-Free State**: Writes per-switch logs to `logs/YYYY-MM-DD_HH-MM-SS/<hostname-or-switch-ip>.log` without ever persisting SSH, Enable, or `|password|` values to disk.
-- **Multi-Language & Transifex Ready**: Drop-in `.po` support powered by `gettext`/Babel (no source edits required for new languages) and `transifex.yml` Git integration.
+### Device Inventory & AirWave Import
+Manage switches manually with **+ Add Device** or connect directly to **Aruba AirWave** via **Import from AirWave...** to browse the folder hierarchy, filter switches by name, IP, OS type, group, or status, and keep track of your active switch inventory.
+
+![Devices Tab](docs/images/devices.png)
+
+### Reusable Command Snippets
+Organize **Config** and **Audit and Remediate** command templates by switch OS, preview syntax-highlighted CLI scripts, import/export XML snippets, and customize commands before execution.
+
+![Snippets Tab](docs/images/snippets.png)
+
+### Device Automation Profiles
+Pre-configured **Device Models** (`ArubaOS-CX`, `ArubaOS-S (ProCurve)`, and custom models) handle login prompts, privilege escalation (`enable`), paging suppression, and configuration wrappers (`configure terminal` / `end`) automatically.
+
+![Device Models Tab](docs/images/device-models.png)
+
+### Guided Task Creation Wizard
+Run configuration or audit tasks across multiple switches through an intuitive step-by-step wizard:
+
+1. **Config Command** — Pick **Config** or **Audit and Remediate**, set the task name, choose the target OS and device model, select a snippet, and adjust CLI commands as needed.
+
+   ![Add Job - Config Command](docs/images/add-job-step1-command.png)
+
+2. **Parameters** — Automatically prompted whenever a snippet uses interactive variables, with real-time input validation (`✓`).
+
+   ![Add Job - Parameters](docs/images/add-job-step2-parameters.png)
+
+3. **Select Device** — Filter by device, IP, OS type, group, or live ping status and check the target switches.
+
+   ![Add Job - Select Device](docs/images/add-job-step3-devices.png)
+
+4. **Confirm & Run** — Enter SSH/Enable credentials, choose parallel or sequential execution, optionally run `write memory`, review the exact commands to be sent, and click **Run Job**.
+
+   ![Add Job - Confirm](docs/images/add-job-step4-confirm.png)
 
 ## Quick Start
 
@@ -21,6 +49,8 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Prebuilt Windows binaries are available on the **[Releases](https://github.com/eduardomozart/pssh-ui/releases/latest)** page.
+
 ## Running Tests
 
 ```bash
@@ -28,6 +58,12 @@ pip install -r requirements-dev.txt
 python -m pytest tests/ -v
 ```
 
-## Documentation
+## Documentation & Translations
 
-Full User Guide, Snippets & Models reference, Developer Design Choices, and Localization instructions are available in the **[Wiki (`docs/`)](docs/Home.md)**.
+Full guides and technical architecture details are available in the **[Wiki (`docs/`)](docs/Home.md)**:
+- **[User Guide](docs/User-Guide.md)** — Detailed workflow, settings, and log inspection
+- **[Snippets & Variables](docs/Snippets-and-Variables.md)** — XML templates, parameterized inputs, and Audit RegEx rules
+- **[Developer Design Choices](docs/Developer-Design-Choices.md)** — Architecture, SSH PTY automation, OS config paths, security, and release packaging
+- **[Localization & Transifex](docs/Localization-and-Transifex.md)** — Multi-language `.po`/`.mo` catalog workflow
+
+Help translate **`pssh-ui`** into more languages on **[Transifex](https://app.transifex.com/eduardomozart/pssh-ui/)**.

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 import urllib3
 
 from airwaveapiclient import APList, AirWaveAPIClient, FolderList
@@ -124,7 +124,8 @@ def is_stacked_device(name: str, all_device_names: Optional[Set[str]] = None) ->
 
 def parse_airwave_folders(folder_xml: str) -> Dict[str, Dict[str, Any]]:
     """
-    Parse AirWave folder_list.xml into {folder_id: {'name', 'parent_id', 'folder_path'}}.
+    Parse AirWave folder_list.xml into {folder_id: {'name', 'parent_id', 'folder_path', 'depth'}},
+    preserving the entire hierarchy starting from 'Top'.
     """
     if not folder_xml or not folder_xml.strip():
         return {}
@@ -133,36 +134,205 @@ def parse_airwave_folders(folder_xml: str) -> Dict[str, Dict[str, Any]]:
     folders: Dict[str, Dict[str, Any]] = {}
     all_names: Dict[str, str] = {}
     all_parents: Dict[str, Optional[str]] = {}
+    top_id: Optional[str] = None
 
     for node in fl:
         fid = str(node.get("@id") or node.get("id") or "").strip()
         fname = str(node.get("name") or "").strip()
         if fid:
-            all_names[fid] = fname
+            all_names[fid] = fname or "Unknown Folder"
             pid = str(node.get("parent_id") or node.get("parent") or "").strip()
             all_parents[fid] = pid if pid and pid != "0" else None
+            if all_names[fid].lower() == "top" and top_id is None:
+                top_id = fid
+
+    if top_id is not None:
+        all_parents[top_id] = None
 
     for fid, name in all_names.items():
-        if name and name.lower() == "top":
-            continue
+        pid = all_parents.get(fid)
+        if fid != top_id and (not pid or pid not in all_names):
+            pid = top_id
         folders[fid] = {
-            "name": name or "Unknown Folder",
-            "parent_id": all_parents.get(fid),
+            "name": name,
+            "parent_id": pid,
         }
 
     for fid, fdata in folders.items():
         path_names = [fdata["name"]]
         curr = fdata["parent_id"]
         visited = {fid}
-        while curr and curr not in visited:
+        while curr and curr not in visited and curr in folders:
             visited.add(curr)
-            if curr in all_names and all_names[curr].lower() != "top":
-                path_names.append(all_names[curr])
-            curr = all_parents.get(curr)
+            path_names.append(folders[curr]["name"])
+            curr = folders[curr]["parent_id"]
         path_names.reverse()
+        if not path_names or path_names[0].lower() != "top":
+            path_names.insert(0, "Top")
         fdata["folder_path"] = " > ".join(path_names)
+        fdata["depth"] = max(0, len(path_names) - 1)
 
     return folders
+
+
+def build_folder_hierarchy_options(
+    folders: Dict[str, Dict[str, Any]],
+    indent_unit: str = "  ",
+) -> List[Tuple[str, str]]:
+    """
+    Build DFS-ordered (indented_label, folder_id_or_name) options rooted at Top,
+    prefixing child folders with spaces to denote inheritance.
+    """
+    if not folders:
+        return []
+
+    children: Dict[Optional[str], List[str]] = {}
+    for fid, fdata in folders.items():
+        pid = fdata.get("parent_id")
+        if pid not in folders:
+            pid = None
+        children.setdefault(pid, []).append(fid)
+
+    for pid in children:
+        children[pid].sort(
+            key=lambda fid: (
+                str(folders[fid].get("name", "")).lower() != "top",
+                str(folders[fid].get("name", "")).lower(),
+            )
+        )
+
+    ordered: List[Tuple[str, str]] = []
+    visited: Set[str] = set()
+    has_top_root = any(str(fdata.get("name", "")).lower() == "top" for fdata in folders.values())
+    if not has_top_root:
+        ordered.append(("Top", "Top"))
+
+    def _walk(parent_id: Optional[str], default_depth: int) -> None:
+        for fid in children.get(parent_id, []):
+            if fid in visited:
+                continue
+            visited.add(fid)
+            fdata = folders[fid]
+            depth = int(fdata.get("depth", default_depth))
+            label = f"{indent_unit * depth}{fdata.get('name', '')}"
+            ordered.append((label, fid))
+            _walk(fid, depth + 1)
+
+    _walk(None, 0 if has_top_root else 1)
+    for fid in sorted(folders.keys(), key=lambda k: str(folders[k].get("folder_path", "")).lower()):
+        if fid not in visited:
+            depth = int(folders[fid].get("depth", 0))
+            ordered.append((f"{indent_unit * depth}{folders[fid].get('name', '')}", fid))
+    return ordered
+
+
+def _normalized_folder_segments(folder_path: str) -> List[str]:
+    parts = [p.strip() for p in (folder_path or "").split(">") if p.strip()]
+    if not parts:
+        return []
+    if parts[0].lower() != "top":
+        parts.insert(0, "Top")
+    return parts
+
+
+def build_folder_options_from_hosts(
+    hosts: Iterable[HostEntry],
+    indent_unit: str = "  ",
+) -> List[Tuple[str, str]]:
+    """Build two-space-indented (label, full_path) folder options from existing hosts."""
+    children: Dict[Tuple[str, ...], Set[Tuple[str, ...]]] = {}
+    roots: Set[Tuple[str, ...]] = set()
+    for h in hosts:
+        segs = _normalized_folder_segments(h.folder_path)
+        if not segs:
+            continue
+        roots.add((segs[0],))
+        for i in range(1, len(segs)):
+            parent = tuple(segs[:i])
+            child = tuple(segs[: i + 1])
+            children.setdefault(parent, set()).add(child)
+
+    ordered: List[Tuple[str, str]] = []
+
+    def _walk(node: Tuple[str, ...], depth: int) -> None:
+        ordered.append((f"{indent_unit * depth}{node[-1]}", " > ".join(node)))
+        for child in sorted(children.get(node, ()), key=lambda k: k[-1].lower()):
+            _walk(child, depth + 1)
+
+    for root in sorted(roots, key=lambda k: k[0].lower()):
+        _walk(root, 0)
+    return ordered
+
+
+def _matches_host_attributes(
+    *,
+    name: str,
+    ip: str,
+    model: str,
+    firmware: str,
+    os_type: SwitchOS,
+    status: str,
+    folder_path: str,
+    serial_number: str,
+    name_tokens: List[str],
+    ip_tokens: List[str],
+    model_tokens: List[str],
+    os_filter: str,
+    status_filter: str,
+    search_token: str,
+) -> bool:
+    if name_tokens and not any(tok in name.lower() for tok in name_tokens):
+        return False
+    if ip_tokens and not any(tok in ip.lower() for tok in ip_tokens):
+        return False
+    if model_tokens and not any(tok in model.lower() for tok in model_tokens):
+        return False
+    if os_filter and os_filter != "All":
+        if os_type.value.lower() != os_filter.strip().lower():
+            return False
+    if status_filter and status_filter != "All":
+        if status.lower() != status_filter.strip().lower():
+            return False
+    if search_token:
+        haystack = " ".join([name, ip, model, firmware, serial_number, folder_path]).lower()
+        if search_token not in haystack:
+            return False
+    return True
+
+
+def host_matches_airwave_filter(host: HostEntry, flt: AirWaveFilter) -> bool:
+    """Apply client-side AirWaveFilter predicates to an existing HostEntry."""
+    if flt.folder and flt.folder.strip():
+        target = flt.folder.strip()
+        target_segs = _normalized_folder_segments(target)
+        host_segs = _normalized_folder_segments(host.folder_path)
+        prefix_match = bool(
+            target_segs
+            and len(host_segs) >= len(target_segs)
+            and [s.lower() for s in host_segs[: len(target_segs)]]
+            == [s.lower() for s in target_segs]
+        )
+        id_match = bool(host.folder_id and host.folder_id == target)
+        substr_match = target.lower() in (host.folder_path or "").lower()
+        if not (id_match or prefix_match or substr_match):
+            return False
+
+    return _matches_host_attributes(
+        name=host.name,
+        ip=host.ip,
+        model=host.model,
+        firmware=host.firmware,
+        os_type=host.os_type,
+        status=host.airwave_status,
+        folder_path=host.folder_path,
+        serial_number=host.serial_number,
+        name_tokens=_split_csv_filters(flt.name_filter),
+        ip_tokens=_split_csv_filters(flt.ip_filter),
+        model_tokens=_split_csv_filters(flt.model),
+        os_filter=flt.os_filter,
+        status_filter=flt.status_filter,
+        search_token=(flt.search_query or "").strip().lower(),
+    )
 
 
 def _extract_text(value: Any) -> str:
@@ -195,13 +365,21 @@ def _matching_folder_ids(folders: Dict[str, Dict[str, Any]], query: str) -> Set[
     """Return folder IDs (and all descendants) matching a folder ID, name, or breadcrumb path."""
     target = query.strip()
     target_lower = target.lower()
-    matched: Set[str] = set()
+    if not target:
+        return set()
 
-    for fid, fdata in folders.items():
-        fname = str(fdata.get("name", "")).lower()
-        fpath = str(fdata.get("folder_path", "")).lower()
-        if fid == target or target_lower == fname or target_lower in fpath:
-            matched.add(fid)
+    matched: Set[str] = {fid for fid in folders if fid == target}
+    if not matched:
+        for fid, fdata in folders.items():
+            fname = str(fdata.get("name", "")).strip().lower()
+            fpath = str(fdata.get("folder_path", "")).strip().lower()
+            if target_lower == fname or target_lower == fpath:
+                matched.add(fid)
+    if not matched:
+        for fid, fdata in folders.items():
+            fpath = str(fdata.get("folder_path", "")).lower()
+            if target_lower in fpath:
+                matched.add(fid)
 
     # Expand recursively to include child folders of matched parents
     changed = True
@@ -250,6 +428,8 @@ def parse_airwave_devices(
         folder_filter_ids = _matching_folder_ids(folders, flt.folder)
 
     category_tokens = _split_csv_filters(flt.category)
+    name_tokens = _split_csv_filters(flt.name_filter)
+    ip_tokens = _split_csv_filters(flt.ip_filter)
     model_tokens = _split_csv_filters(flt.model)
     search_token = (flt.search_query or "").strip().lower()
 
@@ -299,31 +479,32 @@ def parse_airwave_devices(
                 continue
 
         model = _extract_text(ap.get("model"))
-        if model_tokens:
-            if not any(tok in model.lower() for tok in model_tokens):
-                continue
-
         firmware = _extract_text(ap.get("firmware"))
         os_type = infer_switch_os(model=model, firmware=firmware)
-        if flt.os_filter and flt.os_filter != "All":
-            if os_type.value.lower() != flt.os_filter.strip().lower():
-                continue
-
         is_up_raw = _extract_text(ap.get("is_up")).lower()
         aw_status = "Up" if is_up_raw == "true" else ("Down" if is_up_raw == "false" else "Unknown")
-        if flt.status_filter and flt.status_filter != "All":
-            if aw_status.lower() != flt.status_filter.strip().lower():
-                continue
-
         serial_number = _extract_text(ap.get("serial_number"))
+        if not _matches_host_attributes(
+            name=name,
+            ip=ip,
+            model=model,
+            firmware=firmware,
+            os_type=os_type,
+            status=aw_status,
+            folder_path=folder_path,
+            serial_number=serial_number,
+            name_tokens=name_tokens,
+            ip_tokens=ip_tokens,
+            model_tokens=model_tokens,
+            os_filter=flt.os_filter,
+            status_filter=flt.status_filter,
+            search_token=search_token,
+        ):
+            continue
+
         role = _extract_text(ap.get("operating_mode"))
         if not role and is_stacked:
             role = "Member"
-
-        if search_token:
-            haystack = " ".join([name, ip, model, firmware, serial_number, folder_path]).lower()
-            if search_token not in haystack:
-                continue
 
         hosts.append(
             HostEntry(

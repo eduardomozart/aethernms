@@ -66,6 +66,8 @@ def save_settings_xml(
     flt = settings.airwave_filters
     ET.SubElement(flt_el, "Folder").text = flt.folder or ""
     ET.SubElement(flt_el, "Category").text = flt.category or "switch"
+    ET.SubElement(flt_el, "NameFilter").text = flt.name_filter or ""
+    ET.SubElement(flt_el, "IPFilter").text = flt.ip_filter or ""
     ET.SubElement(flt_el, "Model").text = flt.model or ""
     ET.SubElement(flt_el, "OSFilter").text = flt.os_filter or "All"
     ET.SubElement(flt_el, "StatusFilter").text = flt.status_filter or "All"
@@ -109,6 +111,8 @@ def load_settings_xml(file_path: Path | str = DEFAULT_SETTINGS_PATH) -> AppSetti
     airwave_filters = AirWaveFilter(
         folder=_child_text(flt_el, "Folder", ""),
         category=_child_text(flt_el, "Category", "switch"),
+        name_filter=_child_text(flt_el, "NameFilter", ""),
+        ip_filter=_child_text(flt_el, "IPFilter", ""),
         model=_child_text(flt_el, "Model", ""),
         os_filter=_child_text(flt_el, "OSFilter", "All") or "All",
         status_filter=_child_text(flt_el, "StatusFilter", "All") or "All",

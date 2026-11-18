@@ -149,6 +149,7 @@ class HostEntry:
     device_role: str = ""
     enabled: bool = True
     port: int = 22
+    ping_status: str = "Unknown"
 
     @property
     def display_label(self) -> str:
@@ -159,6 +160,12 @@ class HostEntry:
     def unique_key(self) -> str:
         """Return a deterministic host key used for per-host lookups."""
         return f"{self.ip.strip()}:{self.port}"
+
+
+def is_airwave_host(host: HostEntry) -> bool:
+    """Return True when the device originated from AirWave rather than manual entry."""
+    st = (host.airwave_status or "").strip().lower()
+    return bool(st and st != "manual") or host.folder_id is not None
 
 
 @dataclass
@@ -222,6 +229,8 @@ class AirWaveFilter:
 
     folder: str = ""
     category: str = "switch"
+    name_filter: str = ""
+    ip_filter: str = ""
     model: str = ""
     os_filter: str = "All"  # "All", "AOS-S", "AOS-CX"
     status_filter: str = "All"  # "All", "Up", "Down"
