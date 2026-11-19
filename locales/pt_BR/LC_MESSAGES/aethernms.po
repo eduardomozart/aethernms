@@ -1,27 +1,26 @@
-# Portuguese (Brazil) translations for pssh-ui.
+# Translations template for aethernms.
 # Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the pssh-ui project.
+# This file is distributed under the same license as the aethernms project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
-#
+# 
 # Translators:
 # Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>, 2026
+# 
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: aethernms 0.1.0\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-11-19 14:27-0300\n"
-"PO-Revision-Date: 2026-11-17 22:03+0000\n"
-"Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>,"
-" 2026\n"
-"Language: pt_BR\n"
-"Language-Team: Portuguese (Brazil) "
-"(https://app.transifex.com/eduardomozart/teams/311730/pt_BR/)\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
-"1000000 == 0 ? 1 : 2;\n"
+"PO-Revision-Date: 2026-11-19 17:32+0000\n"
+"Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>, 2026\n"
+"Language-Team: Portuguese (Brazil) (https://app.transifex.com/eduardomozart/teams/311730/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: aethernms/common.py:16 aethernms/web_strings.py:158
 msgid "Config"
@@ -163,7 +162,8 @@ msgstr "Desconhecido"
 
 #: aethernms/job_builder.py:109
 msgid "Select at least one target device matching this Netmiko platform."
-msgstr "Selecione ao menos um dispositivo compatível com esta plataforma Netmiko."
+msgstr ""
+"Selecione ao menos um dispositivo compatível com esta plataforma Netmiko."
 
 #: aethernms/job_builder.py:111
 msgid "Username is required."
@@ -423,21 +423,20 @@ msgstr "Porta Telnet Padrão:"
 
 #: aethernms/web_strings.py:65
 msgid ""
-"Note: Default protocol and ports apply only when creating devices "
-"manually or importing devices from AirWave, and can always be overridden "
-"per device."
+"Note: Default protocol and ports apply only when creating devices manually "
+"or importing devices from AirWave, and can always be overridden per device."
 msgstr ""
 "Observação: O protocolo e as portas padrão aplicam-se apenas ao criar "
-"dispositivos manualmente ou importar dispositivos do AirWave, e sempre "
-"podem ser alterados por dispositivo."
+"dispositivos manualmente ou importar dispositivos do AirWave, e sempre podem"
+" ser alterados por dispositivo."
 
 #: aethernms/web_strings.py:68
 msgid ""
-"Configure UI appearance, Netmiko execution defaults, connection defaults,"
-" and External REST API / Swagger access."
+"Configure UI appearance, Netmiko execution defaults, connection defaults, "
+"and External REST API / Swagger access."
 msgstr ""
-"Configure a aparência da interface, padrões de execução Netmiko, padrões "
-"de conexão e acesso à API REST Externa / Swagger."
+"Configure a aparência da interface, padrões de execução Netmiko, padrões de "
+"conexão e acesso à API REST Externa / Swagger."
 
 #: aethernms/web_strings.py:70
 msgid "External API & Swagger Access"
@@ -449,12 +448,12 @@ msgstr "API REST Externa e Swagger UI"
 
 #: aethernms/web_strings.py:73
 msgid ""
-"Disabled by default. When enabled, external clients must authenticate "
-"with an API Key (X-API-Key or Authorization: Bearer) from an allowed IP."
+"Disabled by default. When enabled, external clients must authenticate with "
+"an API Key (X-API-Key or Authorization: Bearer) from an allowed IP."
 msgstr ""
-"Desativado por padrão. Quando ativado, clientes externos devem autenticar"
-" com uma Chave de API (X-API-Key ou Authorization: Bearer) a partir de um"
-" IP permitido."
+"Desativado por padrão. Quando ativado, clientes externos devem autenticar "
+"com uma Chave de API (X-API-Key ou Authorization: Bearer) a partir de um IP "
+"permitido."
 
 #: aethernms/web_strings.py:75
 msgid "Allowed IP Addresses / CIDRs"
@@ -462,11 +461,11 @@ msgstr "Endereços IP / CIDRs Permitidos"
 
 #: aethernms/web_strings.py:77
 msgid ""
-"Comma-separated IPv4/IPv6 addresses, CIDR blocks (e.g. 10.0.0.0/8), or * "
-"for any IP. Default: 127.0.0.1, ::1."
+"Comma-separated IPv4/IPv6 addresses, CIDR blocks (e.g. 10.0.0.0/8), or * for"
+" any IP. Default: 127.0.0.1, ::1."
 msgstr ""
-"Endereços IPv4/IPv6 separados por vírgula, blocos CIDR (ex.: 10.0.0.0/8) "
-"ou * para qualquer IP. Padrão: 127.0.0.1, ::1."
+"Endereços IPv4/IPv6 separados por vírgula, blocos CIDR (ex.: 10.0.0.0/8) ou "
+"* para qualquer IP. Padrão: 127.0.0.1, ::1."
 
 #: aethernms/web_strings.py:79
 msgid "Your IP:"
@@ -670,11 +669,11 @@ msgstr "A API Externa está atualmente desativada."
 
 #: aethernms/web_strings.py:130
 msgid ""
-"Enable External REST API & Swagger UI in System Settings before using API"
-" keys externally."
+"Enable External REST API & Swagger UI in System Settings before using API "
+"keys externally."
 msgstr ""
-"Ative a API REST Externa e o Swagger UI nas Configurações do Sistema "
-"antes de usar chaves de API externamente."
+"Ative a API REST Externa e o Swagger UI nas Configurações do Sistema antes "
+"de usar chaves de API externamente."
 
 #: aethernms/web_strings.py:132
 msgid "Go to System Settings"
@@ -687,11 +686,10 @@ msgstr "Revogar Chave de API"
 #: aethernms/web_strings.py:134
 #, python-brace-format
 msgid ""
-"Revoke API key '{name}'? Any scripts using it will immediately lose "
-"access."
+"Revoke API key '{name}'? Any scripts using it will immediately lose access."
 msgstr ""
-"Revogar a chave de API '{name}'? Quaisquer scripts que a utilizem "
-"perderão o acesso imediatamente."
+"Revogar a chave de API '{name}'? Quaisquer scripts que a utilizem perderão o"
+" acesso imediatamente."
 
 #: aethernms/web_strings.py:135
 msgid "API key revoked."
@@ -1045,11 +1043,11 @@ msgstr "Aviso de Dispositivo Offline"
 
 #: aethernms/web_strings.py:226
 msgid ""
-"One or more selected devices are currently Down (offline). Do you want to"
-" continue anyway?"
+"One or more selected devices are currently Down (offline). Do you want to "
+"continue anyway?"
 msgstr ""
-"Um ou mais dispositivos selecionados estão atualmente Down (offline). "
-"Deseja continuar mesmo assim?"
+"Um ou mais dispositivos selecionados estão atualmente Down (offline). Deseja"
+" continuar mesmo assim?"
 
 #: aethernms/web_strings.py:227
 msgid "Add Snippet"
@@ -1201,8 +1199,8 @@ msgid ""
 "AirWave-managed device: Device Name, IP, Model, and Group are read-only. "
 "Netmiko Platform, Protocol, and Port can be edited."
 msgstr ""
-"Dispositivo gerenciado pelo AirWave: Nome, IP, Modelo e Grupo são somente"
-" leitura. Plataforma Netmiko, Protocolo e Porta podem ser editados."
+"Dispositivo gerenciado pelo AirWave: Nome, IP, Modelo e Grupo são somente "
+"leitura. Plataforma Netmiko, Protocolo e Porta podem ser editados."
 
 #: aethernms/web_strings.py:266
 msgid "Device Log"
@@ -1298,4 +1296,3 @@ msgstr "Ocultar"
 #: aethernms/web_strings.py:288
 msgid "Refresh Status"
 msgstr "Atualizar Status"
-
