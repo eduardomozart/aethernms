@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Snippet version="1.0">
+    <Name>ArubaOS-S NTP</Name>
+    <Type>Config</Type>
+    <DeviceType>aruba_procurve</DeviceType>
+    <Severity>Info</Severity>
+    <Description>Configure SNTP server on ArubaOS-S switches.</Description>
+    <CreatedAt>2026-11-17T15:00:00</CreatedAt>
+    <Commands>! Configure SNTP server on ArubaOS-S
+timesync sntp
+sntp unicast
+sntp server priority 1 ${NTP Server|text|^[A-Za-z0-9_.-]+$}</Commands>
+</Snippet>

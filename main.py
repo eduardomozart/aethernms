@@ -1,6 +1,6 @@
-"""Application entry point for pssh-ui."""
+"""Application entry point launching the aethernms Py4Web server."""
 
-from pssh_ui.app import main
+from aethernms.app import main
 
 
 if __name__ == "__main__":

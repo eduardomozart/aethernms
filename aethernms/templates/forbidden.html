@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" class="cds--white" data-carbon-theme="white">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>aethernms — 403 Access Denied</title>
+  <link rel="icon" href="/assets/aethernms.ico" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/400.css" />
+  <link rel="stylesheet" href="/static/css/aethernms-carbon.css" />
+  <script>
+    (function () {
+      var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.className = dark ? "cds--g100" : "cds--white";
+      document.documentElement.setAttribute("data-carbon-theme", dark ? "g100" : "white");
+    })();
+  </script>
+</head>
+<body>
+  <div class="login-shell">
+    <header class="cds--header cds--g100">
+      <a class="cds--header__name" href="/">
+        <img src="/assets/aethernms-header.png" alt="aethernms" />
+        <span>aethernms</span>
+        <span class="cds--header__subtitle">Config &amp; Audit Automation</span>
+      </a>
+    </header>
+    <main class="login-main">
+      <section class="login-card" style="max-width:520px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;color:#da1e28;">
+          [[=XML(icon("locked", 28))]]
+          <h1 class="tile-title" style="font-size:22px;">403 — Access Denied</h1>
+        </div>
+        <p style="margin:0 0 20px;line-height:1.5;color:var(--cds-text-secondary);">[[=message]]</p>
+        <div style="display:flex;gap:8px;">
+          <a href="/" class="cds--btn cds--btn--primary">Return to Application</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

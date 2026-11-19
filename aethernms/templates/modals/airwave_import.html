@@ -1,0 +1,80 @@
+<!-- AirWave Import Modal -->
+<div id="modal-airwave" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container xl">
+    <div class="cds--modal-header">
+      <h3 class="cds--modal-header__heading" data-i18n="Import from AirWave">Import from AirWave</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <div id="aw-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
+      <div class="filter-bar">
+        <div class="filter-field">
+          <label class="cds--label" for="aw-url" data-i18n="AirWave URL / IP *">AirWave URL / IP *</label>
+          <input id="aw-url" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field compact">
+          <label class="cds--label" for="aw-user" data-i18n="Username *">Username *</label>
+          <input id="aw-user" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field compact">
+          <label class="cds--label" for="aw-pass" data-i18n="Password *">Password *</label>
+          <input id="aw-pass" class="cds--text-input" type="password" autocomplete="new-password" />
+        </div>
+        <label class="checkbox-label" style="padding-bottom:6px;"><input id="aw-ssl" type="checkbox" /> <span data-i18n="Verify SSL">Verify SSL</span></label>
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-aw-fetch">
+          [[=XML(icon("cloud-download", 16))]]
+          <span data-i18n="Fetch Inventory">Fetch Inventory</span>
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-field compact">
+          <label class="cds--label" for="aw-flt-folder" data-i18n="Group">Group</label>
+          <select id="aw-flt-folder" class="cds--select-input"></select>
+        </div>
+        <div class="filter-field">
+          <label class="cds--label" for="aw-flt-name" data-i18n="Device">Device</label>
+          <input id="aw-flt-name" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field">
+          <label class="cds--label" for="aw-flt-ip" data-i18n="IP Address">IP Address</label>
+          <input id="aw-flt-ip" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field compact">
+          <label class="cds--label" for="aw-flt-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
+          <select id="aw-flt-os" class="cds--select-input"></select>
+        </div>
+        <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-aw-select-all" data-i18n="Select All">Select All</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cds--data-table">
+          <thead>
+            <tr>
+              <th class="col-check"></th>
+              <th data-i18n="Device">Device</th>
+              <th data-i18n="Status">Status</th>
+              <th data-i18n="IP Address">IP Address</th>
+              <th data-i18n="Model">Model</th>
+              <th data-i18n="OS Type">OS Type</th>
+              <th data-i18n="Netmiko Platform">Netmiko Platform</th>
+              <th data-i18n="Protocol">Protocol</th>
+              <th data-i18n="Group">Group</th>
+            </tr>
+          </thead>
+          <tbody id="aw-tbody"></tbody>
+        </table>
+      </div>
+      <div id="aw-pagination" class="cds--pagination"></div>
+    </div>
+    <div class="cds--modal-footer spread">
+      <span id="aw-status-text" class="cds--helper-text" data-i18n="Enter AirWave credentials and click Fetch Inventory.">Enter AirWave credentials and click Fetch Inventory.</span>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+        <button type="button" class="cds--btn cds--btn--primary" id="btn-aw-import" data-i18n="Import Selected">Import Selected</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'pssh_ui/**/*.py'
+      - 'aethernms/**/*.py'
       - 'main.py'
       - 'babel.cfg'
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install Babel
 
-      - name: Extract strings to locales/pssh_ui.pot
+      - name: Extract strings to locales/aethernms.pot
         id: extract
         run: |
           python - <<'EOF'
@@ -48,7 +48,7 @@ jobs:
           import sys
           import tempfile
 
-          pot_path = pathlib.Path("locales/pssh_ui.pot")
+          pot_path = pathlib.Path("locales/aethernms.pot")
 
           def normalize(text: str) -> str:
               return "\n".join(
@@ -67,7 +67,7 @@ jobs:
           before = normalize(pot_path.read_text(encoding="utf-8")) if pot_path.is_file() else ""
 
           with tempfile.TemporaryDirectory() as tmpdir:
-              tmp_pot = pathlib.Path(tmpdir) / "pssh_ui.pot"
+              tmp_pot = pathlib.Path(tmpdir) / "aethernms.pot"
               subprocess.run(
                   [
                       sys.executable,
@@ -78,7 +78,7 @@ jobs:
                       "babel.cfg",
                       "-o",
                       str(tmp_pot),
-                      "--project=pssh-ui",
+                      "--project=aethernms",
                       "--version=0.1.0",
                       ".",
                   ],
@@ -99,9 +99,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add locales/pssh_ui.pot
+          git add locales/aethernms.pot
           if ! git diff --cached --quiet; then
-            git commit -m "Update translation template (pssh_ui.pot)"
+            git commit -m "Update translation template (aethernms.pot)"
             git pull --rebase origin "${{ github.ref_name }}"
             git push origin HEAD:"${{ github.ref_name }}"
           fi

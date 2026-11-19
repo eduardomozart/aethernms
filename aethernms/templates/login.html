@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="[[=html_lang]]" class="cds--[[=initial_theme]]" data-carbon-theme="[[=initial_theme]]" data-theme-mode="[[=theme_mode]]" data-needs-setup="[['true' if needs_setup else 'false']]">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>aethernms — Sign In</title>
+  <link rel="icon" href="/assets/aethernms.ico" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/300.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/500.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
+  <link rel="stylesheet" href="/static/css/aethernms-carbon.css" />
+</head>
+<body>
+  <div class="login-shell">
+    <header class="cds--header cds--g100">
+      <a class="cds--header__name" href="/login">
+        <img src="/assets/aethernms-header.png" alt="aethernms" />
+        <span>aethernms</span>
+        <span class="cds--header__subtitle" data-i18n="Config & Audit Automation">Config &amp; Audit Automation</span>
+      </a>
+      <div class="cds--header__global">
+        [[if api_enabled:]]
+        <a class="cds--header__action" href="/api/docs">
+          [[=XML(icon("api", 20))]]
+          <span data-i18n="API Docs (Swagger)">API Docs (Swagger)</span>
+        </a>
+        [[pass]]
+      </div>
+    </header>
+
+    <main class="login-main">
+      <section id="login-card" class="login-card" style="visibility:hidden;">
+        <div class="login-brand">
+          <img src="/assets/aethernms.png" alt="aethernms logo" />
+          <div>
+            <h1 id="auth-heading" class="tile-title" style="font-size:22px;font-weight:400;">Sign In</h1>
+            <div id="auth-sub" class="cds--helper-text">Config &amp; Audit Automation</div>
+          </div>
+        </div>
+
+        <div id="auth-error" class="cds--inline-notification cds--inline-notification--error hidden" role="alert">
+          <span id="auth-error-msg"></span>
+        </div>
+
+        <form id="auth-form" style="display:flex;flex-direction:column;gap:14px;">
+          <div class="cds--form-item">
+            <label class="cds--label" for="auth-username" data-i18n="Username *">Username *</label>
+            <input id="auth-username" class="cds--text-input" type="text" autocomplete="username" required autofocus />
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="auth-password" data-i18n="Password *">Password *</label>
+            <input id="auth-password" class="cds--text-input" type="password" autocomplete="current-password" required />
+          </div>
+          <div id="confirm-wrap" class="cds--form-item hidden">
+            <label class="cds--label" for="auth-confirm" data-i18n="Confirm Password *">Confirm Password *</label>
+            <input id="auth-confirm" class="cds--text-input" type="password" autocomplete="new-password" />
+          </div>
+          <button id="auth-submit" class="cds--btn cds--btn--primary" type="submit" style="width:100%;margin-top:6px;">
+            Sign In
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (async function () {
+      const rootEl = document.documentElement;
+      if (rootEl.getAttribute("data-theme-mode") === "auto" && window.matchMedia) {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const theme = prefersDark ? "g100" : "white";
+        rootEl.setAttribute("data-carbon-theme", theme);
+        rootEl.className = "cds--" + theme;
+      }
+
+      let catalog = {};
+      const t = (key) => catalog[key] || key;
+
+      try {
+        const i18nRes = await fetch("/i18n");
+        if (i18nRes.ok) {
+          const i18nData = await i18nRes.json();
+          catalog = i18nData.catalog || {};
+          document.querySelectorAll("[data-i18n]").forEach((el) => {
+            el.textContent = t(el.getAttribute("data-i18n"));
+          });
+        }
+      } catch (_e) {}
+
+      const needsSetup = rootEl.getAttribute("data-needs-setup") === "true";
+      const heading = document.getElementById("auth-heading");
+      const sub = document.getElementById("auth-sub");
+      const confirmWrap = document.getElementById("confirm-wrap");
+      const confirmInput = document.getElementById("auth-confirm");
+      const submitBtn = document.getElementById("auth-submit");
+      const errBox = document.getElementById("auth-error");
+      const errMsg = document.getElementById("auth-error-msg");
+
+      function safeNextPath() {
+        const params = new URLSearchParams(window.location.search);
+        const nxt = (params.get("next") || "").trim();
+        return nxt.startsWith("/") && !nxt.startsWith("//") ? nxt : "/";
+      }
+
+      if (needsSetup) {
+        heading.textContent = t("Initial Administrator Setup");
+        sub.textContent = t("Create the first administrator account to secure aethernms.");
+        submitBtn.textContent = t("Create Administrator");
+        confirmWrap.classList.remove("hidden");
+        confirmInput.required = true;
+      } else {
+        heading.textContent = t("Sign In");
+        sub.textContent = t("Config & Audit Automation");
+        submitBtn.textContent = t("Sign In");
+      }
+      document.title = `aethernms — ${heading.textContent}`;
+      document.getElementById("login-card").style.visibility = "visible";
+      document.getElementById("auth-username").focus();
+
+      document.getElementById("auth-form").addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        errBox.classList.add("hidden");
+        const username = document.getElementById("auth-username").value.trim();
+        const password = document.getElementById("auth-password").value;
+        if (needsSetup && password !== confirmInput.value) {
+          errMsg.textContent = t("Passwords do not match.");
+          errBox.classList.remove("hidden");
+          return;
+        }
+        submitBtn.disabled = true;
+        try {
+          const endpoint = needsSetup ? "/setup" : "/login";
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errMsg.textContent = t(data.error || "Invalid username or password.");
+            errBox.classList.remove("hidden");
+            return;
+          }
+          window.location.href = safeNextPath();
+        } catch (err) {
+          errMsg.textContent = String(err);
+          errBox.classList.remove("hidden");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

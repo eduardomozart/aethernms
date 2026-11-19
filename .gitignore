@@ -55,7 +55,7 @@ cover/
 # Translations
 *.mo
 *.pot
-!locales/pssh_ui.pot
+!locales/aethernms.pot
 
 # Django stuff:
 *.log
@@ -223,10 +223,21 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Application runtime logs, state, and compiled localization binaries
+# Frontend packages installed via Composer (composer.json + composer.lock)
+aethernms/static/vendor/
+
+# Application runtime logs, state, SQLite databases, and compiled localization binaries
 logs/
 settings.xml
+devices.xml
+jobs.xml
 session.xml
 device_models.xml
+*.db
+*.db-wal
+*.db-shm
+*.table
+.session_secret
+sql.log
 locales/**/LC_MESSAGES/*.mo
 

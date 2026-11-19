@@ -1,0 +1,80 @@
+[[extend 'layout.html']]
+
+<!-- Devices Inventory & AirWave Integration -->
+<section id="view-devices" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <h2 class="tile-title" data-i18n="Devices">Devices</h2>
+      <div class="tile-actions">
+        <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-ping-devices">
+          [[=XML(icon("renew", 16))]]
+          <span data-i18n="Refresh Status">Refresh Status</span>
+        </button>
+        <button type="button" class="cds--btn cds--btn--tertiary cds--btn--sm" id="btn-open-airwave">
+          [[=XML(icon("cloud-download", 16))]]
+          <span data-i18n="Import from AirWave...">Import from AirWave...</span>
+        </button>
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-device">
+          [[=XML(icon("add", 16))]]
+          <span data-i18n="Add Device">Add Device</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="dev-global-query-banner" class="cds--inline-notification hidden">
+      <span><strong data-i18n="Global Search Filter:">Global Search Filter:</strong> <code id="dev-global-query-text" class="mono"></code></span>
+      <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-clear-global-query" data-i18n="Clear Filter">Clear Filter</button>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label class="cds--label" for="flt-dev-name" data-i18n="Device">Device</label>
+        <input id="flt-dev-name" class="cds--text-input" type="text" />
+      </div>
+      <div class="filter-field">
+        <label class="cds--label" for="flt-dev-ip" data-i18n="IP Address">IP Address</label>
+        <input id="flt-dev-ip" class="cds--text-input" type="text" />
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-dev-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
+        <select id="flt-dev-os" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field">
+        <label class="cds--label" for="flt-dev-group" data-i18n="Group">Group</label>
+        <input id="flt-dev-group" class="cds--text-input" type="text" />
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-dev-status" data-i18n="Status">Status</label>
+        <select id="flt-dev-status" class="cds--select-input"></select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="cds--data-table">
+        <thead>
+          <tr>
+            <th data-i18n="Device">Device</th>
+            <th data-i18n="Status">Status</th>
+            <th data-i18n="IP Address">IP Address</th>
+            <th data-i18n="Netmiko Platform">Netmiko Platform</th>
+            <th data-i18n="Protocol">Protocol</th>
+            <th data-i18n="Port">Port</th>
+            <th data-i18n="Model">Model</th>
+            <th data-i18n="Group">Group</th>
+            <th class="col-actions" data-i18n="Action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="devices-tbody"></tbody>
+      </table>
+    </div>
+    <div id="devices-pagination" class="cds--pagination"></div>
+  </div>
+</section>
+
+[[include 'modals/device_editor.html']]
+[[include 'modals/airwave_import.html']]
+[[include 'modals/unmapped_models.html']]
+
+[[block page_scripts]]
+<script src="/static/js/devices.js"></script>
+[[end]]

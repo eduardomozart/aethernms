@@ -1,0 +1,132 @@
+[[extend 'layout.html']]
+
+<!-- AirWave Config & Audit Jobs Layout -->
+<section id="view-jobs" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <h2 class="tile-title" data-i18n="Jobs">Jobs</h2>
+      <div class="tile-actions">
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-job">
+          [[=XML(icon("add", 16))]]
+          <span data-i18n="Add Job">Add Job</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label class="cds--label" for="flt-job-name" data-i18n="Job Name">Job Name</label>
+        <input id="flt-job-name" class="cds--text-input" type="text" />
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-job-type" data-i18n="Job Type">Job Type</label>
+        <select id="flt-job-type" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-job-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
+        <select id="flt-job-os" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-job-status" data-i18n="Status">Status</label>
+        <select id="flt-job-status" class="cds--select-input"></select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="cds--data-table">
+        <thead>
+          <tr>
+            <th data-i18n="Job Name">Job Name</th>
+            <th data-i18n="Job Type">Job Type</th>
+            <th data-i18n="Netmiko Platform">Netmiko Platform</th>
+            <th data-i18n="Status">Status</th>
+            <th data-i18n="Creation Time">Creation Time</th>
+            <th data-i18n="Start Time">Start Time</th>
+            <th data-i18n="End Time">End Time</th>
+            <th class="col-actions" data-i18n="Action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="jobs-tbody"></tbody>
+      </table>
+    </div>
+    <div id="jobs-pagination" class="cds--pagination"></div>
+  </div>
+
+  <!-- Lower Split Panel: Job Details (Details / Devices) -->
+  <div class="cds--tile" id="job-details-card">
+    <div class="tile-header" style="margin-bottom:6px;">
+      <h3 id="job-details-title" class="tile-title" style="font-size:16px;" data-i18n="Job Details">Job Details</h3>
+    </div>
+
+    <div class="cds--tabs" role="tablist">
+      <button type="button" class="cds--tabs__nav-link active" data-job-subtab="details" data-i18n="Details">Details</button>
+      <button type="button" class="cds--tabs__nav-link" data-job-subtab="devices" data-i18n="Devices">Devices</button>
+    </div>
+
+    <div id="job-subtab-details">
+      <div class="metrics-strip">
+        <span class="metric-total"><span data-i18n="Total:">Total:</span> <span id="jd-total">0</span></span>
+        <span class="metric-ok">[[=XML(icon("checkmark-filled", 16))]] <span data-i18n="Success">Success</span>: <span id="jd-ok">0</span></span>
+        <span class="metric-fail">[[=XML(icon("error-filled", 16))]] <span data-i18n="Failed">Failed</span>: <span id="jd-fail">0</span></span>
+        <span id="jd-meta-extra" class="metric-meta"></span>
+      </div>
+
+      <div class="cds--form-item" style="margin-bottom:10px;">
+        <label class="cds--label" data-i18n="Description">Description</label>
+        <div id="jd-desc" class="cli-preview" style="max-height:76px;white-space:pre-wrap;">-</div>
+      </div>
+
+      <div class="cds--form-item" style="margin-bottom:10px;">
+        <label class="cds--label" data-i18n="Config Commands">Config Commands</label>
+        <pre id="jd-cmds" class="cli-preview"></pre>
+      </div>
+
+      <div id="jd-audit-wrap" class="cds--form-item hidden">
+        <label class="cds--label" data-i18n="Audit Validation RegEx">Audit Validation RegEx</label>
+        <pre id="jd-audit" class="cli-preview"></pre>
+      </div>
+    </div>
+
+    <div id="job-subtab-devices" class="hidden">
+      <div class="filter-bar">
+        <div class="filter-field">
+          <label class="cds--label" for="flt-jd-name" data-i18n="Device">Device</label>
+          <input id="flt-jd-name" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field">
+          <label class="cds--label" for="flt-jd-ip" data-i18n="IP Address">IP Address</label>
+          <input id="flt-jd-ip" class="cds--text-input" type="text" />
+        </div>
+        <div class="filter-field compact">
+          <label class="cds--label" for="flt-jd-status" data-i18n="Status">Status</label>
+          <select id="flt-jd-status" class="cds--select-input"></select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cds--data-table">
+          <thead>
+            <tr>
+              <th data-i18n="Device">Device</th>
+              <th data-i18n="IP Address">IP Address</th>
+              <th data-i18n="Status">Status</th>
+              <th data-i18n="Start Time">Start Time</th>
+              <th data-i18n="End Time">End Time</th>
+              <th data-i18n="Operation Result">Operation Result</th>
+              <th class="col-actions" data-i18n="Log">Log</th>
+            </tr>
+          </thead>
+          <tbody id="job-devices-tbody"></tbody>
+        </table>
+      </div>
+      <div id="job-devices-pagination" class="cds--pagination"></div>
+    </div>
+  </div>
+</section>
+
+[[include 'modals/add_job.html']]
+[[include 'modals/device_log.html']]
+
+[[block page_scripts]]
+<script src="/static/js/jobs.js"></script>
+[[end]]

@@ -1,6 +1,6 @@
 """Tests for ${var|type|regex} and ${var|['Item 1', 'Item 2']} parsing, validation, and rendering."""
 
-from pssh_ui.models import HostEntry, SwitchOS
+from pssh_ui.models import HostEntry
 from pssh_ui.variables import (
     extract_variables,
     render_template,
@@ -127,7 +127,7 @@ def test_backwards_compatible_regex_and_html_type_validation():
 
 def test_render_template_substitutes_host_context():
     tpl = "hostname ${device_name}\nlogging source-ip ${device_ip}\n"
-    host = HostEntry(name="SW-EDGE-01", ip="10.20.30.40", os_type=SwitchOS.AOS_S)
+    host = HostEntry(name="SW-EDGE-01", ip="10.20.30.40", os_type="aruba_procurve")
     rendered = render_template(tpl, {}, host=host)
     assert "hostname SW-EDGE-01" in rendered
     assert "logging source-ip 10.20.30.40" in rendered

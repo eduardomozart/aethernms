@@ -1,0 +1,48 @@
+[[extend 'layout.html']]
+
+<nav aria-label="Breadcrumb">
+  <ol class="anms-breadcrumb">
+    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
+    <li>/</li>
+    <li aria-current="page" data-i18n="Users">Users</li>
+  </ol>
+</nav>
+
+<section id="view-admin-users" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <div>
+        <h2 class="tile-title" data-i18n="Users">Users</h2>
+        <span class="cds--helper-text" data-i18n="Manage user accounts, role assignments, and active status.">Manage user accounts, role assignments, and active status.</span>
+      </div>
+      <div class="tile-actions">
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-user">
+          [[=XML(icon("add", 16))]]
+          <span data-i18n="Add User">Add User</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="cds--data-table">
+        <thead>
+          <tr>
+            <th data-i18n="Username">Username</th>
+            <th data-i18n="Display Name">Display Name</th>
+            <th data-i18n="Role">Role</th>
+            <th data-i18n="Status">Status</th>
+            <th data-i18n="Created">Created</th>
+            <th class="col-actions" data-i18n="Action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+[[include 'modals/user_editor.html']]
+
+[[block page_scripts]]
+<script src="/static/js/users.js"></script>
+[[end]]

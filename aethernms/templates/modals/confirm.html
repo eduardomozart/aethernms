@@ -1,0 +1,18 @@
+<!-- Reusable Confirmation Modal -->
+<div id="modal-confirm" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container" style="max-width:460px;">
+    <div class="cds--modal-header">
+      <h3 id="confirm-title" class="cds--modal-header__heading" data-i18n="Confirm">Confirm</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <p id="confirm-message" style="margin:0;white-space:pre-line;"></p>
+    </div>
+    <div class="cds--modal-footer">
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+      <button type="button" class="cds--btn cds--btn--danger" id="confirm-ok-btn" data-i18n="Confirm">Confirm</button>
+    </div>
+  </div>
+</div>

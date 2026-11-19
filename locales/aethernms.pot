@@ -1,0 +1,1260 @@
+# Translations template for aethernms.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the aethernms project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: aethernms 0.1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-19 14:27-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: aethernms/common.py:16 aethernms/web_strings.py:158
+msgid "Config"
+msgstr ""
+
+#: aethernms/common.py:18 aethernms/web_strings.py:159
+msgid "Audit and Remediate"
+msgstr ""
+
+#: aethernms/common.py:32
+msgid "Invalid CLI input"
+msgstr ""
+
+#: aethernms/common.py:33
+msgid "Invalid command or parameter"
+msgstr ""
+
+#: aethernms/common.py:34
+msgid "Ambiguous command"
+msgstr ""
+
+#: aethernms/common.py:35
+msgid "Incomplete command"
+msgstr ""
+
+#: aethernms/common.py:36
+msgid "Unknown command"
+msgstr ""
+
+#: aethernms/common.py:37
+msgid "Execution error"
+msgstr ""
+
+#: aethernms/common.py:38
+msgid "Target entity not found"
+msgstr ""
+
+#: aethernms/common.py:39
+msgid "Authentication / Authorization failure"
+msgstr ""
+
+#: aethernms/common.py:40 aethernms/common.py:41
+msgid "Command rejected by switch"
+msgstr ""
+
+#: aethernms/common.py:42
+msgid "SSH communication error"
+msgstr ""
+
+#: aethernms/common.py:43
+msgid "Communication error"
+msgstr ""
+
+#: aethernms/common.py:44
+msgid "CLI error"
+msgstr ""
+
+#: aethernms/common.py:45
+msgid "Expected audit RegEx not found in output"
+msgstr ""
+
+#: aethernms/common.py:51
+#, python-brace-format
+msgid "Invalid audit RegEx: {err}"
+msgstr ""
+
+#: aethernms/common.py:64
+#, python-format
+msgid "%d error detected"
+msgid_plural "%d errors detected"
+msgstr[0] ""
+msgstr[1] ""
+
+#: aethernms/common.py:73
+#, python-format
+msgid "Audit failed (%d RegEx pattern not matched)"
+msgid_plural "Audit failed (%d RegEx patterns not matched)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: aethernms/common.py:83
+#, python-format
+msgid "Completed (%d command)"
+msgid_plural "Completed (%d commands)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: aethernms/common.py:87
+#, python-brace-format
+msgid "Skipped (no commands for {os})"
+msgstr ""
+
+#: aethernms/common.py:90
+msgid "Audit failed"
+msgstr ""
+
+#: aethernms/common.py:91
+msgid "Executing..."
+msgstr ""
+
+#: aethernms/common.py:92
+msgid "Cancelled by operator"
+msgstr ""
+
+#: aethernms/common.py:93
+msgid "Cancelled before start"
+msgstr ""
+
+#: aethernms/common.py:94
+msgid "Authentication failed"
+msgstr ""
+
+#: aethernms/common.py:95
+msgid "SSH connection error"
+msgstr ""
+
+#: aethernms/common.py:96
+msgid "Connection error"
+msgstr ""
+
+#: aethernms/common.py:97
+msgid "Unexpected worker error"
+msgstr ""
+
+#: aethernms/common.py:104 aethernms/web_strings.py:156
+msgid "All"
+msgstr ""
+
+#: aethernms/common.py:131 aethernms/web_strings.py:157
+msgid "Unmapped"
+msgstr ""
+
+#: aethernms/common.py:131 aethernms/web_strings.py:155
+msgid "Unknown"
+msgstr ""
+
+#: aethernms/job_builder.py:109
+msgid "Select at least one target device matching this Netmiko platform."
+msgstr ""
+
+#: aethernms/job_builder.py:111
+msgid "Username is required."
+msgstr ""
+
+#: aethernms/job_builder.py:113
+msgid "Password is required."
+msgstr ""
+
+#: aethernms/job_builder.py:130
+msgid "No executable commands found (check script contents or '!' comments)."
+msgstr ""
+
+#: aethernms/job_builder.py:133
+msgid "Commands cannot be empty."
+msgstr ""
+
+#: aethernms/variables.py:184
+#, python-brace-format
+msgid "No options available for '{name}'."
+msgstr ""
+
+#: aethernms/variables.py:186
+#, python-brace-format
+msgid "Select a valid option for '{name}'."
+msgstr ""
+
+#: aethernms/variables.py:193
+#, python-brace-format
+msgid "Invalid regex '{regex}' for '{name}': {err}"
+msgstr ""
+
+#: aethernms/variables.py:197
+#, python-brace-format
+msgid "Value for '{name}' must match regex: {regex}"
+msgstr ""
+
+#: aethernms/variables.py:202
+#, python-brace-format
+msgid "Value for '{name}' is required."
+msgstr ""
+
+#: aethernms/web_strings.py:11
+msgid "Config & Audit Automation"
+msgstr ""
+
+#: aethernms/web_strings.py:12
+msgid "Jobs"
+msgstr ""
+
+#: aethernms/web_strings.py:13
+msgid "Snippets"
+msgstr ""
+
+#: aethernms/web_strings.py:14
+msgid "Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:15
+msgid "Administration"
+msgstr ""
+
+#: aethernms/web_strings.py:16
+msgid "System Settings"
+msgstr ""
+
+#: aethernms/web_strings.py:17
+msgid "Users"
+msgstr ""
+
+#: aethernms/web_strings.py:18
+msgid "Roles"
+msgstr ""
+
+#: aethernms/web_strings.py:19
+msgid "API Keys"
+msgstr ""
+
+#: aethernms/web_strings.py:20
+msgid "Settings"
+msgstr ""
+
+#: aethernms/web_strings.py:21
+msgid "About"
+msgstr ""
+
+#: aethernms/web_strings.py:22
+#, python-brace-format
+msgid "About {app}"
+msgstr ""
+
+#: aethernms/web_strings.py:23
+msgid "API Docs (Swagger)"
+msgstr ""
+
+#: aethernms/web_strings.py:24
+msgid "My Account"
+msgstr ""
+
+#: aethernms/web_strings.py:25
+msgid "Sign Out"
+msgstr ""
+
+#: aethernms/web_strings.py:26
+msgid "Sign In"
+msgstr ""
+
+#: aethernms/web_strings.py:27
+msgid "Initial Administrator Setup"
+msgstr ""
+
+#: aethernms/web_strings.py:28
+msgid "Create the first administrator account to secure aethernms."
+msgstr ""
+
+#: aethernms/web_strings.py:29
+msgid "Create Administrator"
+msgstr ""
+
+#: aethernms/web_strings.py:30
+msgid "Username"
+msgstr ""
+
+#: aethernms/web_strings.py:31
+msgid "Username *"
+msgstr ""
+
+#: aethernms/web_strings.py:32
+msgid "Display Name"
+msgstr ""
+
+#: aethernms/web_strings.py:33
+msgid "Password"
+msgstr ""
+
+#: aethernms/web_strings.py:34
+msgid "Password *"
+msgstr ""
+
+#: aethernms/web_strings.py:35
+msgid "Confirm Password *"
+msgstr ""
+
+#: aethernms/web_strings.py:36
+msgid "Current Password *"
+msgstr ""
+
+#: aethernms/web_strings.py:37
+msgid "New Password"
+msgstr ""
+
+#: aethernms/web_strings.py:38
+msgid "New Password *"
+msgstr ""
+
+#: aethernms/web_strings.py:39
+msgid "Leave blank to keep existing password."
+msgstr ""
+
+#: aethernms/web_strings.py:40
+msgid "Change Password"
+msgstr ""
+
+#: aethernms/web_strings.py:41
+msgid "Passwords do not match."
+msgstr ""
+
+#: aethernms/web_strings.py:42
+msgid "Invalid username or password."
+msgstr ""
+
+#: aethernms/web_strings.py:43
+msgid "Search"
+msgstr ""
+
+#: aethernms/web_strings.py:44
+msgid "Search devices by name, IP, model, group..."
+msgstr ""
+
+#: aethernms/web_strings.py:45
+msgid "No matching devices found."
+msgstr ""
+
+#: aethernms/web_strings.py:46
+msgid "View all matching devices in Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:47
+msgid "Global Search Filter:"
+msgstr ""
+
+#: aethernms/web_strings.py:48
+msgid "Clear Filter"
+msgstr ""
+
+#: aethernms/web_strings.py:49
+msgid "Appearance"
+msgstr ""
+
+#: aethernms/web_strings.py:50
+msgid "Language:"
+msgstr ""
+
+#: aethernms/web_strings.py:51
+msgid "Dark Theme:"
+msgstr ""
+
+#: aethernms/web_strings.py:52
+msgid "Auto (OS Default)"
+msgstr ""
+
+#: aethernms/web_strings.py:53
+msgid "Light"
+msgstr ""
+
+#: aethernms/web_strings.py:54
+msgid "Dark"
+msgstr ""
+
+#: aethernms/web_strings.py:55
+msgid "Execution Defaults"
+msgstr ""
+
+#: aethernms/web_strings.py:56
+msgid "Default Username:"
+msgstr ""
+
+#: aethernms/web_strings.py:57
+msgid "Max Parallel Executions:"
+msgstr ""
+
+#: aethernms/web_strings.py:58
+msgid "Connect Timeout (s):"
+msgstr ""
+
+#: aethernms/web_strings.py:59
+msgid "Command Timeout (s):"
+msgstr ""
+
+#: aethernms/web_strings.py:60
+msgid "Connection Defaults"
+msgstr ""
+
+#: aethernms/web_strings.py:61
+msgid "Default Protocol:"
+msgstr ""
+
+#: aethernms/web_strings.py:62
+msgid "Default SSH Port:"
+msgstr ""
+
+#: aethernms/web_strings.py:63
+msgid "Default Telnet Port:"
+msgstr ""
+
+#: aethernms/web_strings.py:65
+msgid ""
+"Note: Default protocol and ports apply only when creating devices "
+"manually or importing devices from AirWave, and can always be overridden "
+"per device."
+msgstr ""
+
+#: aethernms/web_strings.py:68
+msgid ""
+"Configure UI appearance, Netmiko execution defaults, connection defaults,"
+" and External REST API / Swagger access."
+msgstr ""
+
+#: aethernms/web_strings.py:70
+msgid "External API & Swagger Access"
+msgstr ""
+
+#: aethernms/web_strings.py:71
+msgid "External REST API & Swagger UI"
+msgstr ""
+
+#: aethernms/web_strings.py:73
+msgid ""
+"Disabled by default. When enabled, external clients must authenticate "
+"with an API Key (X-API-Key or Authorization: Bearer) from an allowed IP."
+msgstr ""
+
+#: aethernms/web_strings.py:75
+msgid "Allowed IP Addresses / CIDRs"
+msgstr ""
+
+#: aethernms/web_strings.py:77
+msgid ""
+"Comma-separated IPv4/IPv6 addresses, CIDR blocks (e.g. 10.0.0.0/8), or * "
+"for any IP. Default: 127.0.0.1, ::1."
+msgstr ""
+
+#: aethernms/web_strings.py:79
+msgid "Your IP:"
+msgstr ""
+
+#: aethernms/web_strings.py:80
+msgid "Open Swagger UI"
+msgstr ""
+
+#: aethernms/web_strings.py:81
+msgid "Save Settings"
+msgstr ""
+
+#: aethernms/web_strings.py:82
+msgid "Enabled"
+msgstr ""
+
+#: aethernms/web_strings.py:83
+msgid "Disabled"
+msgstr ""
+
+#: aethernms/web_strings.py:84
+msgid "Active"
+msgstr ""
+
+#: aethernms/web_strings.py:85
+msgid "Active Account"
+msgstr ""
+
+#: aethernms/web_strings.py:86
+msgid "You"
+msgstr ""
+
+#: aethernms/web_strings.py:87
+msgid "Add User"
+msgstr ""
+
+#: aethernms/web_strings.py:88
+msgid "Edit User"
+msgstr ""
+
+#: aethernms/web_strings.py:89
+msgid "Delete User"
+msgstr ""
+
+#: aethernms/web_strings.py:90
+#, python-brace-format
+msgid "Delete user account '{name}'?"
+msgstr ""
+
+#: aethernms/web_strings.py:91
+msgid "User saved."
+msgstr ""
+
+#: aethernms/web_strings.py:92
+msgid "User deleted."
+msgstr ""
+
+#: aethernms/web_strings.py:93
+msgid "Manage user accounts, role assignments, and active status."
+msgstr ""
+
+#: aethernms/web_strings.py:94
+msgid "Role"
+msgstr ""
+
+#: aethernms/web_strings.py:95
+msgid "Role *"
+msgstr ""
+
+#: aethernms/web_strings.py:96
+msgid "Role Name"
+msgstr ""
+
+#: aethernms/web_strings.py:97
+msgid "Role Name *"
+msgstr ""
+
+#: aethernms/web_strings.py:98
+msgid "Role Scope"
+msgstr ""
+
+#: aethernms/web_strings.py:99
+msgid "Inherit User Role"
+msgstr ""
+
+#: aethernms/web_strings.py:100
+msgid "Add Role"
+msgstr ""
+
+#: aethernms/web_strings.py:101
+msgid "Edit Role"
+msgstr ""
+
+#: aethernms/web_strings.py:102
+msgid "Delete Role"
+msgstr ""
+
+#: aethernms/web_strings.py:103
+#, python-brace-format
+msgid "Delete custom role '{name}'?"
+msgstr ""
+
+#: aethernms/web_strings.py:104
+msgid "Role saved."
+msgstr ""
+
+#: aethernms/web_strings.py:105
+msgid "Role deleted."
+msgstr ""
+
+#: aethernms/web_strings.py:106
+msgid "Manage built-in and custom RBAC roles and granular permission sets."
+msgstr ""
+
+#: aethernms/web_strings.py:107
+msgid "Type"
+msgstr ""
+
+#: aethernms/web_strings.py:108
+msgid "System"
+msgstr ""
+
+#: aethernms/web_strings.py:109
+msgid "Custom"
+msgstr ""
+
+#: aethernms/web_strings.py:110
+msgid "Permissions"
+msgstr ""
+
+#: aethernms/web_strings.py:111
+msgid "View"
+msgstr ""
+
+#: aethernms/web_strings.py:112
+msgid "Owner"
+msgstr ""
+
+#: aethernms/web_strings.py:113
+msgid "View Jobs & Logs"
+msgstr ""
+
+#: aethernms/web_strings.py:114
+msgid "Create, Run & Stop Jobs"
+msgstr ""
+
+#: aethernms/web_strings.py:115
+msgid "Delete Jobs"
+msgstr ""
+
+#: aethernms/web_strings.py:116
+msgid "View & Export Snippets"
+msgstr ""
+
+#: aethernms/web_strings.py:117
+msgid "Create, Edit, Import & Delete Snippets"
+msgstr ""
+
+#: aethernms/web_strings.py:118
+msgid "View & Ping Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:119
+msgid "Create, Edit & Delete Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:120
+msgid "Fetch & Import AirWave Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:121
+msgid "Manage System Settings & External API"
+msgstr ""
+
+#: aethernms/web_strings.py:122
+msgid "Manage Users"
+msgstr ""
+
+#: aethernms/web_strings.py:123
+msgid "Manage Roles"
+msgstr ""
+
+#: aethernms/web_strings.py:124
+msgid "Manage API Keys"
+msgstr ""
+
+#: aethernms/web_strings.py:126
+msgid ""
+"Generate and revoke REST API keys for external automation (X-API-Key or "
+"Authorization: Bearer)."
+msgstr ""
+
+#: aethernms/web_strings.py:128
+msgid "External API is currently disabled."
+msgstr ""
+
+#: aethernms/web_strings.py:130
+msgid ""
+"Enable External REST API & Swagger UI in System Settings before using API"
+" keys externally."
+msgstr ""
+
+#: aethernms/web_strings.py:132
+msgid "Go to System Settings"
+msgstr ""
+
+#: aethernms/web_strings.py:133
+msgid "Revoke API Key"
+msgstr ""
+
+#: aethernms/web_strings.py:134
+#, python-brace-format
+msgid ""
+"Revoke API key '{name}'? Any scripts using it will immediately lose "
+"access."
+msgstr ""
+
+#: aethernms/web_strings.py:135
+msgid "API key revoked."
+msgstr ""
+
+#: aethernms/web_strings.py:136
+msgid "First Page"
+msgstr ""
+
+#: aethernms/web_strings.py:137
+msgid "Previous Page"
+msgstr ""
+
+#: aethernms/web_strings.py:138
+msgid "Next Page"
+msgstr ""
+
+#: aethernms/web_strings.py:139
+msgid "Last Page"
+msgstr ""
+
+#: aethernms/web_strings.py:140
+msgid "Cancel"
+msgstr ""
+
+#: aethernms/web_strings.py:141
+msgid "Save"
+msgstr ""
+
+#: aethernms/web_strings.py:142
+msgid "Close"
+msgstr ""
+
+#: aethernms/web_strings.py:143
+msgid "Delete"
+msgstr ""
+
+#: aethernms/web_strings.py:144
+msgid "Edit"
+msgstr ""
+
+#: aethernms/web_strings.py:145
+msgid "Confirm"
+msgstr ""
+
+#: aethernms/web_strings.py:146
+msgid "Validation"
+msgstr ""
+
+#: aethernms/web_strings.py:147
+msgid "Error"
+msgstr ""
+
+#: aethernms/web_strings.py:148
+msgid "Success"
+msgstr ""
+
+#: aethernms/web_strings.py:149
+msgid "Failed"
+msgstr ""
+
+#: aethernms/web_strings.py:150
+msgid "Running"
+msgstr ""
+
+#: aethernms/web_strings.py:151
+msgid "Pending"
+msgstr ""
+
+#: aethernms/web_strings.py:152
+msgid "Queued"
+msgstr ""
+
+#: aethernms/web_strings.py:153
+msgid "Up"
+msgstr ""
+
+#: aethernms/web_strings.py:154
+msgid "Down"
+msgstr ""
+
+#: aethernms/web_strings.py:160
+msgid "Add Job"
+msgstr ""
+
+#: aethernms/web_strings.py:161
+msgid "Job Name"
+msgstr ""
+
+#: aethernms/web_strings.py:162
+msgid "Job Name *"
+msgstr ""
+
+#: aethernms/web_strings.py:163
+msgid "Job Type"
+msgstr ""
+
+#: aethernms/web_strings.py:164
+msgid "Job Type *"
+msgstr ""
+
+#: aethernms/web_strings.py:165
+msgid "Netmiko Platform"
+msgstr ""
+
+#: aethernms/web_strings.py:166
+msgid "Netmiko Platform *"
+msgstr ""
+
+#: aethernms/web_strings.py:167
+msgid "Netmiko Platform:"
+msgstr ""
+
+#: aethernms/web_strings.py:168
+msgid "Status"
+msgstr ""
+
+#: aethernms/web_strings.py:169
+msgid "Status:"
+msgstr ""
+
+#: aethernms/web_strings.py:170
+msgid "Creation Time"
+msgstr ""
+
+#: aethernms/web_strings.py:171
+msgid "Start Time"
+msgstr ""
+
+#: aethernms/web_strings.py:172
+msgid "End Time"
+msgstr ""
+
+#: aethernms/web_strings.py:173
+msgid "Action"
+msgstr ""
+
+#: aethernms/web_strings.py:174
+msgid "Job Details"
+msgstr ""
+
+#: aethernms/web_strings.py:175
+msgid "Details"
+msgstr ""
+
+#: aethernms/web_strings.py:176
+msgid "Total:"
+msgstr ""
+
+#: aethernms/web_strings.py:177
+msgid "Description"
+msgstr ""
+
+#: aethernms/web_strings.py:178
+msgid "Description:"
+msgstr ""
+
+#: aethernms/web_strings.py:179
+msgid "Config Commands"
+msgstr ""
+
+#: aethernms/web_strings.py:180
+msgid "Audit Validation RegEx"
+msgstr ""
+
+#: aethernms/web_strings.py:181
+msgid "Device"
+msgstr ""
+
+#: aethernms/web_strings.py:182
+msgid "Device Name"
+msgstr ""
+
+#: aethernms/web_strings.py:183
+msgid "IP Address"
+msgstr ""
+
+#: aethernms/web_strings.py:184
+msgid "IP Address *"
+msgstr ""
+
+#: aethernms/web_strings.py:185
+msgid "Operation Result"
+msgstr ""
+
+#: aethernms/web_strings.py:186
+msgid "Log"
+msgstr ""
+
+#: aethernms/web_strings.py:187
+msgid "Replay Job"
+msgstr ""
+
+#: aethernms/web_strings.py:188
+msgid "Stop Job"
+msgstr ""
+
+#: aethernms/web_strings.py:189
+msgid "Delete Job"
+msgstr ""
+
+#: aethernms/web_strings.py:190
+#, python-brace-format
+msgid "Remove job '{name}' from history?"
+msgstr ""
+
+#: aethernms/web_strings.py:191
+msgid "Stop the running job before deleting it."
+msgstr ""
+
+#: aethernms/web_strings.py:192
+msgid "Config Command"
+msgstr ""
+
+#: aethernms/web_strings.py:193
+msgid "Parameters"
+msgstr ""
+
+#: aethernms/web_strings.py:194
+msgid "Select Device"
+msgstr ""
+
+#: aethernms/web_strings.py:195
+msgid "Select Devices"
+msgstr ""
+
+#: aethernms/web_strings.py:196
+msgid "< Back"
+msgstr ""
+
+#: aethernms/web_strings.py:197
+msgid "Next >"
+msgstr ""
+
+#: aethernms/web_strings.py:198
+msgid "Run Job"
+msgstr ""
+
+#: aethernms/web_strings.py:199
+msgid "Snippets *"
+msgstr ""
+
+#: aethernms/web_strings.py:200
+msgid "Job Description"
+msgstr ""
+
+#: aethernms/web_strings.py:201
+msgid "Config Commands *"
+msgstr ""
+
+#: aethernms/web_strings.py:202
+msgid "Audit Validation RegEx (1 pattern per line, ! comments ignored)"
+msgstr ""
+
+#: aethernms/web_strings.py:203
+msgid "Fill in snippet variables below."
+msgstr ""
+
+#: aethernms/web_strings.py:204
+msgid "No variables required by this snippet. Click Next to select devices."
+msgstr ""
+
+#: aethernms/web_strings.py:205
+#, python-brace-format
+msgid "Snippet Target Platform: {os}"
+msgstr ""
+
+#: aethernms/web_strings.py:206
+msgid "Select All"
+msgstr ""
+
+#: aethernms/web_strings.py:207
+msgid "Clear Selection"
+msgstr ""
+
+#: aethernms/web_strings.py:208
+msgid "Clear Filters"
+msgstr ""
+
+#: aethernms/web_strings.py:209
+msgid "Protocol:Port"
+msgstr ""
+
+#: aethernms/web_strings.py:210
+msgid "Group"
+msgstr ""
+
+#: aethernms/web_strings.py:211
+msgid "Group:"
+msgstr ""
+
+#: aethernms/web_strings.py:212
+msgid "Model"
+msgstr ""
+
+#: aethernms/web_strings.py:213
+msgid "Model:"
+msgstr ""
+
+#: aethernms/web_strings.py:214
+msgid "Firmware"
+msgstr ""
+
+#: aethernms/web_strings.py:215
+msgid "OS Type"
+msgstr ""
+
+#: aethernms/web_strings.py:216
+msgid "Protocol"
+msgstr ""
+
+#: aethernms/web_strings.py:217
+msgid "Protocol *"
+msgstr ""
+
+#: aethernms/web_strings.py:218
+msgid "Port"
+msgstr ""
+
+#: aethernms/web_strings.py:219
+msgid "Port *"
+msgstr ""
+
+#: aethernms/web_strings.py:220
+msgid "Enable Password"
+msgstr ""
+
+#: aethernms/web_strings.py:221
+msgid "Max Parallel Executions"
+msgstr ""
+
+#: aethernms/web_strings.py:222
+msgid "Sequential"
+msgstr ""
+
+#: aethernms/web_strings.py:223
+msgid "Save configuration"
+msgstr ""
+
+#: aethernms/web_strings.py:224
+msgid "Resulting Commands (Read-Only)"
+msgstr ""
+
+#: aethernms/web_strings.py:225
+msgid "Offline Device Warning"
+msgstr ""
+
+#: aethernms/web_strings.py:226
+msgid ""
+"One or more selected devices are currently Down (offline). Do you want to"
+" continue anyway?"
+msgstr ""
+
+#: aethernms/web_strings.py:227
+msgid "Add Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:228
+msgid "Edit Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:229
+msgid "Save Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:230
+msgid "Import Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:231
+msgid "Export Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:232
+msgid "Delete Snippet"
+msgstr ""
+
+#: aethernms/web_strings.py:233
+#, python-brace-format
+msgid "Delete snippet '{name}'?"
+msgstr ""
+
+#: aethernms/web_strings.py:234
+msgid "Name"
+msgstr ""
+
+#: aethernms/web_strings.py:235
+msgid "Name *"
+msgstr ""
+
+#: aethernms/web_strings.py:236
+msgid "Name:"
+msgstr ""
+
+#: aethernms/web_strings.py:237
+msgid "Snippet Type"
+msgstr ""
+
+#: aethernms/web_strings.py:238
+msgid "Snippet Type *"
+msgstr ""
+
+#: aethernms/web_strings.py:239
+msgid "Snippet Type:"
+msgstr ""
+
+#: aethernms/web_strings.py:240
+msgid "Severity"
+msgstr ""
+
+#: aethernms/web_strings.py:241
+msgid "Severity:"
+msgstr ""
+
+#: aethernms/web_strings.py:242
+msgid "Commands *"
+msgstr ""
+
+#: aethernms/web_strings.py:243
+msgid "Snippet Commands Preview"
+msgstr ""
+
+#: aethernms/web_strings.py:244
+msgid "Select a snippet row to export."
+msgstr ""
+
+#: aethernms/web_strings.py:245
+msgid "Add Device"
+msgstr ""
+
+#: aethernms/web_strings.py:246
+msgid "Edit Device"
+msgstr ""
+
+#: aethernms/web_strings.py:247
+msgid "Delete Device"
+msgstr ""
+
+#: aethernms/web_strings.py:248
+#, python-brace-format
+msgid "Remove device '{name}'?"
+msgstr ""
+
+#: aethernms/web_strings.py:249
+msgid "Import from AirWave..."
+msgstr ""
+
+#: aethernms/web_strings.py:250
+msgid "Import from AirWave"
+msgstr ""
+
+#: aethernms/web_strings.py:251
+msgid "AirWave URL / IP *"
+msgstr ""
+
+#: aethernms/web_strings.py:252
+msgid "Verify SSL"
+msgstr ""
+
+#: aethernms/web_strings.py:253
+msgid "Fetch Inventory"
+msgstr ""
+
+#: aethernms/web_strings.py:254
+msgid "Fetching inventory..."
+msgstr ""
+
+#: aethernms/web_strings.py:255
+msgid "Enter AirWave credentials and click Fetch Inventory."
+msgstr ""
+
+#: aethernms/web_strings.py:256
+msgid "Import Selected"
+msgstr ""
+
+#: aethernms/web_strings.py:257
+msgid "Map Unmatched AirWave Models to Netmiko"
+msgstr ""
+
+#: aethernms/web_strings.py:259
+msgid ""
+"Some selected AirWave devices could not be matched automatically to a "
+"Netmiko platform. Select the Netmiko platform for each unmatched OS / "
+"Hardware Model below (saved for future imports):"
+msgstr ""
+
+#: aethernms/web_strings.py:261
+msgid "AirWave OS / Model"
+msgstr ""
+
+#: aethernms/web_strings.py:262
+msgid "Apply & Import"
+msgstr ""
+
+#: aethernms/web_strings.py:264
+msgid ""
+"AirWave-managed device: Device Name, IP, Model, and Group are read-only. "
+"Netmiko Platform, Protocol, and Port can be edited."
+msgstr ""
+
+#: aethernms/web_strings.py:266
+msgid "Device Log"
+msgstr ""
+
+#: aethernms/web_strings.py:267
+msgid "Download .log"
+msgstr ""
+
+#: aethernms/web_strings.py:268
+msgid "Connection:"
+msgstr ""
+
+#: aethernms/web_strings.py:269
+msgid "Repository:"
+msgstr ""
+
+#: aethernms/web_strings.py:270
+msgid "Rows:"
+msgstr ""
+
+#: aethernms/web_strings.py:271
+#, python-brace-format
+msgid "Page {cur} of {total}"
+msgstr ""
+
+#: aethernms/web_strings.py:272
+#, python-brace-format
+msgid "Total Items: {total}"
+msgstr ""
+
+#: aethernms/web_strings.py:273
+#, python-brace-format
+msgid "Total Records: {total}"
+msgstr ""
+
+#: aethernms/web_strings.py:274
+msgid "API Key Name"
+msgstr ""
+
+#: aethernms/web_strings.py:275
+msgid "Generate Key"
+msgstr ""
+
+#: aethernms/web_strings.py:276
+msgid "Copy this API key now — it will not be shown again:"
+msgstr ""
+
+#: aethernms/web_strings.py:277
+msgid "Copy"
+msgstr ""
+
+#: aethernms/web_strings.py:278
+msgid "Copied!"
+msgstr ""
+
+#: aethernms/web_strings.py:279
+msgid "Revoke"
+msgstr ""
+
+#: aethernms/web_strings.py:280
+msgid "Prefix"
+msgstr ""
+
+#: aethernms/web_strings.py:281
+msgid "Created"
+msgstr ""
+
+#: aethernms/web_strings.py:282
+msgid "Last Used"
+msgstr ""
+
+#: aethernms/web_strings.py:283
+msgid "No API keys created yet."
+msgstr ""
+
+#: aethernms/web_strings.py:284
+msgid "Password updated successfully."
+msgstr ""
+
+#: aethernms/web_strings.py:285
+msgid "Settings saved."
+msgstr ""
+
+#: aethernms/web_strings.py:286
+msgid "Show"
+msgstr ""
+
+#: aethernms/web_strings.py:287
+msgid "Hide"
+msgstr ""
+
+#: aethernms/web_strings.py:288
+msgid "Refresh Status"
+msgstr ""
+

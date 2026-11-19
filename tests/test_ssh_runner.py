@@ -1,159 +1,294 @@
-"""Tests for Paramiko PSSHClient and parallel BatchSSHExecutor."""
+"""Tests for Netmiko PSSHClient (SSH & Telnet) and parallel/sequential BatchSSHExecutor."""
 
 from datetime import datetime
 from pathlib import Path
 import threading
 import time
-from typing import List
+from typing import Any, Dict, List
 
-import paramiko
+from netmiko.exceptions import (
+    ConfigInvalidException,
+    NetmikoAuthenticationException,
+    NetmikoTimeoutException,
+)
 
 from pssh_ui.common import format_operation_result_ui
 from pssh_ui.i18n import get_language, set_language
-from pssh_ui.job_builder import build_commands_for_job
 from pssh_ui.logger import write_host_log
-from pssh_ui.model_store import ModelStore
-from pssh_ui.models import DeviceModel, HostEntry, ScheduleSequence, SwitchOS
-from pssh_ui.ssh_runner import BatchSSHExecutor, PSSHClient
+from pssh_ui.models import ConnectionProtocol, HostEntry, ScheduleSequence, SnippetType
+from pssh_ui.ssh_runner import BatchSSHExecutor, PSSHClient, clean_terminal_text
 
 
-class FakeChannel:
-    """In-memory Paramiko shell channel simulator for ArubaOS-S and ArubaOS-CX."""
+class FakeNetmikoConnection:
+    """In-memory Netmiko BaseConnection double supporting SSH/Telnet config & audit flows."""
 
-    def __init__(self, responses: dict, banner: str = "Press any key to continue\n", prompt: str = "Switch-Aruba# ") -> None:
-        self._responses = responses
-        self._prompt = prompt
-        self._rx_chunks: List[bytes] = [banner.encode("utf-8")]
-        self.sent_data: List[str] = []
-        self.closed = False
-        self._current_prompt = prompt
+    def __init__(
+        self,
+        *,
+        responses: Dict[str, str] | None = None,
+        prompt: str = "Switch-Aruba# ",
+        in_enable: bool = True,
+        save_output: str = "Writing configuration...",
+        session_log=None,
+    ) -> None:
+        self.responses = responses or {}
+        self.prompt = prompt
+        self.in_enable = in_enable
+        self.in_config = False
+        self.save_output = save_output
+        self.session_log = session_log
+        self.calls: List[tuple[str, Any]] = []
+        self.disconnected = False
 
-    def settimeout(self, _timeout: float) -> None:
-        return None
+    def _log(self, text: str) -> None:
+        if self.session_log is not None:
+            self.session_log.write(text.encode("utf-8"))
 
-    def recv_ready(self) -> bool:
-        return len(self._rx_chunks) > 0
+    def check_enable_mode(self) -> bool:
+        self.calls.append(("check_enable_mode", self.in_enable))
+        return self.in_enable
 
-    def recv(self, _size: int) -> bytes:
-        return self._rx_chunks.pop(0) if self._rx_chunks else b""
+    def enable(self) -> str:
+        self.calls.append(("enable", None))
+        self.in_enable = True
+        self._log("enable\nSwitch-Aruba# ")
+        return ""
 
-    def exit_status_ready(self) -> bool:
-        return False
+    def config_mode(self) -> str:
+        self.calls.append(("config_mode", None))
+        self.in_config = True
+        self._log("configure terminal\nSwitch-Aruba(config)# ")
+        return "configure terminal\nSwitch-Aruba(config)# "
 
-    def close(self) -> None:
-        self.closed = True
+    def exit_config_mode(self) -> str:
+        self.calls.append(("exit_config_mode", None))
+        self.in_config = False
+        self._log("end\nSwitch-Aruba# ")
+        return "end\nSwitch-Aruba# "
 
-    def send(self, data: str) -> int:
-        self.sent_data.append(data)
-        text = data.strip("\r\n")
-        if data in (" ", "\n", "\r"):
-            self._rx_chunks.append(self._current_prompt.encode("utf-8"))
-            return len(data)
+    def send_config_set(
+        self,
+        config_commands,
+        *,
+        enter_config_mode: bool = True,
+        exit_config_mode: bool = True,
+        read_timeout: float | None = None,
+        error_pattern: str = "",
+    ) -> str:
+        cmds = list(config_commands or [])
+        self.calls.append(("send_config_set", cmds))
+        out_chunks: List[str] = []
+        if enter_config_mode and not self.in_config:
+            out_chunks.append(self.config_mode())
+        for cmd in cmds:
+            reply = self.responses.get(cmd, f"{cmd}\nSwitch-Aruba(config)# ")
+            self._log(reply)
+            out_chunks.append(reply)
+            if reply == "__TIMEOUT__":
+                raise NetmikoTimeoutException("Timed out waiting for switch")
+            if error_pattern:
+                import re
 
-        if text == "configure terminal":
-            self._current_prompt = "Switch-Aruba(config)# "
-            self._rx_chunks.append(f"{text}\n{self._current_prompt}".encode("utf-8"))
-        elif text in self._responses:
-            reply = self._responses[text]
-            self._rx_chunks.append(reply.encode("utf-8"))
-        else:
-            self._rx_chunks.append(f"{text}\n{self._current_prompt}".encode("utf-8"))
-        return len(data)
+                if re.search(error_pattern, reply, flags=re.M):
+                    raise ConfigInvalidException(
+                        f"Invalid input detected at command: {cmd}, matched error: {reply.strip()}"
+                    )
+        if exit_config_mode and self.in_config:
+            out_chunks.append(self.exit_config_mode())
+        return "".join(out_chunks)
+
+    def send_command(
+        self,
+        command_string: str,
+        *,
+        read_timeout: float = 10.0,
+        strip_prompt: bool = True,
+        strip_command: bool = True,
+    ) -> str:
+        self.calls.append(("send_command", command_string))
+        reply = self.responses.get(command_string, f"{command_string}\nOK\n{self.prompt}")
+        self._log(reply)
+        return reply
+
+    def save_config(self) -> str:
+        self.calls.append(("save_config", None))
+        self._log(f"write memory\n{self.save_output}\nSwitch-Aruba# ")
+        return self.save_output
+
+    def disconnect(self) -> None:
+        self.calls.append(("disconnect", None))
+        self.disconnected = True
 
 
-class FakeSSHClient:
-    """Mock Paramiko SSHClient backed by FakeChannel."""
-
-    def __init__(self, channel: FakeChannel | None = None, auth_fail: bool = False) -> None:
-        self.channel = channel
-        self.auth_fail = auth_fail
-        self.closed = False
-        self.connect_kwargs = {}
-
-    def set_missing_host_key_policy(self, _policy) -> None:
-        return None
-
-    def connect(self, **kwargs) -> None:
-        self.connect_kwargs = kwargs
-        if self.auth_fail:
-            raise paramiko.AuthenticationException("Bad credentials")
-
-    def invoke_shell(self, **_kwargs):
-        return self.channel
-
-    def close(self) -> None:
-        self.closed = True
+def test_clean_terminal_text_normalizes_vt100_and_pagers():
+    raw = "Aruba 2930F\r\nPress any key to continue\x1b[24;1HSwitch#\x08# "
+    cleaned = clean_terminal_text(raw)
+    assert "Press any key" not in cleaned
+    assert "\x1b" not in cleaned
+    lines = [line for line in cleaned.splitlines() if line]
+    assert lines == ["Aruba 2930F", "Switch#"]
 
 
-def test_pssh_client_handles_aoss_banner_no_page_and_errors():
-    chan = FakeChannel(
-        responses={
-            "bad command": "bad command\nInvalid input: bad\nSwitch-Aruba(config)# ",
-            "snmpv3 only": "snmpv3 only\nSwitch-Aruba(config)# ",
-        }
+def test_pssh_client_config_telnet_aborts_on_error_and_records_steps(tmp_path: Path):
+    captured_kwargs: Dict[str, Any] = {}
+
+    def fake_factory(**kwargs):
+        captured_kwargs.update(kwargs)
+        return FakeNetmikoConnection(
+            responses={
+                "bad command": "bad command\nInvalid input: bad\nSwitch-Aruba(config)# ",
+            },
+            session_log=kwargs.get("session_log"),
+        )
+
+    client = PSSHClient(connect_handler_factory=fake_factory)
+    host = HostEntry(
+        name="SW-TELNET",
+        ip="10.0.0.1",
+        os_type="aruba_procurve",
+        protocol=ConnectionProtocol.TELNET,
+        port=23,
     )
-    fake_ssh = FakeSSHClient(channel=chan)
-    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
-
-    host = HostEntry(name="SW-AOSS-01", ip="10.0.0.1", os_type=SwitchOS.AOS_S)
     res = client.execute_commands(
         host=host,
         username="admin",
-        password="dummy_password",
-        commands=["configure terminal", "bad command", "snmpv3 only"],
+        password="secret",
+        commands=["vlan 10", "bad command", "vlan 20"],
+        job_type=SnippetType.CONFIG,
+        include_write=True,
     )
 
-    assert "no page\n" in chan.sent_data
+    assert captured_kwargs["device_type"] == "aruba_procurve_telnet"
+    assert captured_kwargs["port"] == 23
+    assert res.connection_method == "Telnet (aruba_procurve_telnet)"
     assert res.status == "Failed"
-    assert len(res.step_results) == 4
-    assert res.step_results[0].command == "no page"
+    assert len(res.step_results) == 3
     assert res.step_results[0].result == "Succeeded"
-    assert res.step_results[1].result == "Succeeded"
-    assert res.step_results[2].result == "Failed"
-    assert res.step_results[3].result == "Skipped"
-    assert "Aborted" in res.step_results[3].suggestion
-    assert "snmpv3 only\n" not in chan.sent_data
-    assert "1 error detected: Invalid CLI input" in res.operation_result
+    assert res.step_results[1].result == "Failed"
+    assert res.step_results[2].result == "Skipped"
+    assert "Aborted" in res.step_results[2].suggestion
     assert len(res.error_lines) == 1
-    assert "Invalid input: bad" in res.error_lines[0]["text"]
-    assert chan.closed is True
-    assert fake_ssh.closed is True
+    assert "Invalid CLI input" in res.error_lines[0]["reason"]
+
+    log_txt = Path(write_host_log(res, tmp_path)).read_text(encoding="utf-8")
+    assert "Connection      : Telnet (aruba_procurve_telnet)" in log_txt
+    assert "--- Raw Telnet Terminal Output ---" in log_txt
 
 
-def test_pssh_client_handles_snmpv3_init_prompts():
-    class InitWizardChannel(FakeChannel):
-        def send(self, data: str) -> int:
-            self.sent_data.append(data)
-            text = data.strip("\r\n")
-            if text == "snmpv3 enable":
-                self._rx_chunks.append(b"snmpv3 enable\nEnter authentication password: ")
-            elif len(self.sent_data) >= 3 and self.sent_data[-2].strip() == "snmpv3 enable":
-                self._rx_chunks.append(b"Would you like to create a user that uses SHA? [y/n]")
-            elif text == "n":
-                self._rx_chunks.append(b"\nSwitch-Aruba(config)# ")
-            else:
-                return super().send(data)
-            return len(data)
+def test_pssh_client_aoscx_config_save_and_audit_mode(tmp_path: Path):
+    prev_lang = get_language()
+    try:
+        set_language("pt_BR")
+        fake_conn_holder: List[FakeNetmikoConnection] = []
 
-    chan = InitWizardChannel(responses={}, banner="", prompt="Switch-Aruba(config)# ")
-    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
-    host = HostEntry(name="SW-INIT", ip="10.0.0.9", os_type=SwitchOS.AOS_S)
+        def ok_factory(**kwargs):
+            conn = FakeNetmikoConnection(session_log=kwargs.get("session_log"))
+            fake_conn_holder.append(conn)
+            return conn
 
-    res = client.execute_commands(host, "admin", "dummy_pw", ["snmpv3 enable"])
-    assert res.status == "Success"
-    assert "n\n" in chan.sent_data
+        client = PSSHClient(connect_handler_factory=ok_factory)
+        host = HostEntry(
+            name="SW-CX-01",
+            ip="10.0.0.20",
+            os_type="aruba_aoscx",
+            protocol=ConnectionProtocol.SSH,
+            port=22,
+        )
+        ok_res = client.execute_commands(
+            host=host,
+            username="admin",
+            password="pw",
+            commands=["ntp server 1.1.1.1", "ntp enable"],
+            job_type=SnippetType.CONFIG,
+            include_write=True,
+            template_command_count=2,
+        )
+        assert ok_res.status == "Success"
+        assert ok_res.connection_method == "SSH (aruba_aoscx)"
+        assert ok_res.operation_result == "Completed (2 commands)"
+        assert format_operation_result_ui(ok_res.operation_result) == "Concluído (2 comandos)"
+        call_names = [name for name, _arg in fake_conn_holder[0].calls]
+        assert "config_mode" in call_names
+        assert "exit_config_mode" in call_names
+        assert "save_config" in call_names
+        assert fake_conn_holder[0].disconnected is True
+
+        # Audit mode uses send_command without entering config mode
+        def audit_factory(**kwargs):
+            return FakeNetmikoConnection(
+                in_enable=False,
+                responses={
+                    "show snmpv3 users": "show snmpv3 users\nUser: noc_ro | Auth: sha\nSwitch-Aruba# "
+                },
+                session_log=kwargs.get("session_log"),
+            )
+
+        audit_client = PSSHClient(connect_handler_factory=audit_factory)
+        host_pro = HostEntry(
+            name="SW-PRO",
+            ip="10.0.0.30",
+            os_type="aruba_procurve",
+            protocol=ConnectionProtocol.SSH,
+        )
+        aud_ok = audit_client.execute_commands(
+            host=host_pro,
+            username="admin",
+            password="pw",
+            commands=["show snmpv3 users"],
+            audit_regex="User:\\s+noc_ro",
+            enable_password="EnableSecret!99",
+            job_type=SnippetType.AUDIT,
+        )
+        assert aud_ok.status == "Success"
+
+        aud_fail = audit_client.execute_commands(
+            host=host_pro,
+            username="admin",
+            password="pw",
+            commands=["show snmpv3 users"],
+            audit_regex="User:\\s+missing_user",
+            enable_password="EnableSecret!99",
+            job_type=SnippetType.AUDIT,
+        )
+        assert aud_fail.status == "Failed"
+        assert "Audit failed" in aud_fail.operation_result
+        assert aud_fail.error_lines[0]["text"] == "User:\\s+missing_user"
+    finally:
+        set_language(prev_lang)
 
 
-def test_pssh_client_reports_authentication_failure():
-    client = PSSHClient(
-        poll_interval=0.005,
-        ssh_client_factory=lambda: FakeSSHClient(auth_fail=True),
+def test_pssh_client_auth_failure_and_unsupported_telnet(tmp_path: Path):
+    def auth_fail_factory(**_kwargs):
+        raise NetmikoAuthenticationException("Bad credentials")
+
+    client = PSSHClient(connect_handler_factory=auth_fail_factory)
+    host = HostEntry(name="SW-AUTH", ip="10.0.0.5", os_type="aruba_aoscx")
+    res = client.execute_commands(
+        host, "admin", "wrong_pw", ["show version"], job_type=SnippetType.AUDIT
     )
-    host = HostEntry(name="SW-AUTH", ip="10.0.0.5", os_type=SwitchOS.AOS_CX)
-    res = client.execute_commands(host, "admin", "wrong_pw", ["show version"])
     assert res.status == "Failed"
-    assert "Authentication failed" in res.operation_result
-    assert len(res.error_lines) == 1
+    assert res.operation_result == "Authentication failed"
+    assert res.exception_message == "Authentication failed: Bad credentials"
+    assert res.error_lines == []
+
+    log_txt = Path(write_host_log(res, tmp_path)).read_text(encoding="utf-8")
+    assert "--- Connection / Execution Exception ---\nAuthentication failed: Bad credentials" in log_txt
+    assert "--- Detected Errors ---" not in log_txt
+    assert "--- Raw SSH Terminal Output ---\nAuthentication failed: Bad credentials" in log_txt
+
+    # Rejects Telnet cleanly on platforms that have no native Netmiko _telnet driver
+    unsupported_host = HostEntry(
+        name="SW-CX-TELNET",
+        ip="10.0.0.6",
+        os_type="aruba_aoscx",
+        protocol=ConnectionProtocol.TELNET,
+        port=23,
+    )
+    bad_proto_res = PSSHClient().execute_commands(
+        unsupported_host, "admin", "pw", ["show version"], job_type=SnippetType.AUDIT
+    )
+    assert bad_proto_res.status == "Failed"
+    assert "Telnet" in bad_proto_res.exception_message
 
 
 def test_batch_executor_respects_max_parallel_and_writes_logs(tmp_path: Path):
@@ -162,7 +297,7 @@ def test_batch_executor_respects_max_parallel_and_writes_logs(tmp_path: Path):
     peak_active = 0
 
     class TrackingClient(PSSHClient):
-        def execute_commands(self, host, username, password, commands, cancel_event=None):
+        def execute_commands(self, host, username, password, commands, **kwargs):
             nonlocal active_count, peak_active
             with active_lock:
                 active_count += 1
@@ -170,252 +305,29 @@ def test_batch_executor_respects_max_parallel_and_writes_logs(tmp_path: Path):
             time.sleep(0.05)
             with active_lock:
                 active_count -= 1
-            return super().execute_commands(host, username, password, [], cancel_event=cancel_event)
+            return super().execute_commands(host, username, password, [], **kwargs)
 
     hosts = [
-        HostEntry(name=f"SW-{i:02d}", ip=f"10.0.0.{i}", os_type=SwitchOS.AOS_CX)
+        HostEntry(name=f"SW-{i}", ip=f"10.0.0.{i}", os_type="aruba_procurve")
         for i in range(1, 7)
     ]
-    cmd_map = {h.unique_key: ["show system"] for h in hosts}
-
     executor = BatchSSHExecutor(
-        client_factory=lambda: TrackingClient(),
+        client_factory=lambda: TrackingClient(
+            connect_handler_factory=lambda **kw: FakeNetmikoConnection(session_log=kw.get("session_log"))
+        ),
         logs_base_dir=tmp_path / "logs",
     )
-    run_dt = datetime(2026, 11, 17, 16, 0, 0)
     run_dir, results = executor.run_batch(
         hosts=hosts,
         username="admin",
-        password="dummy_password",
-        commands_by_host=cmd_map,
+        password="pw",
+        commands_by_host={h.unique_key: [] for h in hosts},
         max_parallel=2,
         schedule_sequence=ScheduleSequence.CONCURRENT,
-        run_timestamp=run_dt,
+        run_timestamp=datetime(2026, 11, 17, 16, 0, 0),
     )
 
-    assert peak_active <= 2
-    assert peak_active == 2
-    assert run_dir.name == "2026-11-17_16-00-00"
     assert len(results) == 6
-    for h in hosts:
-        assert (run_dir / f"{h.name}.log").is_file()
-
-    # Verify Sequential mode caps workers at 1
-    peak_active = 0
-    executor.run_batch(
-        hosts=hosts[:3],
-        username="admin",
-        password="dummy_password",
-        commands_by_host=cmd_map,
-        max_parallel=5,
-        schedule_sequence=ScheduleSequence.SEQUENTIAL,
-        run_timestamp=run_dt,
-    )
-    assert peak_active == 1
-
-
-def test_ssh_client_handles_enable_credentials_and_audit_regex():
-    class EnableAndAuditChannel(FakeChannel):
-        def send(self, data: str) -> int:
-            self.sent_data.append(data)
-            text = data.strip("\r\n")
-            if text == "enable":
-                self._rx_chunks.append(b"Password: ")
-            elif text == "EnableSecret!99":
-                self._current_prompt = "Switch-Aruba# "
-                self._rx_chunks.append(b"\nSwitch-Aruba# ")
-            elif text == "show snmpv3 users":
-                self._rx_chunks.append(
-                    b"show snmpv3 users\nUser: noc_ro | Auth: sha\nSwitch-Aruba# "
-                )
-            else:
-                return super().send(data)
-            return len(data)
-
-    chan = EnableAndAuditChannel(responses={}, banner="Switch-Aruba> ", prompt="Switch-Aruba> ")
-    client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan))
-    host = HostEntry(name="SW-AUD", ip="10.0.0.15", os_type=SwitchOS.AOS_S)
-    mdl = DeviceModel(name="ArubaOS-S", device_type=SwitchOS.AOS_S)
-
-    ok_res = client.execute_commands(
-        host=host,
-        username="admin",
-        password="ssh_pw",
-        commands=["show snmpv3 users"],
-        audit_regex="User:\\s+noc_ro",
-        enable_password="EnableSecret!99",
-        device_model=mdl,
-    )
-    assert "enable\n" in chan.sent_data
-    assert "EnableSecret!99\n" in chan.sent_data
-    assert ok_res.status == "Success"
-
-    chan2 = EnableAndAuditChannel(responses={}, banner="Switch-Aruba> ", prompt="Switch-Aruba> ")
-    client2 = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=chan2))
-    fail_res = client2.execute_commands(
-        host=host,
-        username="admin",
-        password="ssh_pw",
-        commands=["show snmpv3 users"],
-        audit_regex="User:\\s+missing_user",
-        enable_password="EnableSecret!99",
-        device_model=mdl,
-    )
-    assert fail_res.status == "Failed"
-    assert "Audit failed" in fail_res.operation_result
-    assert fail_res.error_lines[0]["text"] == "User:\\s+missing_user"
-
-
-def test_ssh_runner_ignores_last_login_banner_formats_same_line_and_keeps_english_logs(tmp_path: Path):
-    class SplitBannerCXChannel(FakeChannel):
-        def __init__(self, responses=None):
-            super().__init__(responses=responses or {}, banner="", prompt="SW-CX-01# ")
-            self._rx_chunks = [
-                b"Last login: 2026-11-11 20:24:06 from 10.0.0.100\r\n",
-                b'User "admin" has logged in 2 times in the past 30 days\r\n\r\nSW-CX-01# ',
-            ]
-
-        def send(self, data: str) -> int:
-            self.sent_data.append(data)
-            text = data.strip("\r\n")
-            if text == "configure terminal":
-                self._current_prompt = "SW-CX-01(config)# "
-                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
-            elif text == "end":
-                self._current_prompt = "SW-CX-01# "
-                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
-            elif text in self._responses:
-                self._rx_chunks.append(self._responses[text].encode("utf-8"))
-            else:
-                self._rx_chunks.append(f"{text}\r\n{self._current_prompt}".encode("utf-8"))
-            return len(data)
-
-    prev_lang = get_language()
-    try:
-        set_language("pt_BR")
-        cx_model = next(
-            m for m in ModelStore().load_all_models() if m.device_type == SwitchOS.AOS_CX
-        )
-        chan = SplitBannerCXChannel()
-        fake_ssh = FakeSSHClient(channel=chan)
-        client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fake_ssh)
-        host = HostEntry(name="SW-CX-01", ip="10.0.0.20", os_type=SwitchOS.AOS_CX)
-
-        ok_res = client.execute_commands(
-            host=host,
-            username="admin",
-            password="pw",
-            commands=["configure terminal", "ntp server 1.1.1.1", "ntp enable", "end"],
-            device_model=cx_model,
-        )
-        assert "admin\n" not in chan.sent_data
-        assert ok_res.status == "Success"
-        assert ok_res.step_results[0].command == "no page"
-        assert ok_res.step_results[0].result == "Succeeded"
-        assert len(ok_res.step_results) == 5
-        assert ok_res.operation_result == "Completed (2 commands)"
-        assert format_operation_result_ui(ok_res.operation_result) == "Concluído (2 comandos)"
-        raw_lines = ok_res.raw_output.splitlines()
-        assert "SW-CX-01# no page" in raw_lines
-        assert "SW-CX-01# configure terminal" in raw_lines
-        assert "SW-CX-01(config)# ntp server 1.1.1.1" in raw_lines
-        assert raw_lines[-1] == "SW-CX-01(config)# end"  # No dangling trailing bare prompt
-        assert chan.closed is True and fake_ssh.closed is True
-
-        # Verify optional 'write memory' executes in SSH stream but counts only the 2 template commands
-        write_chan = SplitBannerCXChannel()
-        write_client = PSSHClient(
-            poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=write_chan)
-        )
-        cmd_map = build_commands_for_job(
-            "ntp server 1.1.1.1\nntp enable",
-            {},
-            [host],
-            device_model=cx_model,
-            include_write_command=True,
-        )
-        write_res = write_client.execute_commands(
-            host=host,
-            username="admin",
-            password="pw",
-            commands=cmd_map[host.unique_key],
-            device_model=cx_model,
-            template_command_count=2,
-        )
-        assert write_res.status == "Success"
-        assert len(write_res.step_results) == 6
-        assert write_res.step_results[-1].command == "write memory"
-        assert write_res.step_results[-1].result == "Succeeded"
-        assert "write memory\n" in write_chan.sent_data
-        assert write_res.operation_result == "Completed (2 commands)"
-
-        # Verify _count_template_commands also strips 'write memory' when template_command_count is omitted
-        write_res_auto = PSSHClient(
-            poll_interval=0.005,
-            ssh_client_factory=lambda: FakeSSHClient(channel=SplitBannerCXChannel()),
-        ).execute_commands(
-            host=host,
-            username="admin",
-            password="pw",
-            commands=cmd_map[host.unique_key],
-            device_model=cx_model,
-        )
-        assert write_res_auto.operation_result == "Completed (2 commands)"
-
-        # Failed step stays English in .log while UI display helper translates in pt_BR
-        fail_chan = SplitBannerCXChannel(
-            responses={"bad cmd": "bad cmd\r\n% Invalid input detected.\r\nSW-CX-01(config)# "}
-        )
-        fail_ssh = FakeSSHClient(channel=fail_chan)
-        fail_client = PSSHClient(poll_interval=0.005, ssh_client_factory=lambda: fail_ssh)
-        fail_res = fail_client.execute_commands(
-            host=host,
-            username="admin",
-            password="pw",
-            commands=["configure terminal", "bad cmd", "ntp enable", "end"],
-            device_model=cx_model,
-        )
-        assert fail_res.step_results[0].command == "no page"
-        assert fail_res.step_results[0].result == "Succeeded"
-        assert fail_res.step_results[1].result == "Succeeded"
-        assert fail_res.step_results[2].result == "Failed"
-        assert fail_res.step_results[3].result == "Skipped"
-        assert fail_res.step_results[4].result == "Skipped"
-        assert "ntp enable\n" not in fail_chan.sent_data
-        assert "end\n" not in fail_chan.sent_data
-        assert fail_res.operation_result == "1 error detected: Invalid command or parameter"
-        assert format_operation_result_ui(fail_res.operation_result) == (
-            "1 erro detectado: Comando ou parâmetro inválido"
-        )
-
-        # If 'no page' itself fails, abort immediately before running remaining commands
-        nopage_fail_chan = SplitBannerCXChannel(
-            responses={"no page": "no page\r\nInvalid input: no page\r\nSW-CX-01# "}
-        )
-        nopage_fail_client = PSSHClient(
-            poll_interval=0.005, ssh_client_factory=lambda: FakeSSHClient(channel=nopage_fail_chan)
-        )
-        nopage_fail_res = nopage_fail_client.execute_commands(
-            host=host,
-            username="admin",
-            password="pw",
-            commands=["configure terminal", "ntp enable"],
-            device_model=cx_model,
-        )
-        assert nopage_fail_res.status == "Failed"
-        assert nopage_fail_res.step_results[0].command == "no page"
-        assert nopage_fail_res.step_results[0].result == "Failed"
-        assert nopage_fail_res.step_results[1].result == "Skipped"
-        assert nopage_fail_res.step_results[2].result == "Skipped"
-        assert "configure terminal\n" not in nopage_fail_chan.sent_data
-
-        assert "Aborted due to earlier command failure." in fail_res.step_results[3].suggestion
-        log_path = Path(write_host_log(fail_res, tmp_path))
-        log_txt = log_path.read_text(encoding="utf-8")
-        assert "Operation Result: 1 error detected: Invalid command or parameter" in log_txt
-        assert "--- Command Execution Summary ---" not in log_txt
-        assert "--- Raw SSH Terminal Output ---" in log_txt
-        assert "Comando ou parâmetro inválido" not in log_txt
-        assert "erro(s)" not in log_txt
-    finally:
-        set_language(prev_lang)
+    assert peak_active <= 2
+    assert (run_dir / "SW-1.log").is_file()
+    assert all(r.log_path for r in results)

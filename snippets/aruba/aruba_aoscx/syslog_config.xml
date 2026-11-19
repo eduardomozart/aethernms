@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Snippet version="1.0">
+    <Name>ArubaOS-CX Syslog</Name>
+    <Type>Config</Type>
+    <DeviceType>aruba_aoscx</DeviceType>
+    <Severity>Info</Severity>
+    <Description>Configure remote Syslog destination on ArubaOS-CX switches.</Description>
+    <CreatedAt>2026-11-17T18:10:00</CreatedAt>
+    <Commands>! Configure remote Syslog server on ArubaOS-CX
+logging ${Syslog IP|text|^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$}</Commands>
+</Snippet>

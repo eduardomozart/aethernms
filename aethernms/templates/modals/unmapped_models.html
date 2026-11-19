@@ -1,0 +1,19 @@
+<!-- Unmapped AirWave Models Modal -->
+<div id="modal-unmapped" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container">
+    <div class="cds--modal-header">
+      <h3 class="cds--modal-header__heading" data-i18n="Map Unmatched AirWave Models to Netmiko">Map Unmatched AirWave Models to Netmiko</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <p class="cds--helper-text" style="margin:0 0 12px;" data-i18n="Some selected AirWave devices could not be matched automatically to a Netmiko platform. Select the Netmiko platform for each unmatched OS / Hardware Model below (saved for future imports):"></p>
+      <div id="unmapped-rows" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+    <div class="cds--modal-footer">
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-apply-unmapped" data-i18n="Apply & Import">Apply &amp; Import</button>
+    </div>
+  </div>
+</div>

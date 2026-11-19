@@ -8,30 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Live page-scoped ICMP reachability probing (`PingMonitor`) with on-the-fly **Status** filtering in the **Devices** tab and Step 3 (**Select Device**) of **Add Job**, plus **OK/Cancel** confirmation listing unreachable selected device names and IPs.
-- Job **Replay (`↻`)** row action in the **Jobs** tab to reopen **Add Job** pre-filled with commands, target devices, non-secret parameters, write option (`include_write` persisted in `session.xml`), and execution settings.
-- Table pagination (`TablePaginator`) and auto-hiding scrollbars across tables and text editors.
-- Upgrade-safe template library seeding using SHA-256 tracking for bundled snippets and device models, along with **Import/Export Device Model** actions and **Audit Validation RegEx** (`Audit and Remediate`) support.
-- Separate built-in `ArubaOS-S NTP` (`snippets/aruba/aoss/ntp_config.xml`) and `ArubaOS-S Syslog` (`snippets/aruba/aoss/syslog_config.xml`) snippet templates.
-- In-repo `wiki/` documentation pages and `.github/workflows/wiki.yml` automation to publish documentation updates to the GitHub Wiki.
-- Transifex Git integration, automated `.pot` extraction workflow (`.github/workflows/updatepot.yml`), and expanded Brazilian Portuguese (`pt_BR`) translations including 3-form `Plural-Forms` handling via `gettext.c2py`.
+- **Py4Web + SQLite (`PyDAL`) Web Application Architecture**: Refactored the desktop application into a multi-user browser web app (`pssh_ui/web_app.py`, `pssh_ui/db.py`, `pssh_ui/app.py`, `apps/_default/__init__.py`) backed by a single WAL-mode SQLite database at `%APPDATA%\pssh-ui\pssh_ui.db` (Windows) / `~/.pssh-ui/pssh_ui.db` (Linux/macOS), with automatic one-time migration from legacy `settings.xml`, `devices.xml`, `jobs.xml`, and `session.xml`.
+- **IBM Carbon Design System (v11) Multi-Page UI**: Rebuilt the frontend using Py4Web Renoir template inheritance (`layout.html` + `/jobs`, `/snippets`, `/devices` pages + `pssh_ui/templates/modals/*.html` partials + `login.html`) and modular JavaScript (`core.js`, `jobs.js`, `snippets.js`, `devices.js`), styled with IBM Carbon v11 `g10` (Light) and `g100` (Dark) tokens while preserving the **AirWave Config & Audit Jobs** layout, dynamic step wizard, syntax-highlighted CLI previews, and global `Esc` modal close behavior.
+- **Authentication & Personal API Keys (`pssh_ui/auth.py`)**: Added first-run administrator setup (`/login`, plus `PSSH_UI_ADMIN_USER` / `PSSH_UI_ADMIN_PASSWORD` env bootstrap), PBKDF2-HMAC-SHA256 password hashing, signed Py4Web session cookies, and SHA-256 hashed personal API keys (`X-API-Key` / `Authorization: Bearer <token>`).
+- **Authenticated REST API & Interactive Swagger UI (`pssh_ui/openapi_spec.py`, `pssh_ui/templates/swagger.html`, `wiki/REST-API.md`)**: Exposed every GUI capability through `/api/...` JSON endpoints (jobs, devices, ICMP ping, AirWave fetch/import, snippets CRUD + XML import/export, variable parsing, settings, and per-device SQLite logs with `?download=1`), documented via OpenAPI 3.0.3 (`GET /api/openapi.json`) and Swagger UI (`GET /api/docs` / `GET /swagger`) with an offline interactive explorer fallback.
+- **SQLite-Backed Snippets & Per-Device Logs**: Auto-seeded bundled `snippets/<vendor>/<platform>/*.xml` into SQLite with SHA-256 upgrade tracking (preserving user edits and deletions) alongside XML Import/Export; stored formatted per-device execution transcripts inside SQLite `job_result.formatted_log` for in-browser viewing and `.log` downloads.
+- Native **Netmiko** (`netmiko>=4.5.0`) automation engine supporting all non-serial platforms from `netmiko.ssh_dispatcher.CLASS_MAPPER` and their native `SSH` / `Telnet` drivers (`pssh_ui/netmiko_catalog.py`, `pssh_ui/ssh_runner.py`).
+- Global **Default Protocol** (`SSH` / `Telnet`), **Default SSH Port** (`22`), and **Default Telnet Port** (`23`) preferences under **Connection Defaults** in **Settings (`⚙`)**, positioned below **Execution Defaults**, clarifying they apply only when creating devices manually or importing devices from AirWave, and can always be overridden per device.
+- Automatic AirWave **OS Type → Netmiko Platform** mapping (`AOS-S` → `aruba_procurve`, `AOS-CX` → `aruba_aoscx`, plus persisted custom OS mappings), prompting (`Map Unmatched AirWave Models to Netmiko`) only when selected devices have no match.
 
 ### Changed
-- Refactored the monolithic GUI into modular `pssh_ui/app.py`, `pssh_ui/tabs/`, `pssh_ui/dialogs/`, and `pssh_ui/common.py` components.
-- Renamed `ArubaSSHClient` to `PSSHClient` (`pssh_ui/ssh_runner.py`).
-- Filtered **Add Job** snippets by **Job Type**, automatically skipped the **Parameters** step when no template variables exist, and ensured new non-replay jobs start with empty parameter fields instead of reusing previous session values.
-- Updated Step 4 (**Confirm**) of **Add Job** to preview only rendered template commands without model wrappers (`no page`, `configure terminal`, `end`), display the selected model's write command in `Run write command ({cmd})` (hiding the checkbox when none is defined) without adding it to the read-only preview, and rename sequential execution to `Sequential (1 device at a time)`.
-- Executed paging suppression (`DisablePagingCommand`, e.g., `no page`) as a tracked SSH step that aborts on failure while counting only rendered template commands in the UI `Completed (N commands)` summary.
-- Kept parser, SSH runner, and per-device `.log` output in canonical English (`--- Raw SSH Terminal Output ---` without per-command execution summaries) while translating status messages and error reasons in the UI (`format_operation_result_ui`).
-- Unified AirWave import filters (`All` defaults, hierarchical folder selection, persistent multi-page row selection) with **Devices** filtering and separated AirWave inventory status from live reachability (`ping_status`).
-- Simplified **Devices**, **Add Job**, and **AirWave Import** tables to show localized status text (`Up` / `Down` / `Unknown`) without overlay status orb icons.
-- Ordered **Select Device** in **Add Job** so supported devices (matching the selected target OS) appear before unsupported devices.
+- Removed `tkinter`, `sv-ttk`, `pillow`, and XML-only state/shared-snippets-folder storage (`pssh_ui/tabs/`, `pssh_ui/dialogs/`, `settings_store.py`, `session_store.py`) in favor of **Py4Web**, **SQLite (`PyDAL`)**, and **IBM Carbon v11**.
+- Changed the non-Windows user data directory from `~/.config/pssh-ui` to `~/.pssh-ui`.
+- Replaced `paramiko` and custom `<DeviceModel>` XML prompt/wrapper profiles with native Netmiko drivers (`ConnectHandler`, `config_mode`, `send_config_set`, `send_command`, `exit_config_mode`, `save_config`).
+- Renamed bundled snippet folders and `<DeviceType>` tags to Netmiko platform naming (`snippets/aruba/aruba_procurve/`, `snippets/aruba/aruba_aoscx/`) while seamlessly normalizing legacy `AOS-S` / `AOS-CX` inputs.
+- Enforced strictly Netmiko-supported platforms and native protocols across UI and REST API; kept AirWave **Import** empty until **Fetch Inventory** runs and enforced read-only **Device Name**, **IP Address**, **Model**, and **Group** for AirWave-managed devices while keeping **Netmiko Platform**, **Protocol**, and **Port** editable.
+- Switched Windows release packaging in `.github/workflows/release.yml` to portable PyInstaller `--onedir` archive `pssh-ui-win-x64.zip` collecting `py4web`, `pydal`, `yatl`, `ombott`, `renoir`, `rocket3`, `netmiko`, templates, static assets, snippets, locales, and documentation without extracting into `%TEMP%` on launch.
 
 ### Fixed
-- Anchored `UsernamePromptRegex` and `PasswordPromptRegex` and restricted credential prompt detection to incomplete lines ending in `:`, ignoring `Last login:` banners so usernames are not typed at active CLI prompts.
-- Aborted remaining commands on first failed step (`Skipped`), stripped trailing idle CLI prompts from raw SSH transcripts, and ensured SSH channels always close on exit.
-- Synchronized Step 2 (**Parameters**) entry values into `param_values` before Step 4 preview rendering and **Run Job** validation so pre-filled or untouched fields substitute cleanly and validate at Step 2.
-- Fixed plural-form lookup in `.po` catalogs, cleaned up obsolete translation entries, and updated PyInstaller release build metadata injection.
+- Avoided duplicating connection/authentication exception lines into `--- Detected Errors ---` while preserving them in `--- Connection / Execution Exception ---` and the raw terminal transcript.
+- Normalized VT100 control sequences, carriage returns, backspaces, and pager artifacts in captured session transcripts (`clean_terminal_text`).
+- Prevented login, enable, AirWave, and `${var|password}` secret values from ever being persisted in SQLite and masked runtime secrets in Netmiko `session_log`.
+- Hardened background job workers so unexpected execution errors cleanly finalize the job as `Failed` instead of leaving it stuck in `Running`.
 
 ## [1.0.0] - 2026-11-17
 

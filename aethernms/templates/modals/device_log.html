@@ -1,0 +1,23 @@
+<!-- Device Log Viewer Modal -->
+<div id="modal-log" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container lg">
+    <div class="cds--modal-header">
+      <h3 id="log-modal-title" class="cds--modal-header__heading" data-i18n="Device Log">Device Log</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <div id="log-banner" style="font-weight:600;margin-bottom:4px;"></div>
+      <div id="log-conn-meta" class="cds--helper-text" style="margin-bottom:10px;"></div>
+      <div id="log-terminal" class="log-terminal"></div>
+    </div>
+    <div class="cds--modal-footer spread">
+      <a id="btn-download-log" class="cds--btn cds--btn--tertiary cds--btn--sm" href="#" download>
+        [[=XML(icon("download", 16))]]
+        <span data-i18n="Download .log">Download .log</span>
+      </a>
+      <button type="button" class="cds--btn cds--btn--primary" data-modal-cancel data-i18n="Close">Close</button>
+    </div>
+  </div>
+</div>

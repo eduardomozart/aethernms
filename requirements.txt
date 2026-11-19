@@ -1,7 +1,7 @@
-paramiko>=3.4.0
+netmiko>=4.5.0
+py4web>=1.20240101
+pydal>=20231101
 requests>=2.28.0
 xmltodict>=0.13.0
 babel>=2.12.0
-pillow>=10.0.0
-sv-ttk>=2.6.0
 git+https://github.com/eduardomozart/airwaveapiclient.git@master

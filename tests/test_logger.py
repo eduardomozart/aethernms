@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 from pssh_ui.logger import create_run_log_dir, sanitize_log_filename, write_host_log
-from pssh_ui.models import CommandStepResult, HostEntry, HostExecutionResult, SwitchOS
+from pssh_ui.models import CommandStepResult, ConnectionProtocol, HostEntry, HostExecutionResult
 
 
 def test_log_directory_uses_yyyy_mm_dd_hh_mm_ss_and_host_filename(tmp_path: Path):
@@ -13,16 +13,23 @@ def test_log_directory_uses_yyyy_mm_dd_hh_mm_ss_and_host_filename(tmp_path: Path
     assert run_dir.name == "2026-11-17_15-30-45"
     assert run_dir.is_dir()
 
-    host_named = HostEntry(name="SW/CORE:01", ip="10.0.0.1", os_type=SwitchOS.AOS_CX)
+    host_named = HostEntry(name="SW/CORE:01", ip="10.0.0.1", os_type="aruba_aoscx")
     assert sanitize_log_filename(host_named) == "SW_CORE_01.log"
 
-    host_ip_only = HostEntry(name="", ip="10.0.0.2", os_type=SwitchOS.AOS_S)
+    host_ip_only = HostEntry(
+        name="",
+        ip="10.0.0.2",
+        os_type="aruba_procurve",
+        protocol=ConnectionProtocol.TELNET,
+        port=2323,
+    )
     assert sanitize_log_filename(host_ip_only) == "10.0.0.2.log"
 
     result = HostExecutionResult(
         host=host_ip_only,
         status="Failed",
-        operation_result="1 command error(s) detected",
+        operation_result="1 error detected: Invalid CLI input",
+        connection_method="Telnet (aruba_procurve_telnet)",
         started_at="2026-11-17 15:30:45",
         finished_at="2026-11-17 15:30:47",
         step_results=[
@@ -49,6 +56,8 @@ def test_log_directory_uses_yyyy_mm_dd_hh_mm_ss_and_host_filename(tmp_path: Path
     assert log_path.parent.name == "2026-11-17_15-30-45"
     content = log_path.read_text(encoding="utf-8")
     assert "Invalid input: badcmd" in content
-    assert "10.0.0.2:22" in content
+    assert "10.0.0.2:2323" in content
+    assert "Connection      : Telnet (aruba_procurve_telnet)" in content
+    assert "Netmiko Platform: aruba_procurve" in content
     assert "--- Command Execution Summary ---" not in content
-    assert "--- Raw SSH Terminal Output ---" in content
+    assert "--- Raw Telnet Terminal Output ---" in content

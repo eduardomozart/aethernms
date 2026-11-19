@@ -1,0 +1,79 @@
+[[extend 'layout.html']]
+
+<!-- Snippets Management & CLI Preview -->
+<section id="view-snippets" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <h2 class="tile-title" data-i18n="Snippets">Snippets</h2>
+      <div class="tile-actions">
+        <input type="file" id="snippet-import-file" accept=".xml" class="hidden" />
+        <button type="button" class="cds--btn cds--btn--tertiary cds--btn--sm" id="btn-import-snippet">
+          [[=XML(icon("upload", 16))]]
+          <span data-i18n="Import Snippet">Import Snippet</span>
+        </button>
+        <button type="button" class="cds--btn cds--btn--tertiary cds--btn--sm" id="btn-export-snippet">
+          [[=XML(icon("download", 16))]]
+          <span data-i18n="Export Snippet">Export Snippet</span>
+        </button>
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-snippet">
+          [[=XML(icon("add", 16))]]
+          <span data-i18n="Add Snippet">Add Snippet</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-field">
+        <label class="cds--label" for="flt-snip-name" data-i18n="Name">Name</label>
+        <input id="flt-snip-name" class="cds--text-input" type="text" />
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-snip-type" data-i18n="Snippet Type">Snippet Type</label>
+        <select id="flt-snip-type" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-snip-sev" data-i18n="Severity">Severity</label>
+        <select id="flt-snip-sev" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field compact">
+        <label class="cds--label" for="flt-snip-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
+        <select id="flt-snip-os" class="cds--select-input"></select>
+      </div>
+      <div class="filter-field">
+        <label class="cds--label" for="flt-snip-desc" data-i18n="Description">Description</label>
+        <input id="flt-snip-desc" class="cds--text-input" type="text" />
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="cds--data-table">
+        <thead>
+          <tr>
+            <th data-i18n="Name">Name</th>
+            <th data-i18n="Snippet Type">Snippet Type</th>
+            <th data-i18n="Severity">Severity</th>
+            <th data-i18n="Netmiko Platform">Netmiko Platform</th>
+            <th data-i18n="Creation Time">Creation Time</th>
+            <th data-i18n="Description">Description</th>
+            <th class="col-actions" data-i18n="Action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="snippets-tbody"></tbody>
+      </table>
+    </div>
+    <div id="snippets-pagination" class="cds--pagination"></div>
+  </div>
+
+  <div class="cds--tile">
+    <div class="tile-header" style="margin-bottom:8px;">
+      <h3 class="tile-title" style="font-size:15px;" data-i18n="Snippet Commands Preview">Snippet Commands Preview</h3>
+    </div>
+    <pre id="snippet-preview" class="cli-preview"></pre>
+  </div>
+</section>
+
+[[include 'modals/snippet_editor.html']]
+
+[[block page_scripts]]
+<script src="/static/js/snippets.js"></script>
+[[end]]

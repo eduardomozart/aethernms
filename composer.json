@@ -1,0 +1,24 @@
+{
+    "name": "eduardomozart/aethernms",
+    "description": "Frontend IBM Carbon Design System v11, IBM Plex fonts, Carbon SVG icons, and Swagger UI dependencies for aethernms",
+    "type": "project",
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "require": {
+        "npm-asset/carbon--styles": "^1.110",
+        "npm-asset/fontsource--ibm-plex-mono": "^5.0",
+        "npm-asset/fontsource--ibm-plex-sans": "^5.0",
+        "npm-asset/iconify-json--carbon": "^1.2",
+        "npm-asset/swagger-ui-dist": "^5.18"
+    },
+    "config": {
+        "vendor-dir": "aethernms/static/vendor",
+        "sort-packages": true,
+        "allow-plugins": {}
+    }
+}

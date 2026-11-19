@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" class="cds--white" data-carbon-theme="white">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>aethernms — REST API Docs (Swagger)</title>
+  <link rel="icon" href="/assets/aethernms.ico" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/swagger-ui-dist/swagger-ui.css" />
+  <link rel="stylesheet" href="/static/css/aethernms-carbon.css" />
+  <style>
+    .swagger-wrap {
+      max-width: 1400px;
+      margin: 48px auto 0;
+      padding: 20px 24px 36px;
+    }
+    .swagger-ui .topbar { display: none; }
+    .offline-endpoint {
+      border: 1px solid var(--anms-tile-border);
+      background: var(--anms-tile-bg);
+      margin-bottom: 10px;
+    }
+    .offline-endpoint summary {
+      padding: 10px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+    }
+    .offline-method {
+      display: inline-block;
+      min-width: 64px;
+      text-align: center;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    .m-get { background: #0f62fe; }
+    .m-post { background: #24a148; }
+    .m-put { background: #b28600; }
+    .m-delete { background: #da1e28; }
+    .offline-body {
+      padding: 12px 14px;
+      border-top: 1px solid var(--anms-tile-border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header class="cds--header cds--g100">
+    <a class="cds--header__name" href="/">
+      <img src="/assets/aethernms-header.png" alt="aethernms" />
+      <span>aethernms</span>
+      <span class="cds--header__subtitle">REST API &amp; Swagger UI (OpenAPI 3.0)</span>
+    </a>
+    <div class="cds--header__global">
+      <a class="cds--header__action" href="/api/openapi.json" target="_blank">openapi.json</a>
+      <a class="cds--header__action" href="/">Back to App</a>
+    </div>
+  </header>
+
+  <main class="swagger-wrap">
+    <div id="swagger-ui"></div>
+    <div id="offline-explorer" class="hidden"></div>
+  </main>
+
+  <script src="/static/vendor/npm-asset/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script>
+    (async function () {
+      if (window.SwaggerUIBundle) {
+        window.SwaggerUIBundle({
+          url: "/api/openapi.json",
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          persistAuthorization: true,
+          requestInterceptor: function (req) {
+            // Strictly omit browser session cookies so API calls from Swagger require an API Key
+            req.credentials = "omit";
+            return req;
+          },
+        });
+        return;
+      }
+
+      // Offline fallback OpenAPI 3.0 interactive explorer (API-Key-only)
+      const root = document.getElementById("offline-explorer");
+      root.classList.remove("hidden");
+      const spec = await (await fetch("/api/openapi.json", { credentials: "omit" })).json();
+
+      const headerCard = document.createElement("div");
+      headerCard.className = "cds--tile";
+      headerCard.style.marginBottom = "16px";
+      headerCard.innerHTML = `
+        <h2 class="tile-title">${spec.info.title} <span class="cds--tag cds--tag--blue">${spec.info.version}</span></h2>
+        <p style="margin:6px 0 12px;color:var(--cds-text-secondary);">${spec.info.description || ""}</p>
+        <div class="cds--form-item" style="max-width:480px;">
+          <label class="cds--label" for="offline-api-key">Authorize (X-API-Key required)</label>
+          <input id="offline-api-key" class="cds--text-input mono" type="password" placeholder="aethernms_..." />
+        </div>
+      `;
+      root.appendChild(headerCard);
+
+      for (const [path, methods] of Object.entries(spec.paths || {})) {
+        for (const [method, op] of Object.entries(methods)) {
+          const det = document.createElement("details");
+          det.className = "offline-endpoint";
+          const mLow = method.toLowerCase();
+          det.innerHTML = `
+            <summary>
+              <span class="offline-method m-${mLow}">${method}</span>
+              <code class="mono">${path}</code>
+              <span style="color:var(--cds-text-secondary);font-weight:400;">${op.summary || ""}</span>
+            </summary>
+            <div class="offline-body">
+              <div class="cds--form-item">
+                <label class="cds--label">Path</label>
+                <input class="cds--text-input mono try-path" value="${path}" />
+              </div>
+              ${["post", "put"].includes(mLow) ? `
+                <div class="cds--form-item">
+                  <label class="cds--label">JSON Request Body</label>
+                  <textarea class="cds--text-area mono try-body" rows="4">{}</textarea>
+                </div>` : ""}
+              <div>
+                <button class="cds--btn cds--btn--primary cds--btn--sm try-exec" type="button">Execute</button>
+              </div>
+              <pre class="cli-preview try-out hidden"></pre>
+            </div>
+          `;
+          det.querySelector(".try-exec").addEventListener("click", async () => {
+            const url = det.querySelector(".try-path").value.trim();
+            const outEl = det.querySelector(".try-out");
+            const apiKey = document.getElementById("offline-api-key").value.trim();
+            const headers = {};
+            if (apiKey) headers["X-API-Key"] = apiKey;
+            const opts = { method: method.toUpperCase(), headers, credentials: "omit" };
+            const bodyEl = det.querySelector(".try-body");
+            if (bodyEl) {
+              headers["Content-Type"] = "application/json";
+              opts.body = bodyEl.value;
+            }
+            const r = await fetch(url, opts);
+            const txt = await r.text();
+            outEl.textContent = `HTTP ${r.status}\n\n${txt}`;
+            outEl.classList.remove("hidden");
+          });
+          root.appendChild(det);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

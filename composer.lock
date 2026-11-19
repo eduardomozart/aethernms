@@ -1,0 +1,503 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "fb95b97b678448cb69c8d6c4aec3ac7a",
+    "packages": [
+        {
+            "name": "npm-asset/carbon--colors",
+            "version": "11.62.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/colors/-/colors-11.62.0.tgz",
+                "shasum": "009f5039aabfff6a6de4bb67bfe870562fee8258"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--feature-flags",
+            "version": "1.12.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/feature-flags/-/feature-flags-1.12.0.tgz",
+                "shasum": "9ba8e114174807ea688213cc49e3fad764632085"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--grid",
+            "version": "11.66.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/grid/-/grid-11.66.0.tgz",
+                "shasum": "dc5b972ef1d6cd56c84776bf59e4adbc992720c7"
+            },
+            "require": {
+                "npm-asset/carbon--layout": ">=11.63.0,<12.0.0",
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--layout",
+            "version": "11.63.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/layout/-/layout-11.63.0.tgz",
+                "shasum": "e6539b8215317468559e378f84d1f97ede98456f"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--motion",
+            "version": "11.57.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/motion/-/motion-11.57.0.tgz",
+                "shasum": "cccb8c781ae955b34bb228b63e86ba17e70a0da7"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--styles",
+            "version": "1.119.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/styles/-/styles-1.119.0.tgz",
+                "shasum": "3542973470912817258a7a98f95ca9a23aed4196"
+            },
+            "require": {
+                "npm-asset/carbon--colors": ">=11.62.0,<12.0.0",
+                "npm-asset/carbon--feature-flags": ">=1.12.0,<2.0.0",
+                "npm-asset/carbon--grid": ">=11.66.0,<12.0.0",
+                "npm-asset/carbon--layout": ">=11.63.0,<12.0.0",
+                "npm-asset/carbon--motion": ">=11.56.0,<12.0.0",
+                "npm-asset/carbon--themes": ">=11.85.0,<12.0.0",
+                "npm-asset/carbon--type": ">=11.71.0,<12.0.0",
+                "npm-asset/ibm--plex": "6.4.1",
+                "npm-asset/ibm--plex-mono": "2.5.0",
+                "npm-asset/ibm--plex-sans": "1.1.0",
+                "npm-asset/ibm--plex-sans-arabic": "1.1.0",
+                "npm-asset/ibm--plex-sans-devanagari": "1.1.0",
+                "npm-asset/ibm--plex-sans-hebrew": "1.1.0",
+                "npm-asset/ibm--plex-sans-thai": "1.1.0",
+                "npm-asset/ibm--plex-sans-thai-looped": "1.1.0",
+                "npm-asset/ibm--plex-serif": "2.0.0",
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--themes",
+            "version": "11.86.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/themes/-/themes-11.86.0.tgz",
+                "shasum": "0910466fd29af8405f51e24fc2bcf2fe678bf68f"
+            },
+            "require": {
+                "npm-asset/carbon--colors": ">=11.62.0,<12.0.0",
+                "npm-asset/carbon--layout": ">=11.63.0,<12.0.0",
+                "npm-asset/carbon--type": ">=11.71.0,<12.0.0",
+                "npm-asset/color": ">=4.0.0,<5.0.0",
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/carbon--type",
+            "version": "11.71.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@carbon/type/-/type-11.71.0.tgz",
+                "shasum": "1eed077d09e42e7b4095a3c078d9e226e2ef6ab7"
+            },
+            "require": {
+                "npm-asset/carbon--grid": ">=11.66.0,<12.0.0",
+                "npm-asset/carbon--layout": ">=11.63.0,<12.0.0",
+                "npm-asset/ibm--telemetry-js": ">=1.5.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/color",
+            "version": "4.2.3",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/color/-/color-4.2.3.tgz",
+                "shasum": "d781ecb5e57224ee43ea9627560107c0e0c6463a"
+            },
+            "require": {
+                "npm-asset/color-convert": ">=2.0.1,<3.0.0",
+                "npm-asset/color-string": ">=1.9.0,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/color-convert",
+            "version": "2.0.1",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+                "shasum": "72d3a68d598c9bdb3af2ad1e84f21d896abd4de3"
+            },
+            "require": {
+                "npm-asset/color-name": "~1.1.4"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/color-name",
+            "version": "1.1.4",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+                "shasum": "c2a09a87acbde69543de6f63fa3995c826c536a2"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/color-string",
+            "version": "1.9.1",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/color-string/-/color-string-1.9.1.tgz",
+                "shasum": "4467f9146f036f855b764dfb5bf8582bf342c7a4"
+            },
+            "require": {
+                "npm-asset/color-name": ">=1.0.0,<2.0.0",
+                "npm-asset/simple-swizzle": ">=0.2.2,<0.3.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/fontsource--ibm-plex-mono",
+            "version": "5.3.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@fontsource/ibm-plex-mono/-/ibm-plex-mono-5.3.0.tgz",
+                "shasum": "1879699d104602d5331e28e103f33c3b1b766b17"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/fontsource--ibm-plex-sans",
+            "version": "5.3.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@fontsource/ibm-plex-sans/-/ibm-plex-sans-5.3.0.tgz",
+                "shasum": "8099950b404e625f65e7bd833bcb84ffe6bcd40c"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex",
+            "version": "6.4.1",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex/-/plex-6.4.1.tgz",
+                "shasum": "22b9ff26074b816ad01d3a242dbe33be106b0889"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.5.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-mono",
+            "version": "2.5.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-mono/-/plex-mono-2.5.0.tgz",
+                "shasum": "152c0b1dda619ef5f032db258bda798cf278125e"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans/-/plex-sans-1.1.0.tgz",
+                "shasum": "44a45a8e269870221c431eb4e8023dca6ed21ceb"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans-arabic",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans-arabic/-/plex-sans-arabic-1.1.0.tgz",
+                "shasum": "01e351a87f9d21378c38738d016f1dbf8ef20a0a"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans-devanagari",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans-devanagari/-/plex-sans-devanagari-1.1.0.tgz",
+                "shasum": "b8873d547debc4937343a2566819c273299816f3"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans-hebrew",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans-hebrew/-/plex-sans-hebrew-1.1.0.tgz",
+                "shasum": "6016e57dd24c1a3cfa889c672164bedae56e4869"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans-thai",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans-thai/-/plex-sans-thai-1.1.0.tgz",
+                "shasum": "d5b7490f349d641d13fa3a6bb8ce27f5b70e69e2"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-sans-thai-looped",
+            "version": "1.1.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-sans-thai-looped/-/plex-sans-thai-looped-1.1.0.tgz",
+                "shasum": "21db23f3df062d223bc422d24c8667d26cd7198e"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--plex-serif",
+            "version": "2.0.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/plex-serif/-/plex-serif-2.0.0.tgz",
+                "shasum": "536fed68f481dea2435653e7c2a743f5a2249bdd"
+            },
+            "require": {
+                "npm-asset/ibm--telemetry-js": ">=1.6.1,<2.0.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "OFL-1.1"
+            ]
+        },
+        {
+            "name": "npm-asset/ibm--telemetry-js",
+            "version": "1.12.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@ibm/telemetry-js/-/telemetry-js-1.12.0.tgz",
+                "shasum": "d935716e254c043f87e37aa4373ab57fd4a1786b"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/iconify--types",
+            "version": "2.0.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@iconify/types/-/types-2.0.0.tgz",
+                "shasum": "ab0e9ea681d6c8a1214f30cd741fe3a20cc57f57"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/iconify-json--carbon",
+            "version": "1.2.30",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@iconify-json/carbon/-/carbon-1.2.30.tgz",
+                "shasum": "697c6f0c51b3dd44578669ad59b37946112d1191"
+            },
+            "require": {
+                "npm-asset/iconify--types": "*"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/is-arrayish",
+            "version": "0.3.4",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/is-arrayish/-/is-arrayish-0.3.4.tgz",
+                "shasum": "1ee5553818511915685d33bb13d31bf854e5059d"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/scarf--scarf",
+            "version": "1.4.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/@scarf/scarf/-/scarf-1.4.0.tgz",
+                "shasum": "3bbb984085dbd6d982494538b523be1ce6562972"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        },
+        {
+            "name": "npm-asset/simple-swizzle",
+            "version": "0.2.4",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/simple-swizzle/-/simple-swizzle-0.2.4.tgz",
+                "shasum": "a8d11a45a11600d6a1ecdff6363329e3648c3667"
+            },
+            "require": {
+                "npm-asset/is-arrayish": ">=0.3.1,<0.4.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/swagger-ui-dist",
+            "version": "5.35.0",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/swagger-ui-dist/-/swagger-ui-dist-5.35.0.tgz",
+                "shasum": "5c3b487ae5a2121b2c668d6f92b550707521876a"
+            },
+            "require": {
+                "npm-asset/scarf--scarf": "1.4.0"
+            },
+            "type": "npm-asset",
+            "license": [
+                "Apache-2.0"
+            ]
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
+}

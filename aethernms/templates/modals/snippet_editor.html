@@ -1,0 +1,51 @@
+<!-- Snippet Editor Modal -->
+<div id="modal-snippet" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container lg">
+    <div class="cds--modal-header">
+      <h3 id="modal-snippet-title" class="cds--modal-header__heading" data-i18n="Add Snippet">Add Snippet</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <div id="snip-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
+      <div class="form-grid">
+        <div class="cds--form-item span-2">
+          <label class="cds--label" data-i18n="Snippet Type *">Snippet Type *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="snip-type" value="Config" checked /> <span data-i18n="Config">Config</span></label>
+            <label><input type="radio" name="snip-type" value="Audit and Remediate" /> <span data-i18n="Audit and Remediate">Audit and Remediate</span></label>
+          </div>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="snip-name" data-i18n="Name *">Name *</label>
+          <input id="snip-name" class="cds--text-input" type="text" />
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="snip-os" data-i18n="Netmiko Platform *">Netmiko Platform *</label>
+          <select id="snip-os" class="cds--select-input"></select>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="snip-sev" data-i18n="Severity">Severity</label>
+          <select id="snip-sev" class="cds--select-input"></select>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="snip-desc" data-i18n="Description">Description</label>
+          <input id="snip-desc" class="cds--text-input" type="text" />
+        </div>
+        <div class="cds--form-item span-2">
+          <label class="cds--label" for="snip-cmds" data-i18n="Commands *">Commands *</label>
+          <textarea id="snip-cmds" class="cds--text-area mono" rows="7"></textarea>
+        </div>
+        <div id="snip-audit-wrap" class="cds--form-item span-2 hidden">
+          <label class="cds--label" for="snip-audit" data-i18n="Audit Validation RegEx">Audit Validation RegEx</label>
+          <textarea id="snip-audit" class="cds--text-area mono" rows="5"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="cds--modal-footer">
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-snippet" data-i18n="Save Snippet">Save Snippet</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+[[extend 'layout.html']]
+
+<nav aria-label="Breadcrumb">
+  <ol class="anms-breadcrumb">
+    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
+    <li>/</li>
+    <li aria-current="page" data-i18n="Roles">Roles</li>
+  </ol>
+</nav>
+
+<section id="view-admin-roles" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <div>
+        <h2 class="tile-title" data-i18n="Roles">Roles</h2>
+        <span class="cds--helper-text" data-i18n="Manage built-in and custom RBAC roles and granular permission sets.">Manage built-in and custom RBAC roles and granular permission sets.</span>
+      </div>
+      <div class="tile-actions">
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-role">
+          [[=XML(icon("add", 16))]]
+          <span data-i18n="Add Role">Add Role</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="cds--data-table">
+        <thead>
+          <tr>
+            <th data-i18n="Role Name">Role Name</th>
+            <th data-i18n="Type">Type</th>
+            <th data-i18n="Permissions">Permissions</th>
+            <th data-i18n="Users">Users</th>
+            <th data-i18n="Description">Description</th>
+            <th class="col-actions" data-i18n="Action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="roles-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+[[include 'modals/role_editor.html']]
+
+[[block page_scripts]]
+<script src="/static/js/roles.js"></script>
+[[end]]

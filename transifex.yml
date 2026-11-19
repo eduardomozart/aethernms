@@ -2,6 +2,6 @@ git:
   filters:
     - filter_type: file
       file_format: PO
-      source_file: locales/pssh_ui.pot
+      source_file: locales/aethernms.pot
       source_language: en
-      translation_files_expression: locales/<lang>/LC_MESSAGES/pssh_ui.po
+      translation_files_expression: locales/<lang>/LC_MESSAGES/aethernms.po

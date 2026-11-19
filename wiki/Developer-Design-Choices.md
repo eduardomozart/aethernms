@@ -8,59 +8,61 @@ This document explains the architectural and technical choices behind **`pssh-ui
 
 ```mermaid
 flowchart LR
-    App["pssh_ui/app.py\n(PsshApp Shell + main)"] --> Tabs["pssh_ui/tabs/\n(Jobs, Snippets, Devices, Models)"]
-    App --> Dlgs["pssh_ui/dialogs/\n(AddJob, AirWave, Editors, Settings, About)"]
-    Tabs --> Common["pssh_ui/common.py\n(Theme, Highlighting, Widgets)"]
-    Dlgs --> Common
-    Tabs --> Job["pssh_ui/job_builder.py\n(OS Discovery, Model Wrappers & Filtering)"]
-    Dlgs --> Job
-    App --> OS["pssh_ui/os_integration.py\n(Windows & macOS Theme/Locale)"]
-    App --> Settings["pssh_ui/settings_store.py\n(%APPDATA% / ~/.config settings.xml)"]
-    App --> Snippets["pssh_ui/snippet_store.py\n(Bundled snippets/<vendor>/<os>/*.xml)"]
-    App --> Models["pssh_ui/model_store.py\n(Bundled model/<vendor>/*.xml)"]
-    App --> Session["pssh_ui/session_store.py\n(%APPDATA% / ~/.config session.xml)"]
-    Dlgs --> AirWave["pssh_ui/airwave_importer.py\n(airwaveapiclient + OS Classifier)"]
-    App --> I18n["pssh_ui/i18n.py\n(Dynamic Transifex .po + Babel Labels)"]
-
-    Job --> Vars["pssh_ui/variables.py\n(${var|type|regex} & ${var|['A','B']})"]
-    Job --> Parser["pssh_ui/parser.py\n(! comments, CLI Errors & Audit RegEx)"]
-    Tabs --> Runner["pssh_ui/ssh_runner.py\n(ThreadPoolExecutor + DeviceModel PTY)"]
-    Runner --> Logger["pssh_ui/logger.py\n(User Config logs/YYYY-MM-DD_HH-MM-SS/*.log)"]
+    Browser["IBM Carbon v11 Web UI\n(layout.html, jobs/snippets/devices.html,\nmodals/*.html, core/jobs/snippets/devices.js)"] --> Web["pssh_ui/web_app.py\n(Py4Web Routes, Auth, REST API)"]
+    Swagger["Swagger UI (/api/docs)\n& OpenAPI (/api/openapi.json)"] --> Web
+    CLI["pssh_ui/app.py & main.py\n(Rocket3 Server) / apps/_default"] --> Web
+    Web --> Auth["pssh_ui/auth.py\n(PBKDF2 Passwords, SHA-256 API Keys)"]
+    Web --> OpenAPI["pssh_ui/openapi_spec.py\n(OpenAPI 3.0.3 Schema)"]
+    Web --> DB["pssh_ui/db.py\n(PyDAL SQLite WAL Store + XML Migration)"]
+    Web --> Cat["pssh_ui/netmiko_catalog.py\n(CLASS_MAPPER Platform & Protocol Registry)"]
+    Web --> Job["pssh_ui/job_builder.py\n(Platform Filtering & Validation)"]
+    Web --> AirWave["pssh_ui/airwave_importer.py\n(airwaveapiclient + OS->Netmiko Mapper)"]
+    Web --> I18n["pssh_ui/i18n.py\n(Gettext .po/.mo + JSON Catalog Export)"]
+    Web --> Vars["pssh_ui/variables.py\n(${var|type|regex} & ${var|['A','B']})"]
+    Web --> Parser["pssh_ui/parser.py\n(! comments, CLI Errors & Audit RegEx)"]
+    Web --> Runner["pssh_ui/ssh_runner.py\n(ThreadPoolExecutor + Netmiko ConnectHandler)"]
+    Runner --> Cat
+    Runner --> Logger["pssh_ui/logger.py\n(format_host_log -> SQLite job_result)"]
 ```
 
-Core logic lives in pure Python modules decoupled from `tkinter`, allowing automated unit testing without requiring a desktop display. Interface modules live in `pssh_ui/app.py`, `pssh_ui/common.py`, `pssh_ui/tabs/`, and `pssh_ui/dialogs/`.
+Core automation and domain modules (`netmiko_catalog.py`, `ssh_runner.py`, `parser.py`, `variables.py`, `job_builder.py`, `airwave_importer.py`, `ping_checker.py`, `db.py`) are pure Python modules completely decoupled from the browser UI, enabling fast deterministic WSGI and unit testing with mocked Netmiko connections.
 
 ---
 
-## 2. User Data vs Distributed Templates (`pssh_ui/paths.py`)
+## 2. Py4Web + PyDAL SQLite Persistence (`pssh_ui/db.py`)
 
-* **Per-User Directory** (`%APPDATA%\pssh-ui` on Windows; `~/.config/pssh-ui` or `$XDG_CONFIG_HOME/pssh-ui` on Linux/macOS): stores `settings.xml`, `session.xml`, and `logs/`, created automatically when missing. In frozen `.exe` builds, editable `snippets/` and `model/` XML libraries are also seeded here from `_MEIPASS` defaults (`seed_bundled_templates()`) via SHA-256 hash tracking (`.seed_manifest.json`) so unedited defaults auto-update on upgrade, deletions are preserved, and user customizations never get overwritten (`<file>.xml.new` sidecars preserve upstream changes).
-* **Source Mode Templates**: Running directly from source resolves `snippets/` and `model/` to the repository root cleanly.
-* **Zero-Code XML & Catalog Extensibility**: `parse_device_type()` (`CustomOS`) and `discover_device_types()` load any `<DeviceType>` defined in `model/<vendor>/*.xml` or `snippets/<vendor>/<os>/*.xml` dynamically without hardcoding OS enums in Python source code (`<Folder>` tags are omitted because subfolder hierarchy derives from directory layout). Dropping a Transifex `.po` file under `locales/<lang>/LC_MESSAGES/` likewise enables a new language automatically via `gettext`/Babel.
-
----
-
-## 3. Visual Design, Settings & About (`Sun-Valley-ttk-theme`)
-
-* **OS Auto Defaults**: Both Theme and Language default to `"auto"` (**Auto (OS Default)**) on Windows and macOS (`pssh_ui/os_integration.py`). Global settings live in `settings.xml` (accessible via **`⚙`**; integer validation blocks decimal timeouts).
-* **Header & About**: Displays the transparent PNG app icon generated in `assets/` (plus a 9-resolution DIB/PNG `.ico`), the `"Config & Audit Automation"` subtitle, an **`ⓘ`** dialog (`pssh_ui/dialogs/about_dialog.py`) showing app metadata + clickable Git URL (`get_repository_url()` parsing `.git/config`), and **`⚙`** (`pssh_ui/dialogs/settings_dialog.py`).
-* **Dynamic Step Wizard**: Step headers render Pillow-supersampled circular badges (`1`–`3` when a template has no variables, expanding dynamically to `1`–`4` with **Parameters** when `${...}` variables exist) using Sun-Valley accent blue (`#0067c0` / `#60cdff`). Switching `Job Type *` (`Config` ↔ `Audit and Remediate`) filters `Snippets *`, closes any open popdown, and resets selection cleanly.
-* **Parameterized Templates (`pssh_ui/variables.py`)**: Supports `${var|type|regex}` and `${var|["Item 1", "Item 2"]}` syntax with uppercase letters, spaces, accents, HTML-like field types (`text`, `password`, `number`, `email`, `url`, `select`), regex validation, and `!` comments.
-* **Row-Level Actions, Import/Export & `Job Details`**: **Jobs**, **Snippets** (**Import/Export Snippet**), **Devices**, and **Device Models** (**Import/Export Device Model**) expose inline row icons; **Job Details** highlights **bold** counts, borderless surfaces, and per-row log viewing.
+* **Single SQLite Database (`WAL` Mode)**: Stored at `%APPDATA%\pssh-ui\pssh_ui.db` (Windows) or `~/.pssh-ui/pssh_ui.db` (Linux/macOS), containing `auth_user`, `api_key`, `app_settings`, `snippet`, `device`, `saved_parameter`, `job`, and `job_result` (including `formatted_log` per device).
+* **Thread-Safe Short-Lived PyDAL Connections**: Because background Netmiko `ThreadPoolExecutor` workers update per-host statuses concurrently while the browser polls `/api/jobs`, `DatabaseStore` serializes short-lived PyDAL WAL connections under an `RLock` with `PRAGMA busy_timeout=15000` and `PRAGMA foreign_keys=ON`.
+* **SHA-256 Bundled Snippet Seeding**: Built-in XML templates under `snippets/<vendor>/<platform>/*.xml` are seeded into the `snippet` table on startup. Unedited bundled rows auto-update when upstream XML hashes change, user deletions set `is_deleted=True` (respected across restarts), and user edits clear `seeded_sha256` so customizations are never overwritten.
+* **One-Time Legacy XML Migration**: On first launch against an empty database, `migrate_legacy_xml_files()` imports legacy `settings.xml`, `devices.xml`, `jobs.xml` (or `session.xml`), and any existing disk `.log` files into SQLite automatically while scrubbing `|password|` variable values.
 
 ---
 
-## 4. `DeviceModel` Automation & Paramiko PTY (`pssh_ui/ssh_runner.py`)
+## 3. Authentication, API Keys & OpenAPI 3.0.3 (`pssh_ui/auth.py`, `pssh_ui/openapi_spec.py`)
 
-`ArubaSSHClient` uses an interactive PTY (`invoke_shell(term="vt100")`) driven by the selected `DeviceModel`:
-1. Matches `PagerPromptRegex` / `Press any key to continue` and issues `DisablePagingCommand` (`no page`).
-2. Detects `UsernamePromptRegex`, `PasswordPromptRegex`, and `EnablePasswordPromptRegex` so credential prompts or privilege escalation (`EnableCommand = enable`) work automatically when switches challenge the automation session.
-3. `wrap_commands_with_model()` prepends `PreConfigCommands` (`configure terminal`) and appends `PostConfigCommands` (`end`) — plus `WriteCommand` (`write memory`) when checked in Step 4 — only for `Config` jobs, eliminating duplicate `configure terminal` boilerplate in XML snippets while avoiding duplicate boundary commands.
-4. `validate_audit_regex()` verifies every active RegEx line from `<AuditRegex>` against combined switch output after execution.
+* **Session + API Key Dual Auth**: Browser sessions use signed Py4Web `Session` cookies (`pssh_ui_session`, backed by a persistent high-entropy `.session_secret` meeting Py4Web's `IS_STRONG(entropy=50)` check). REST API automation clients authenticate with `X-API-Key: pssh_...` or `Authorization: Bearer pssh_...` headers validated against SHA-256 key digests in `api_key`.
+* **Self-Documenting REST API**: Every GUI action maps 1-to-1 to a `/api/...` JSON route documented in `pssh_ui/openapi_spec.py` (OpenAPI 3.0.3 at `/api/openapi.json`) and rendered via `/api/docs` (`/swagger`), including an offline built-in OpenAPI explorer fallback when external CDNs are unavailable in air-gapped networks.
 
 ---
 
-## 5. Security, Logging & Release Automation
+## 4. IBM Carbon Design System v11 & AirWave Workflow
 
-* **Timestamped Per-Switch Logs & Password-Free Disk State**: Writes per-switch transcripts to `%APPDATA%\pssh-ui\logs\YYYY-MM-DD_HH-MM-SS\<hostname-or-switch-ip>.log` (or `~/.config/pssh-ui/logs/...`). `settings_store.py` and `session_store.py` never persist SSH, Enable, AirWave, or `|password|` variable values to disk.
-* **PyInstaller & Release Workflow**: `.github/workflows/release.yml` bundles `--icon assets/pssh-ui.ico`, `assets/`, `snippets/`, `model/`, `locales/`, and `sv_ttk` into `pssh-ui-x64.exe`, injecting release tag & GitHub repository metadata automatically.
+* **Zero-Build Self-Contained Carbon v11 UI**: `pssh_ui/static/css/carbon-v11.css` implements official IBM Carbon v11 design tokens (`g10` Light and `g100` Dark), UI Shell Header, Tabs, DataTable, Pagination, Tags, Progress Indicator, Modals, and syntax-highlighted CLI code blocks with zero Node.js/npm build dependency.
+* **AirWave Empty-Until-Fetch & Read-Only Separation**: The **Import from AirWave** modal stays empty until credentials are provided and **Fetch Inventory** runs. For imported AirWave devices (`is_airwave_host()`), both the UI and backend (`PUT /api/devices/{id}` + `DatabaseStore.update_device()`) enforce read-only identity/inventory fields (**Name**, **IP Address**, **Model**, **Group**) while keeping **Netmiko Platform**, **Protocol**, and **Port** editable.
+* **Dynamic Step Wizard**: The Carbon Progress Indicator dynamically shows `1–3` steps when a snippet has no variables and expands to `1–4` steps (`Parameters`) when `${...}` variables are present. Pressing `Esc` closes the topmost open modal cleanly.
+
+---
+
+## 5. Native Netmiko Automation Engine (`pssh_ui/ssh_runner.py`)
+
+`PSSHClient` delegates session negotiation, banner handling, paging suppression (`disable_paging`), privilege escalation (`enable()`), configuration mode transitions (`config_mode()` / `exit_config_mode()`), and config saving (`save_config()`) directly to **Netmiko** native drivers via `ConnectHandler`:
+1. `resolve_netmiko_device_type(platform, protocol)` maps `(host.os_type, host.protocol)` exclusively to native keys registered in Netmiko `CLASS_MAPPER` (rejecting unsupported Telnet combinations without synthetic fallbacks).
+2. Raw wire transcripts are captured natively via an in-memory `io.BytesIO` buffer passed to Netmiko `session_log` (with Netmiko's built-in secret filtering masking login and enable passwords), cleaned with `clean_terminal_text()`, formatted via `format_host_log()`, and persisted directly in SQLite `job_result.formatted_log`.
+3. **Config** jobs enter config mode natively and execute each rendered CLI command step-by-step via `send_config_set([cmd], enter_config_mode=False, exit_config_mode=False, error_pattern=CONFIG_ERROR_PATTERN)` to stop immediately on the first CLI error; **Audit and Remediate** jobs run commands via `send_command()` and evaluate `audit_regex` rules with `validate_audit_regex()`.
+
+---
+
+## 6. Security & Release Automation
+
+* **Zero Plaintext Device/Template Secrets in SQLite**: Device SSH/Telnet passwords, enable passwords, AirWave passwords, and `${var|password}` parameter values are never stored in SQLite (masked as `••••••••` in `parameters_masked_json` and `********` in `commands_rendered`). User account passwords use salted PBKDF2-HMAC-SHA256 (`600,000` iterations); API keys store only SHA-256 digests.
+* **PyInstaller Portable ZIP Release Workflow**: `.github/workflows/release.yml` builds with PyInstaller `--onedir` (`--icon assets/pssh-ui.ico`, collecting `py4web`, `pydal`, `yatl`, `ombott`, `renoir`, `rocket3`, `netmiko`, and bundling `pssh_ui/templates`, `pssh_ui/static`, `snippets`, `locales`, `assets`), copies `LICENSE`, `README.md`, `CHANGELOG.md`, and `wiki/` alongside `pssh-ui-x64.exe` and `_internal/`, and packages everything into `pssh-ui-win-x64.zip`.

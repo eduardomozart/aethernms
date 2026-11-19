@@ -1,0 +1,146 @@
+[[extend 'layout.html']]
+
+<nav aria-label="Breadcrumb">
+  <ol class="anms-breadcrumb">
+    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
+    <li>/</li>
+    <li aria-current="page" data-i18n="System Settings">System Settings</li>
+  </ol>
+</nav>
+
+<section id="view-admin-settings" class="view-panel active">
+  <div class="cds--tile">
+    <div class="tile-header">
+      <div>
+        <h2 class="tile-title" data-i18n="System Settings">System Settings</h2>
+        <span class="cds--helper-text" data-i18n="Configure UI appearance, Netmiko execution defaults, connection defaults, and External REST API / Swagger access.">Configure UI appearance, Netmiko execution defaults, connection defaults, and External REST API / Swagger access.</span>
+      </div>
+      <div class="tile-actions">
+        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-save-settings">
+          [[=XML(icon("checkmark-filled", 16))]]
+          <span data-i18n="Save Settings">Save Settings</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="settings-msg" class="cds--inline-notification hidden" role="status"></div>
+
+    <div class="settings-grid">
+      <!-- Appearance -->
+      <div class="cds--tile" style="background:var(--anms-workspace-bg);">
+        <h3 class="tile-title" style="font-size:16px;margin-bottom:14px;" data-i18n="Appearance">Appearance</h3>
+        <div class="form-grid">
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-lang" data-i18n="Language:">Language:</label>
+            <select id="set-lang" class="cds--select-input"></select>
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-theme" data-i18n="Dark Theme:">Dark Theme:</label>
+            <select id="set-theme" class="cds--select-input"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- External REST API & Swagger Access -->
+      <div class="cds--tile" style="background:var(--anms-workspace-bg);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
+          <h3 class="tile-title" style="font-size:16px;" data-i18n="External API & Swagger Access">External API &amp; Swagger Access</h3>
+          <a
+            id="set-swagger-link"
+            href="/api/docs"
+            target="_blank"
+            class="cds--btn cds--btn--tertiary cds--btn--sm hidden"
+          >
+            [[=XML(icon("api", 16))]]
+            <span data-i18n="Open Swagger UI">Open Swagger UI</span>
+          </a>
+        </div>
+
+        <div class="cds--form-item" style="margin-bottom:14px;">
+          <label class="cds--label" id="lbl-api-toggle" data-i18n="External REST API & Swagger UI">External REST API &amp; Swagger UI</label>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button
+              type="button"
+              id="set-api-enabled"
+              class="cds--toggle__button"
+              role="switch"
+              aria-checked="false"
+              aria-labelledby="lbl-api-toggle"
+              style="background:none;border:0;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:10px;"
+            >
+              <span id="set-api-switch" class="cds--toggle__switch"></span>
+              <span id="set-api-state-text" style="font-size:14px;color:var(--cds-text-primary);" data-i18n="Disabled">Disabled</span>
+            </button>
+          </div>
+          <span class="cds--helper-text" data-i18n="Disabled by default. When enabled, external clients must authenticate with an API Key (X-API-Key or Authorization: Bearer) from an allowed IP.">Disabled by default. When enabled, external clients must authenticate with an API Key (X-API-Key or Authorization: Bearer) from an allowed IP.</span>
+        </div>
+
+        <div class="cds--form-item">
+          <label class="cds--label" for="set-api-allowed-ips" data-i18n="Allowed IP Addresses / CIDRs">Allowed IP Addresses / CIDRs</label>
+          <input
+            id="set-api-allowed-ips"
+            class="cds--text-input mono"
+            type="text"
+            placeholder="127.0.0.1, ::1"
+          />
+          <span class="cds--helper-text">
+            <span data-i18n="Comma-separated IPv4/IPv6 addresses, CIDR blocks (e.g. 10.0.0.0/8), or * for any IP. Default: 127.0.0.1, ::1.">Comma-separated IPv4/IPv6 addresses, CIDR blocks (e.g. 10.0.0.0/8), or * for any IP. Default: 127.0.0.1, ::1.</span>
+            <strong style="margin-left:6px;"><span data-i18n="Your IP:">Your IP:</span> <code id="set-client-ip" class="mono">127.0.0.1</code></strong>
+          </span>
+        </div>
+      </div>
+
+      <!-- Execution Defaults -->
+      <div class="cds--tile" style="background:var(--anms-workspace-bg);">
+        <h3 class="tile-title" style="font-size:16px;margin-bottom:14px;" data-i18n="Execution Defaults">Execution Defaults</h3>
+        <div class="form-grid">
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-user" data-i18n="Default Username:">Default Username:</label>
+            <input id="set-user" class="cds--text-input" type="text" />
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-parallel" data-i18n="Max Parallel Executions:">Max Parallel Executions:</label>
+            <input id="set-parallel" class="cds--text-input" type="number" min="1" max="64" />
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-conn-to" data-i18n="Connect Timeout (s):">Connect Timeout (s):</label>
+            <input id="set-conn-to" class="cds--text-input" type="number" min="1" max="120" />
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-cmd-to" data-i18n="Command Timeout (s):">Command Timeout (s):</label>
+            <input id="set-cmd-to" class="cds--text-input" type="number" min="1" max="300" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection Defaults -->
+      <div class="cds--tile" style="background:var(--anms-workspace-bg);">
+        <h3 class="tile-title" style="font-size:16px;margin-bottom:14px;" data-i18n="Connection Defaults">Connection Defaults</h3>
+        <div class="form-grid">
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-proto" data-i18n="Default Protocol:">Default Protocol:</label>
+            <select id="set-proto" class="cds--select-input">
+              <option value="SSH">SSH</option>
+              <option value="Telnet">Telnet</option>
+            </select>
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-ssh-port" data-i18n="Default SSH Port:">Default SSH Port:</label>
+            <input id="set-ssh-port" class="cds--text-input" type="number" min="1" max="65535" />
+          </div>
+          <div class="cds--form-item">
+            <label class="cds--label" for="set-telnet-port" data-i18n="Default Telnet Port:">Default Telnet Port:</label>
+            <input id="set-telnet-port" class="cds--text-input" type="number" min="1" max="65535" />
+          </div>
+        </div>
+        <p class="cds--helper-text" style="margin-top:12px;" data-i18n="Note: Default protocol and ports apply only when creating devices manually or importing devices from AirWave, and can always be overridden per device.">
+          Note: Default protocol and ports apply only when creating devices manually or importing devices from AirWave, and can always be overridden per device.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+[[block page_scripts]]
+<script src="/static/js/settings.js"></script>
+[[end]]

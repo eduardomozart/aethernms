@@ -1,0 +1,43 @@
+<!-- User Editor Modal -->
+<div id="modal-user-editor" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container">
+    <div class="cds--modal-header">
+      <h3 id="modal-user-title" class="cds--modal-header__heading" data-i18n="Add User">Add User</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <div id="user-editor-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
+      <div class="form-grid">
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-username" data-i18n="Username *">Username *</label>
+          <input id="usr-username" class="cds--text-input" type="text" autocomplete="off" />
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-display-name" data-i18n="Display Name">Display Name</label>
+          <input id="usr-display-name" class="cds--text-input" type="text" autocomplete="off" />
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-role" data-i18n="Role *">Role *</label>
+          <select id="usr-role" class="cds--select-input"></select>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-password" id="usr-password-label" data-i18n="Password *">Password *</label>
+          <input id="usr-password" class="cds--text-input" type="password" autocomplete="new-password" />
+          <span id="usr-password-hint" class="cds--helper-text hidden" data-i18n="Leave blank to keep existing password.">Leave blank to keep existing password.</span>
+        </div>
+        <div class="cds--form-item span-2">
+          <label class="checkbox-label">
+            <input id="usr-active" type="checkbox" checked />
+            <span data-i18n="Active Account">Active Account</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="cds--modal-footer">
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-user" data-i18n="Save">Save</button>
+    </div>
+  </div>
+</div>

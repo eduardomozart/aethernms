@@ -1,4 +1,4 @@
-"""Tests for AirWave folder/device XML parsing, OS classification, and filtering."""
+"""Tests for AirWave folder/device XML parsing, OS-to-Netmiko mapping, and filtering."""
 
 from httmock import HTTMock, urlmatch
 
@@ -7,11 +7,12 @@ from pssh_ui.airwave_importer import (
     build_folder_options_from_hosts,
     fetch_airwave_inventory,
     host_matches_airwave_filter,
-    infer_switch_os,
+    infer_airwave_os_label,
+    map_airwave_os_to_netmiko,
     parse_airwave_devices,
     parse_airwave_folders,
 )
-from pssh_ui.models import AirWaveFilter, HostEntry, SwitchOS, is_airwave_host
+from pssh_ui.models import AirWaveFilter, AppSettings, ConnectionProtocol, HostEntry, is_airwave_host
 
 
 SAMPLE_FOLDER_XML = """<?xml version="1.0" encoding="utf-8"?>
@@ -68,15 +69,25 @@ SAMPLE_AP_XML = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
-def test_infer_switch_os():
-    assert infer_switch_os("Aruba 2930F", "WC.16.10.0017") == SwitchOS.AOS_S
-    assert infer_switch_os("HP 2530-24G", "YA.16.04.0008") == SwitchOS.AOS_S
-    assert infer_switch_os("Aruba 6300M", "FL.10.13.1000") == SwitchOS.AOS_CX
-    assert infer_switch_os("6200F", "") == SwitchOS.AOS_CX
-    assert infer_switch_os("UnknownBox", "1.0") == SwitchOS.UNKNOWN
+def test_airwave_os_to_netmiko_mapping():
+    assert infer_airwave_os_label("Aruba 2930F", "WC.16.10.0017") == "AOS-S"
+    assert map_airwave_os_to_netmiko(model="Aruba 2930F", firmware="WC.16.10.0017") == "aruba_procurve"
+    assert map_airwave_os_to_netmiko(model="HP 2530-24G", firmware="YA.16.04.0008") == "aruba_procurve"
+    assert map_airwave_os_to_netmiko(model="Aruba 6300M", firmware="FL.10.13.1000") == "aruba_aoscx"
+    assert map_airwave_os_to_netmiko(model="6200F", firmware="") == "aruba_aoscx"
+    assert map_airwave_os_to_netmiko(os_label="Cisco IOS", model="WS-C2960", firmware="15.2") == "cisco_ios"
+    assert map_airwave_os_to_netmiko(model="UnknownBox", firmware="1.0") == ""
+    assert (
+        map_airwave_os_to_netmiko(
+            model="UnknownBox",
+            firmware="1.0",
+            custom_mappings={"UnknownBox": "hp_comware"},
+        )
+        == "hp_comware"
+    )
 
 
-def test_parse_airwave_filters_and_stack_deduplication():
+def test_parse_airwave_filters_defaults_and_stack_deduplication():
     folders = parse_airwave_folders(SAMPLE_FOLDER_XML)
     assert folders["1"]["folder_path"] == "Top"
     assert folders["10"]["folder_path"] == "Top > Campus"
@@ -90,16 +101,22 @@ def test_parse_airwave_filters_and_stack_deduplication():
         ("    Building B", "12"),
     ]
 
-    # Default filter: category='switch', exclude VSF duplicate SW-A-2930-2
+    settings = AppSettings(default_protocol=ConnectionProtocol.TELNET, ssh_port=2222, telnet_port=2323)
     hosts, total = parse_airwave_devices(
         SAMPLE_AP_XML,
         folders=folders,
         filters=AirWaveFilter(folder="Top", category="switch", include_stacked=False),
+        settings=settings,
     )
     assert total == 4
     assert [h.name for h in hosts] == ["SW-A-2930", "SW-B-6300"]
-    assert hosts[0].os_type == SwitchOS.AOS_S
-    assert hosts[1].os_type == SwitchOS.AOS_CX
+    assert hosts[0].os_type == "aruba_procurve"
+    assert hosts[0].protocol == ConnectionProtocol.TELNET
+    assert hosts[0].port == 2323
+    # aruba_aoscx has no native Telnet driver in Netmiko -> stays SSH + ssh_port
+    assert hosts[1].os_type == "aruba_aoscx"
+    assert hosts[1].protocol == ConnectionProtocol.SSH
+    assert hosts[1].port == 2222
 
     # Name and IP filters
     by_name, _ = parse_airwave_devices(
@@ -116,11 +133,11 @@ def test_parse_airwave_filters_and_stack_deduplication():
     )
     assert [h.name for h in by_ip] == ["SW-B-6300"]
 
-    # Recursive folder filter on parent "Campus" + OS filter AOS-CX
+    # Recursive folder filter on parent "Campus" + platform filter aruba_aoscx
     cx_hosts, _ = parse_airwave_devices(
         SAMPLE_AP_XML,
         folders=folders,
-        filters=AirWaveFilter(folder="Campus", category="switch", os_filter="AOS-CX"),
+        filters=AirWaveFilter(folder="Campus", category="switch", os_filter="aruba_aoscx"),
     )
     assert [h.name for h in cx_hosts] == ["SW-B-6300"]
 
@@ -159,7 +176,8 @@ def test_is_airwave_host_and_cached_host_filtering():
     aw_s = HostEntry(
         name="SW-A",
         ip="10.1.1.10",
-        os_type=SwitchOS.AOS_S,
+        os_type="aruba_procurve",
+        airwave_os="AOS-S",
         model="Aruba 2930F",
         folder_id="11",
         folder_path="Top > Campus > Building A",
@@ -168,7 +186,8 @@ def test_is_airwave_host_and_cached_host_filtering():
     aw_cx = HostEntry(
         name="SW-B",
         ip="10.1.2.10",
-        os_type=SwitchOS.AOS_CX,
+        os_type="aruba_aoscx",
+        airwave_os="AOS-CX",
         model="Aruba 6300M",
         folder_id="12",
         folder_path="Top > Campus > Building B",
@@ -186,7 +205,7 @@ def test_is_airwave_host_and_cached_host_filtering():
     ]
 
     assert host_matches_airwave_filter(aw_s, AirWaveFilter(folder="Top > Campus"))
-    assert host_matches_airwave_filter(aw_s, AirWaveFilter(name_filter="SW-A", os_filter="AOS-S"))
-    assert not host_matches_airwave_filter(aw_s, AirWaveFilter(os_filter="AOS-CX"))
+    assert host_matches_airwave_filter(aw_s, AirWaveFilter(name_filter="SW-A", os_filter="aruba_procurve"))
+    assert not host_matches_airwave_filter(aw_s, AirWaveFilter(os_filter="aruba_aoscx"))
     assert not host_matches_airwave_filter(aw_cx, AirWaveFilter(status_filter="Up"))
     assert host_matches_airwave_filter(aw_cx, AirWaveFilter(ip_filter="10.1.2."))

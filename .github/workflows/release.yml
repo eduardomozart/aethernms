@@ -28,9 +28,13 @@ jobs:
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
 
+    - name: Install frontend Carbon dependencies (Composer)
+      run: |
+        composer install --no-interaction --no-progress
+
     - name: Compile translation catalogs
       run: |
-        python -m babel.messages.frontend compile -d locales -D pssh_ui
+        python -m babel.messages.frontend compile -d locales -D aethernms
 
     - name: Run test suite
       run: |
@@ -42,16 +46,24 @@ jobs:
         if ($tag -match '^\d') { $tag = "v$tag" }
         $shortSha = if ($env:GITHUB_SHA) { $env:GITHUB_SHA.Substring(0, [Math]::Min(7, $env:GITHUB_SHA.Length)) } else { "" }
         $releaseVer = if ($tag -and $tag -ne "DEV_BUILD") { if ($shortSha) { "$tag-$shortSha" } else { $tag } } elseif ($shortSha) { $shortSha } else { "DEV_BUILD" }
-        (Get-Content pssh_ui/__init__.py) -replace '__version__ = "DEV_BUILD"', "__version__ = `"$releaseVer`"" -replace '__repo_url__ = ".*"', "__repo_url__ = `"https://github.com/${{ github.repository }}`"" | Set-Content pssh_ui/__init__.py
+        (Get-Content aethernms/__init__.py) -replace '__version__ = "DEV_BUILD"', "__version__ = `"$releaseVer`"" -replace '__repo_url__ = ".*"', "__repo_url__ = `"https://github.com/${{ github.repository }}`"" | Set-Content aethernms/__init__.py
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed --icon assets/pssh-ui.ico --name pssh-ui-x64 --collect-all sv_ttk --add-data "snippets;snippets" --add-data "model;model" --add-data "locales;locales" --add-data "assets;assets" --hidden-import airwaveapiclient main.py
+        pyinstaller --onedir --icon assets/aethernms.ico --name aethernms-x64 --collect-all py4web --collect-all pydal --collect-all yatl --collect-all ombott --collect-all renoir --collect-all rocket3 --collect-all netmiko --add-data "aethernms/templates;aethernms/templates" --add-data "aethernms/static;aethernms/static" --add-data "snippets;snippets" --add-data "locales;locales" --add-data "assets;assets" --hidden-import airwaveapiclient main.py
+
+    - name: Prepare Release Package
+      run: |
+        mkdir release_package
+        Move-Item -Path dist\aethernms-x64 -Destination release_package\
+        Copy-Item -Path LICENSE, README.md, CHANGELOG.md -Destination release_package\aethernms-x64\
+        Copy-Item -Path wiki -Destination release_package\aethernms-x64\ -Recurse
+        Compress-Archive -Path release_package\aethernms-x64\* -DestinationPath aethernms-win-x64.zip
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/pssh-ui-x64.exe
+        files: aethernms-win-x64.zip
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

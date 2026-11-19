@@ -1,0 +1,34 @@
+<!-- My Account / Self-Service Password Change Modal -->
+<div id="modal-account" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
+  <div class="cds--modal-container" style="max-width:460px;">
+    <div class="cds--modal-header">
+      <h3 class="cds--modal-header__heading" data-i18n="My Account">My Account</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+        [[=XML(icon("close", 20))]]
+      </button>
+    </div>
+    <div class="cds--modal-content">
+      <div style="margin-bottom:14px;padding:10px 12px;background:var(--anms-workspace-bg);border:1px solid var(--anms-tile-border);">
+        <div><span class="cds--label" style="display:inline;" data-i18n="Username">Username</span>: <strong id="acc-username"></strong></div>
+        <div style="margin-top:4px;"><span class="cds--label" style="display:inline;" data-i18n="Role">Role</span>: <span id="acc-role" class="cds--tag cds--tag--blue"></span></div>
+      </div>
+
+      <div id="pw-msg" class="cds--inline-notification hidden"></div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="cds--form-item">
+          <label class="cds--label" for="pw-cur" data-i18n="Current Password *">Current Password *</label>
+          <input id="pw-cur" class="cds--text-input" type="password" autocomplete="current-password" />
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="pw-new" data-i18n="New Password *">New Password *</label>
+          <input id="pw-new" class="cds--text-input" type="password" autocomplete="new-password" />
+        </div>
+      </div>
+    </div>
+    <div class="cds--modal-footer">
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Close">Close</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-change-pw" data-i18n="Change Password">Change Password</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="[[=html_lang]]" class="cds--[[=initial_theme]]" data-carbon-theme="[[=initial_theme]]" data-theme-mode="[[=theme_mode]]">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>aethernms — Config &amp; Audit Automation</title>
+  <link rel="icon" href="/assets/aethernms.ico" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/300.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/500.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/500.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/600.css" />
+  <link rel="stylesheet" href="/static/css/aethernms-carbon.css" />
+  <script>
+    (function () {
+      var el = document.documentElement;
+      if (el.getAttribute("data-theme-mode") === "auto" && window.matchMedia) {
+        var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = isDark ? "g100" : "white";
+        el.setAttribute("data-carbon-theme", theme);
+        el.className = "cds--" + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- IBM Carbon UI Shell 48px Dark Header (.cds--g100) -->
+  <header class="cds--header cds--g100">
+    <button
+      type="button"
+      id="btn-toggle-sidenav"
+      class="cds--header__menu-trigger"
+      aria-label="Toggle navigation"
+      aria-expanded="true"
+    >
+      [[=XML(icon("menu", 20))]]
+    </button>
+
+    <a class="cds--header__name" href="/jobs" id="brand-link">
+      <img src="/assets/aethernms-header.png" alt="aethernms" />
+      <span>aethernms</span>
+      <span class="cds--header__subtitle" data-i18n="Config & Audit Automation">Config &amp; Audit Automation</span>
+    </a>
+
+    <!-- Global Device Search (Header Search Input + Search Button + Live Dropdown) -->
+    <form id="global-device-search-form" class="anms-global-search" role="search" autocomplete="off">
+      <div class="anms-search-input-wrap">
+        <span class="anms-search-leading-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="global-device-search-input"
+          class="anms-search-input"
+          type="text"
+          placeholder="Search devices by name, IP, model, group..."
+          data-i18n-placeholder="Search devices by name, IP, model, group..."
+          aria-label="Search devices"
+        />
+        <button
+          type="button"
+          id="global-device-search-clear"
+          class="anms-search-clear hidden"
+          title="Clear"
+          aria-label="Clear search"
+        >
+          [[=XML(icon("close", 16))]]
+        </button>
+      </div>
+      <button type="submit" id="global-device-search-submit" class="anms-search-submit">
+        [[=XML(icon("search", 16))]]
+        <span data-i18n="Search">Search</span>
+      </button>
+      <div id="global-search-results" class="anms-search-dropdown hidden" role="listbox"></div>
+    </form>
+
+    <div class="cds--header__global">
+      <a
+        id="hdr-api-docs-link"
+        class="cds--header__action [[if not api_enabled:]]hidden[[pass]]"
+        href="/api/docs"
+        target="_blank"
+        title="Swagger / OpenAPI 3.0"
+      >
+        [[=XML(icon("api", 20))]]
+        <span data-i18n="API Docs (Swagger)">API Docs (Swagger)</span>
+      </a>
+      <button type="button" class="cds--header__action" id="btn-open-about" title="About" aria-label="About">
+        [[=XML(icon("information", 20))]]
+      </button>
+      <button
+        type="button"
+        class="cds--header__action anms-header-user-btn"
+        id="btn-open-account"
+        title="My Account"
+      >
+        [[=XML(icon("user-avatar", 20))]]
+        <span id="hdr-username">[[=user.get("username", "")]]</span>
+        <span id="hdr-user-role" class="anms-header-role-badge">[[=user.get("role", "")]]</span>
+      </button>
+      <button type="button" class="cds--header__action" id="btn-logout" title="Sign Out" aria-label="Sign Out">
+        [[=XML(icon("logout", 20))]]
+        <span data-i18n="Sign Out">Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- IBM Carbon 256px Collapsible SideNav with Icons & Expandable Administration Submenu -->
+  <nav id="app-sidenav" class="cds--side-nav cds--side-nav--expanded cds--side-nav--ux" aria-label="Side navigation">
+    <ul class="cds--side-nav__items">
+      [[if "jobs:read" in perms:]]
+      <li class="cds--side-nav__item">
+        <a
+          class="cds--side-nav__link [[if active_page == 'jobs':]]cds--side-nav__link--current[[pass]]"
+          href="/jobs"
+          [[if active_page == 'jobs':]]aria-current="page"[[pass]]
+        >
+          <div class="cds--side-nav__icon">[[=XML(icon("task", 16))]]</div>
+          <span class="cds--side-nav__link-text" data-i18n="Jobs">Jobs</span>
+        </a>
+      </li>
+      [[pass]]
+
+      [[if "snippets:read" in perms:]]
+      <li class="cds--side-nav__item">
+        <a
+          class="cds--side-nav__link [[if active_page == 'snippets':]]cds--side-nav__link--current[[pass]]"
+          href="/snippets"
+          [[if active_page == 'snippets':]]aria-current="page"[[pass]]
+        >
+          <div class="cds--side-nav__icon">[[=XML(icon("code", 16))]]</div>
+          <span class="cds--side-nav__link-text" data-i18n="Snippets">Snippets</span>
+        </a>
+      </li>
+      [[pass]]
+
+      [[if "devices:read" in perms:]]
+      <li class="cds--side-nav__item">
+        <a
+          class="cds--side-nav__link [[if active_page == 'devices':]]cds--side-nav__link--current[[pass]]"
+          href="/devices"
+          [[if active_page == 'devices':]]aria-current="page"[[pass]]
+        >
+          <div class="cds--side-nav__icon">[[=XML(icon("network-4", 16))]]</div>
+          <span class="cds--side-nav__link-text" data-i18n="Devices">Devices</span>
+        </a>
+      </li>
+      [[pass]]
+
+      [[if has_admin_nav:]]
+      <li class="cds--side-nav__divider" role="separator"></li>
+      <li class="cds--side-nav__item cds--side-nav__item--icon [[if active_page.startswith('admin_'):]]cds--side-nav__item--active[[pass]]">
+        <button
+          type="button"
+          id="sidenav-admin-toggle"
+          class="cds--side-nav__submenu"
+          aria-haspopup="true"
+          aria-expanded="[['true' if active_page.startswith('admin_') else 'false']]"
+        >
+          <div class="cds--side-nav__icon">[[=XML(icon("settings-services", 16))]]</div>
+          <span class="cds--side-nav__submenu-title" data-i18n="Administration">Administration</span>
+          <div class="cds--side-nav__icon cds--side-nav__submenu-chevron">
+            [[=XML(icon("chevron-down", 16))]]
+          </div>
+        </button>
+        <ul class="cds--side-nav__menu" role="menu">
+          [[if "system:settings" in perms:]]
+          <li class="cds--side-nav__menu-item">
+            <a
+              class="cds--side-nav__link [[if active_page == 'admin_settings':]]cds--side-nav__link--current[[pass]]"
+              href="/administration/settings"
+              [[if active_page == 'admin_settings':]]aria-current="page"[[pass]]
+            >
+              <span class="cds--side-nav__link-text" data-i18n="System Settings">System Settings</span>
+            </a>
+          </li>
+          [[pass]]
+          [[if "users:manage" in perms:]]
+          <li class="cds--side-nav__menu-item">
+            <a
+              class="cds--side-nav__link [[if active_page == 'admin_users':]]cds--side-nav__link--current[[pass]]"
+              href="/administration/users"
+              [[if active_page == 'admin_users':]]aria-current="page"[[pass]]
+            >
+              <span class="cds--side-nav__link-text" data-i18n="Users">Users</span>
+            </a>
+          </li>
+          [[pass]]
+          [[if "roles:manage" in perms:]]
+          <li class="cds--side-nav__menu-item">
+            <a
+              class="cds--side-nav__link [[if active_page == 'admin_roles':]]cds--side-nav__link--current[[pass]]"
+              href="/administration/roles"
+              [[if active_page == 'admin_roles':]]aria-current="page"[[pass]]
+            >
+              <span class="cds--side-nav__link-text" data-i18n="Roles">Roles</span>
+            </a>
+          </li>
+          [[pass]]
+          [[if "api_keys:manage" in perms:]]
+          <li class="cds--side-nav__menu-item">
+            <a
+              class="cds--side-nav__link [[if active_page == 'admin_api_keys':]]cds--side-nav__link--current[[pass]]"
+              href="/administration/api-keys"
+              [[if active_page == 'admin_api_keys':]]aria-current="page"[[pass]]
+            >
+              <span class="cds--side-nav__link-text" data-i18n="API Keys">API Keys</span>
+            </a>
+          </li>
+          [[pass]]
+        </ul>
+      </li>
+      [[pass]]
+    </ul>
+  </nav>
+
+  <main class="cds--content">
+    [[include]]
+  </main>
+
+  <!-- Shared Lightweight Global Modals -->
+  [[include 'modals/account.html']]
+  [[include 'modals/about.html']]
+  [[include 'modals/confirm.html']]
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="/static/js/core.js"></script>
+  [[block page_scripts]][[end]]
+</body>
+</html>
