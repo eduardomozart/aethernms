@@ -1,4 +1,4 @@
-"""Resource, repository URL, and OS user-data path resolution (%APPDATA%\\aethernms and ~/.aethernms)."""
+"""Resource, repository URL, docs URL, and user-data path resolution (~/.aethernms)."""
 
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from aethernms import __repo_url__
 PACKAGE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = PACKAGE_DIR.parent
 APP_DIR_NAME = "aethernms"
+DEFAULT_DOCS_URL = "https://eduardomozart.github.io/aethernms"
 
 
 def is_frozen() -> bool:
@@ -25,7 +26,7 @@ def is_frozen() -> bool:
 
 
 def bundle_root() -> Path:
-    """Return base directory containing bundled read-only assets, snippets, and locales."""
+    """Return base directory containing bundled read-only templates, static files, assets, snippets, and locales."""
     if is_frozen():
         return Path(getattr(sys, "_MEIPASS"))
     return PROJECT_ROOT
@@ -36,37 +37,40 @@ def get_config_dir(
     home_dir: Optional[Path] = None,
 ) -> Path:
     """
-    Return the OS user data/configuration directory for XML state, logs, and default snippets:
-      - Windows: %APPDATA%\\aethernms
-      - Linux / macOS: ~/.aethernms
+    Return the user data/configuration directory for configuration, logs, and databases:
+      - AETHERNMS_CONFIG_DIR environment override (when set and platform/home are omitted)
+      - Windows / Linux / macOS: ~/.aethernms (%USERPROFILE%\\.aethernms on Windows)
     """
-    plat = (platform_name or sys.platform).lower()
+    if platform_name is None and home_dir is None:
+        env_cfg = os.environ.get("AETHERNMS_CONFIG_DIR", "").strip()
+        if env_cfg:
+            target = Path(env_cfg).expanduser()
+            target.mkdir(parents=True, exist_ok=True)
+            return target
+
+    _ = platform_name  # Unified cross-platform ~/.aethernms path avoids Windows MSIX AppData virtualization
     home = home_dir or Path.home()
-
-    if plat.startswith("win"):
-        base_env = os.environ.get("APPDATA", "").strip()
-        base = Path(base_env) if (base_env and home_dir is None) else (home / "AppData" / "Roaming")
-        target = base / APP_DIR_NAME
-    else:
-        target = home / f".{APP_DIR_NAME}"
-
+    target = home / f".{APP_DIR_NAME}"
     target.mkdir(parents=True, exist_ok=True)
     return target
 
 
 def runtime_root() -> Path:
-    """Return writable user configuration directory (%APPDATA%\\aethernms or ~/.aethernms)."""
+    """Return writable user configuration directory (~/.aethernms)."""
     return get_config_dir()
-
-
-def get_assets_dir() -> Path:
-    """Return path to bundled icon/image assets."""
-    return bundle_root() / "assets"
 
 
 def get_locales_dir() -> Path:
     """Return path to gettext locales directory."""
     return bundle_root() / "locales"
+
+
+def get_assets_dir() -> Path:
+    """Return path to icon/logo/manifest assets directory."""
+    bundled = bundle_root() / "assets"
+    if bundled.is_dir():
+        return bundled
+    return PROJECT_ROOT / "assets"
 
 
 def get_templates_dir() -> Path:
@@ -91,12 +95,12 @@ def bundled_snippets_dir() -> Path:
 
 
 def get_snippets_dir() -> Path:
-    """Return legacy default snippets directory (%APPDATA%\\aethernms\\snippets or ~/.aethernms/snippets)."""
+    """Return legacy default snippets directory (~/.aethernms/snippets)."""
     return get_config_dir() / "snippets"
 
 
 def get_db_path() -> Path:
-    """Return SQLite database path inside %APPDATA%\\aethernms or ~/.aethernms."""
+    """Return SQLite database path inside ~/.aethernms."""
     return runtime_root() / "aethernms.db"
 
 
@@ -169,30 +173,38 @@ def seed_bundled_templates(
 
 
 def get_settings_path() -> Path:
-    """Return user settings.xml path inside %APPDATA%\\aethernms or ~/.aethernms."""
+    """Return user settings.xml path inside ~/.aethernms."""
     return runtime_root() / "settings.xml"
 
 
 def get_devices_path() -> Path:
-    """Return user devices.xml path inside %APPDATA%\\aethernms or ~/.aethernms."""
+    """Return user devices.xml path inside ~/.aethernms."""
     return runtime_root() / "devices.xml"
 
 
 def get_jobs_path() -> Path:
-    """Return user jobs.xml path inside %APPDATA%\\aethernms or ~/.aethernms."""
+    """Return user jobs.xml path inside ~/.aethernms."""
     return runtime_root() / "jobs.xml"
 
 
 def get_session_path() -> Path:
-    """Return legacy session.xml path inside %APPDATA%\\aethernms or ~/.aethernms."""
+    """Return legacy session.xml path inside ~/.aethernms."""
     return runtime_root() / "session.xml"
 
 
 def get_logs_dir() -> Path:
-    """Return user logs directory inside %APPDATA%\\aethernms\\logs or ~/.aethernms/logs."""
+    """Return user logs directory inside ~/.aethernms/logs."""
     logs_dir = runtime_root() / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
     return logs_dir
+
+
+def get_docs_base_url() -> str:
+    """Return GitHub Pages documentation base URL (overridable via AETHERNMS_DOCS_URL)."""
+    env_url = os.environ.get("AETHERNMS_DOCS_URL", "").strip()
+    if env_url:
+        return env_url.rstrip("/")
+    return DEFAULT_DOCS_URL
 
 
 def normalize_git_remote_url(raw_url: str) -> str:

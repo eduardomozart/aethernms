@@ -1,38 +1,86 @@
 [[extend 'layout.html']]
 
-<nav aria-label="Breadcrumb">
-  <ol class="anms-breadcrumb">
-    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
-    <li>/</li>
-    <li aria-current="page" data-i18n="Users">Users</li>
-  </ol>
-</nav>
+<div class="anms-page-header">
+  <nav aria-label="Breadcrumb">
+    <ol class="anms-breadcrumb">
+      <li><a href="/">aether</a></li>
+      <li>/</li>
+      [[if can_manage_users:]]
+      <li><a href="/administration" data-i18n="Administration">[[=T("Administration")]]</a></li>
+      <li>/</li>
+      [[pass]]
+      <li aria-current="page" data-i18n="Users">[[=T("Users")]]</li>
+    </ol>
+  </nav>
+  <div class="anms-page-header__row">
+    <div class="anms-page-header__main">
+      <h1 class="anms-page-title" data-i18n="Users">[[=T("Users")]]</h1>
+      <p class="anms-page-subtitle" data-i18n="Manage user accounts, per-user appearance preferences, role assignments, and active status.">
+        [[=T("Manage user accounts, per-user appearance preferences, role assignments, and active status.")]]
+      </p>
+    </div>
+  </div>
+</div>
 
 <section id="view-admin-users" class="view-panel active">
-  <div class="cds--tile">
-    <div class="tile-header">
-      <div>
-        <h2 class="tile-title" data-i18n="Users">Users</h2>
-        <span class="cds--helper-text" data-i18n="Manage user accounts, role assignments, and active status.">Manage user accounts, role assignments, and active status.</span>
+  <div class="anms-table-container">
+    <div class="anms-dt-toolbar">
+      <div class="anms-dt-search-wrap">
+        <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="users-dt-search"
+          class="anms-dt-search-input"
+          type="text"
+          placeholder="[[=T('Search table...')]]"
+          data-i18n-placeholder="Search table..."
+          aria-label="[[=T('Search table...')]]"
+        />
+        <button type="button" id="users-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+          [[=XML(icon("close", 16))]]
+        </button>
       </div>
-      <div class="tile-actions">
-        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-user">
+      <div class="anms-dt-toolbar-actions">
+        <div class="anms-dt-filter-wrap">
+          <button type="button" id="users-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+            [[=XML(icon("filter", 16))]]
+            <span id="users-filter-badge" class="anms-filter-badge hidden">0</span>
+          </button>
+          <div id="users-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+            <div class="anms-filter-popover__body">
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-usr-role" data-i18n="Role">[[=T("Role")]]</label>
+                <select id="flt-usr-role" class="cds--select-input"></select>
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-usr-status" data-i18n="Status">[[=T("Status")]]</label>
+                <select id="flt-usr-status" class="cds--select-input"></select>
+              </div>
+            </div>
+            <div class="anms-filter-popover__footer">
+              <button type="button" id="users-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+              <button type="button" id="users-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="cds--btn cds--btn--primary [[if not can_manage_users:]]hidden[[pass]]" id="btn-add-user">
           [[=XML(icon("add", 16))]]
-          <span data-i18n="Add User">Add User</span>
+          <span data-i18n="Add User">[[=T("Add User")]]</span>
         </button>
       </div>
     </div>
+    <div id="users-active-filters" class="anms-active-filters hidden"></div>
 
     <div class="table-wrap">
       <table class="cds--data-table">
         <thead>
           <tr>
-            <th data-i18n="Username">Username</th>
-            <th data-i18n="Display Name">Display Name</th>
-            <th data-i18n="Role">Role</th>
-            <th data-i18n="Status">Status</th>
-            <th data-i18n="Created">Created</th>
-            <th class="col-actions" data-i18n="Action">Action</th>
+            <th data-i18n="Username">[[=T("Username")]]</th>
+            <th data-i18n="Display Name">[[=T("Display Name")]]</th>
+            <th data-i18n="Role">[[=T("Role")]]</th>
+            <th data-i18n="Status">[[=T("Status")]]</th>
+            <th data-i18n="Appearance">[[=T("Appearance")]]</th>
+            <th data-i18n="Created">[[=T("Created")]]</th>
+            <th class="col-actions" data-i18n="Action">[[=T("Action")]]</th>
           </tr>
         </thead>
         <tbody id="users-tbody"></tbody>

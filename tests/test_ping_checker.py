@@ -5,7 +5,7 @@ from __future__ import annotations
 import queue
 import subprocess
 
-from pssh_ui.ping_checker import PingMonitor, ping_host, probe_ips_concurrently
+from aethernms.ping_checker import PingMonitor, ping_host, probe_ips_concurrently
 
 
 def test_ping_host_checks_icmp_reply_regex(monkeypatch):

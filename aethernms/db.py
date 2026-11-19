@@ -1,4 +1,4 @@
-"""SQLite persistence via PyDAL for users, API keys, settings, snippets, devices, jobs, and logs."""
+"""Multi-backend persistence via PyDAL (SQLite default + PostgreSQL/MySQL/MSSQL/Oracle/Custom) for users, API keys, settings, snippets, devices, jobs, and logs."""
 
 from __future__ import annotations
 
@@ -23,6 +23,12 @@ from aethernms.auth import (
     hash_password,
     verify_password,
 )
+from aethernms.db_config import (
+    detect_engine_from_uri,
+    get_dal_meta_dir,
+    mask_dal_uri,
+    parse_sqlite_uri_path,
+)
 from aethernms.logger import format_host_log
 from aethernms.models import (
     AirWaveFilter,
@@ -42,8 +48,9 @@ from aethernms.netmiko_catalog import (
     canonical_platform,
     default_protocol_for_platform,
     normalize_legacy_platform,
+    platform_display_name,
 )
-from aethernms.paths import bundled_snippets_dir, get_db_path
+from aethernms.paths import bundled_snippets_dir, get_db_path, runtime_root
 from aethernms.snippet_store import SnippetStore, normalize_folder_path, snippet_from_xml_file
 from aethernms.variables import extract_variables
 
@@ -119,6 +126,8 @@ def _define_tables(db: DAL) -> None:
         Field("password_hash", "string", length=256, notnull=True),
         Field("role", "string", length=128, default="Admin"),
         Field("is_active", "boolean", default=True),
+        Field("language", "string", length=32, default="auto"),
+        Field("theme_mode", "string", length=16, default="auto"),
         Field("created_at", "string", length=32, default=_now_iso),
     )
 
@@ -244,30 +253,89 @@ def _define_tables(db: DAL) -> None:
 
 
 class DatabaseStore:
-    """Thread-safe SQLite repository backed by PyDAL for all aethernms state and logs."""
+    """Thread-safe multi-backend repository backed by PyDAL for all aethernms state and logs."""
 
-    def __init__(self, db_path: Optional[Path | str] = None) -> None:
-        self.db_path = Path(db_path) if db_path else get_db_path()
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+    def __init__(
+        self,
+        db_path: Optional[Path | str] = None,
+        db_uri: Optional[str] = None,
+        folder: Optional[Path | str] = None,
+        engine: str = "sqlite",
+    ) -> None:
         self._lock = threading.RLock()
-        self._uri = f"sqlite://{self.db_path.name}"
+        raw_uri = (db_uri or "").strip()
+
+        if raw_uri:
+            detected = detect_engine_from_uri(raw_uri)
+            eff_engine = (engine or "").strip().lower()
+            if not eff_engine or (eff_engine == "sqlite" and detected != "sqlite"):
+                eff_engine = detected
+            self.engine = eff_engine
+            if detected == "sqlite":
+                self.is_sqlite = True
+                parsed = parse_sqlite_uri_path(raw_uri)
+                self.db_path: Optional[Path] = parsed
+                if parsed is not None:
+                    parsed.parent.mkdir(parents=True, exist_ok=True)
+                    self._folder = Path(folder) if folder is not None else parsed.parent
+                    self._folder.mkdir(parents=True, exist_ok=True)
+                    if self._folder.resolve() == parsed.parent.resolve():
+                        self._uri = f"sqlite://{parsed.name}"
+                    else:
+                        self._uri = f"sqlite://{parsed.as_posix()}"
+                    self._raw_uri = f"sqlite://{parsed.as_posix()}"
+                else:
+                    self._folder = Path(folder) if folder is not None else get_dal_meta_dir()
+                    self._folder.mkdir(parents=True, exist_ok=True)
+                    self._uri = raw_uri
+                    self._raw_uri = raw_uri
+            else:
+                self.is_sqlite = False
+                self.db_path = None
+                self._folder = Path(folder) if folder is not None else get_dal_meta_dir()
+                self._folder.mkdir(parents=True, exist_ok=True)
+                self._uri = raw_uri
+                self._raw_uri = raw_uri
+        else:
+            self.db_path = Path(db_path) if db_path else get_db_path()
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._folder = Path(folder) if folder is not None else self.db_path.parent
+            self._folder.mkdir(parents=True, exist_ok=True)
+            self.is_sqlite = True
+            self.engine = (engine or "sqlite").strip().lower() or "sqlite"
+            if self._folder.resolve() == self.db_path.parent.resolve():
+                self._uri = f"sqlite://{self.db_path.name}"
+            else:
+                self._uri = f"sqlite://{self.db_path.as_posix()}"
+            self._raw_uri = f"sqlite://{self.db_path.as_posix()}"
 
         # Initialize schema once cleanly.
         self._bootstrap_schema()
 
+    @property
+    def raw_uri(self) -> str:
+        return self._raw_uri
+
+    @property
+    def db_uri_masked(self) -> str:
+        return mask_dal_uri(self._raw_uri)
+
     def _open_dal(self, migrate: bool = False) -> DAL:
-        db = DAL(
-            self._uri,
-            folder=str(self.db_path.parent),
-            migrate=migrate,
-            fake_migrate=False,
-            pool_size=0,
-            check_reserved=[],
-            adapter_args={"timeout": 15.0},
-        )
-        db.executesql("PRAGMA journal_mode=WAL;")
-        db.executesql("PRAGMA busy_timeout=15000;")
-        db.executesql("PRAGMA foreign_keys=ON;")
+        dal_kwargs: Dict[str, Any] = {
+            "folder": str(self._folder),
+            "migrate": migrate,
+            "fake_migrate": False,
+            "pool_size": 0,
+            "check_reserved": [],
+            "decode_credentials": True,
+        }
+        if self.is_sqlite:
+            dal_kwargs["adapter_args"] = {"timeout": 15.0}
+        db = DAL(self._uri, **dal_kwargs)
+        if self.is_sqlite:
+            db.executesql("PRAGMA journal_mode=WAL;")
+            db.executesql("PRAGMA busy_timeout=15000;")
+            db.executesql("PRAGMA foreign_keys=ON;")
         _define_tables(db)
         return db
 
@@ -284,19 +352,24 @@ class DatabaseStore:
     def _seed_default_roles_in_tx(db: DAL) -> None:
         for spec in DEFAULT_ROLES:
             rname = str(spec["name"])
+            desc = str(spec["description"])
             existing = db(db.auth_role.name == rname).select().first()
             perms_json = json.dumps(list(spec["permissions"]), sort_keys=True)
             if existing is None:
                 db.auth_role.insert(
                     name=rname,
-                    description=str(spec["description"]),
+                    description=desc,
                     is_system=True,
                     permissions_json=perms_json,
                     created_at=_now_iso(),
                 )
-            elif rname == "Admin":
-                # Keep built-in Admin full-access so administrators can never lock themselves out.
-                existing.update_record(is_system=True, permissions_json=perms_json)
+            else:
+                # Built-in system roles (Admin, Operator, Viewer) are read-only and stay synchronized.
+                existing.update_record(
+                    is_system=True,
+                    description=desc,
+                    permissions_json=perms_json,
+                )
         # Normalize legacy lowercase 'admin' user rows to 'Admin'
         for urow in db(db.auth_user.id > 0).select():
             canon = canonical_role_name(urow.role)
@@ -351,12 +424,18 @@ class DatabaseStore:
     @classmethod
     def _row_to_user_dict(cls, db: DAL, row: Any) -> Dict[str, Any]:
         role_name = canonical_role_name(row.role)
+        lang = (getattr(row, "language", None) or "auto").strip() or "auto"
+        theme = (getattr(row, "theme_mode", None) or "auto").strip().lower() or "auto"
+        if theme not in ("auto", "light", "dark"):
+            theme = "auto"
         return {
             "id": int(row.id),
             "username": row.username,
             "display_name": row.display_name or "",
             "role": role_name,
             "is_active": True if row.is_active is None else bool(row.is_active),
+            "language": lang,
+            "theme_mode": theme,
             "permissions": cls._resolve_permissions_in_tx(db, role_name),
             "created_at": row.created_at or "",
         }
@@ -451,8 +530,8 @@ class DatabaseStore:
             r = db.auth_role[int(role_id)]
             if r is None:
                 return None
-            if r.name == "Admin":
-                raise ValueError("The built-in Admin role cannot be modified.")
+            if r.is_system:
+                raise ValueError(f"System role '{r.name}' is read-only and cannot be modified.")
 
             new_name = (name if name is not None else r.name).strip()
             if not new_name:
@@ -519,6 +598,11 @@ class DatabaseStore:
 
         return self._with_db(_op)
 
+    @staticmethod
+    def _normalize_user_theme(raw_theme: Optional[str]) -> str:
+        theme = (raw_theme or "auto").strip().lower()
+        return theme if theme in ("auto", "light", "dark") else "auto"
+
     def create_user(
         self,
         username: str,
@@ -526,6 +610,8 @@ class DatabaseStore:
         role: str = "Admin",
         display_name: str = "",
         is_active: bool = True,
+        language: str = "auto",
+        theme_mode: str = "auto",
     ) -> Dict[str, Any]:
         clean_user = (username or "").strip()
         if not clean_user:
@@ -534,9 +620,11 @@ class DatabaseStore:
             raise ValueError("Password must be at least 6 characters long.")
         pw_hash = hash_password(password)
         role_canon = canonical_role_name(role or "Admin")
+        clean_lang = (language or "auto").strip() or "auto"
+        clean_theme = self._normalize_user_theme(theme_mode)
 
         def _op(db: DAL) -> Dict[str, Any]:
-            existing = db(db.auth_user.username == clean_user).select().first()
+            existing = db(db.auth_user.username.lower() == clean_user.lower()).select().first()
             if existing is not None:
                 raise ValueError(f"User '{clean_user}' already exists.")
             rrow = db(db.auth_role.name == role_canon).select().first()
@@ -548,6 +636,8 @@ class DatabaseStore:
                 password_hash=pw_hash,
                 role=rrow.name,
                 is_active=bool(is_active),
+                language=clean_lang,
+                theme_mode=clean_theme,
                 created_at=_now_iso(),
             )
             return self._row_to_user_dict(db, db.auth_user[uid])
@@ -561,6 +651,8 @@ class DatabaseStore:
         display_name: Optional[str] = None,
         is_active: Optional[bool] = None,
         password: Optional[str] = None,
+        language: Optional[str] = None,
+        theme_mode: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         if password is not None and password != "" and len(password) < 6:
             raise ValueError("Password must be at least 6 characters long.")
@@ -595,6 +687,10 @@ class DatabaseStore:
                 updates["display_name"] = display_name.strip()
             if password:
                 updates["password_hash"] = hash_password(password)
+            if language is not None:
+                updates["language"] = (language or "auto").strip() or "auto"
+            if theme_mode is not None:
+                updates["theme_mode"] = self._normalize_user_theme(theme_mode)
             row.update_record(**updates)
             return self._row_to_user_dict(db, db.auth_user[int(user_id)])
 
@@ -635,7 +731,7 @@ class DatabaseStore:
             return None
 
         def _op(db: DAL) -> Optional[Dict[str, Any]]:
-            row = db(db.auth_user.username == clean_user).select().first()
+            row = db(db.auth_user.username.lower() == clean_user.lower()).select().first()
             if row is None or not verify_password(password, row.password_hash):
                 return None
             if row.is_active is False:
@@ -643,6 +739,16 @@ class DatabaseStore:
             return self._row_to_user_dict(db, row)
 
         return self._with_db(_op)
+
+    def verify_user_password(self, user_id: int, password: str) -> bool:
+        if not password:
+            return False
+
+        def _op(db: DAL) -> bool:
+            row = db.auth_user[int(user_id)]
+            return bool(row is not None and verify_password(password, row.password_hash))
+
+        return bool(self._with_db(_op))
 
     def update_user_password(self, user_id: int, new_password: str) -> bool:
         if len(new_password or "") < 6:
@@ -773,6 +879,8 @@ class DatabaseStore:
                 "display_name": user_row.display_name or "",
                 "role": eff_role,
                 "is_active": True,
+                "language": (getattr(user_row, "language", None) or "auto").strip() or "auto",
+                "theme_mode": self._normalize_user_theme(getattr(user_row, "theme_mode", None)),
                 "permissions": self._resolve_permissions_in_tx(db, eff_role),
                 "api_key_id": int(row.id),
             }
@@ -915,15 +1023,13 @@ class DatabaseStore:
             audit_regex=row.audit_regex or "",
             created_at=row.created_at or "",
             file_path=None,
+            is_builtin=bool((getattr(row, "bundled_rel_path", None) or "").strip()),
         )
 
     def seed_bundled_snippets(self, source_dir: Optional[Path] = None) -> int:
         """
-        Seed built-in XML snippets into SQLite with SHA-256 upgrade tracking:
-          - New bundled XMLs are inserted with bundled_rel_path + seeded_sha256.
-          - Unmodified built-in snippets receive upstream changes automatically.
-          - Deleted built-in snippets (is_deleted=True) stay deleted across restarts/upgrades.
-          - User-edited built-in snippets (seeded_sha256 cleared on edit) stay untouched.
+        Synchronize built-in XML snippets into the database with SHA-256 upgrade tracking.
+        Built-in snippets (`bundled_rel_path != ''`) are read-only templates always kept active and up-to-date.
         Returns count of inserted/updated records.
         """
         src = Path(source_dir) if source_dir else bundled_snippets_dir()
@@ -963,11 +1069,7 @@ class DatabaseStore:
                     changed += 1
                     continue
 
-                if existing.is_deleted:
-                    continue
-
-                # Empty seeded_sha256 marks a user-edited snippet; do not overwrite it.
-                if existing.seeded_sha256 and existing.seeded_sha256 != src_hash:
+                if existing.is_deleted or existing.seeded_sha256 != src_hash:
                     existing.update_record(
                         name=snip.name,
                         folder=snip.folder or SnippetStore.default_folder_for_os(snip.device_type),
@@ -978,6 +1080,7 @@ class DatabaseStore:
                         commands=snip.commands,
                         audit_regex=snip.audit_regex,
                         seeded_sha256=src_hash,
+                        is_deleted=False,
                     )
                     changed += 1
             return changed
@@ -1046,6 +1149,8 @@ class DatabaseStore:
             ).select().first()
             if row is None:
                 return None
+            if (row.bundled_rel_path or "").strip():
+                raise ValueError("Built-in snippets are read-only and cannot be modified.")
             row.update_record(
                 name=snippet.name.strip(),
                 folder=folder,
@@ -1055,7 +1160,6 @@ class DatabaseStore:
                 description=snippet.description or "",
                 commands=snippet.commands or "",
                 audit_regex=snippet.audit_regex or "",
-                # Clearing seeded_sha256 protects user edits from future upstream seeding.
                 seeded_sha256="",
             )
             return self._row_to_snippet(db.snippet[int(snippet_id)])
@@ -1069,10 +1173,9 @@ class DatabaseStore:
             ).select().first()
             if row is None:
                 return False
-            if row.bundled_rel_path:
-                row.update_record(is_deleted=True)
-            else:
-                db(db.snippet.id == int(snippet_id)).delete()
+            if (row.bundled_rel_path or "").strip():
+                raise ValueError("Built-in snippets are read-only and cannot be deleted.")
+            db(db.snippet.id == int(snippet_id)).delete()
             return True
 
         return self._with_db(_op)
@@ -1151,6 +1254,7 @@ class DatabaseStore:
                     h.model or "",
                     h.folder_path or "",
                     h.os_type or "",
+                    platform_display_name(h.os_type),
                     h.serial_number or "",
                     h.protocol.value,
                 )
@@ -1595,7 +1699,11 @@ class DatabaseStore:
         Import legacy XML state into SQLite when the corresponding tables are still empty.
         Returns summary counts {'settings': 0|1, 'devices': N, 'jobs': M}.
         """
-        base = Path(config_dir) if config_dir else self.db_path.parent
+        base = (
+            Path(config_dir)
+            if config_dir
+            else (self.db_path.parent if self.db_path is not None else runtime_root())
+        )
         counts = {"settings": 0, "devices": 0, "jobs": 0}
 
         settings_file = base / "settings.xml"

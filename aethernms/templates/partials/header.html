@@ -1,0 +1,178 @@
+<!-- Shared IBM Carbon UI Shell 48px Dark Header (.cds--header.cds--g100) -->
+<header class="cds--header cds--g100">
+  <div class="anms-header-brand-zone [[if header_mode == 'app':]]anms-header-brand-zone--app[[pass]]">
+    [[if header_mode == "app":]]
+    <button
+      type="button"
+      id="btn-toggle-sidenav"
+      class="cds--header__menu-trigger"
+      title="[[=T('Toggle navigation')]]"
+      data-i18n-title="Toggle navigation"
+      aria-label="[[=T('Toggle navigation')]]"
+      data-i18n-aria-label="Toggle navigation"
+      aria-expanded="false"
+    >
+      [[=XML(icon("menu", 20))]]
+    </button>
+    [[pass]]
+
+    <a
+      class="cds--header__name"
+      href="[[=header_href]]"
+      [[if header_mode == "app":]]id="brand-link"[[pass]]
+      aria-label="ÆTHER NMS"
+    >
+      <span class="anms-brand-wordmark">ÆTHER</span>
+      <span class="cds--header__subtitle anms-brand-sub">NMS</span>
+      [[if header_mode == "swagger":]]
+      <span class="cds--header__subtitle" data-i18n="API Docs (Swagger)">[[=T("API Docs (Swagger)")]]</span>
+      [[pass]]
+    </a>
+  </div>
+
+  [[if header_mode == "app":]]
+  <!-- Global Device Search (Full-height dark bar aligned after 256px SideNav with embedded right search icon) -->
+  <form id="global-device-search-form" class="anms-global-search" role="search" autocomplete="off">
+    <div class="anms-search-input-wrap">
+      <input
+        id="global-device-search-input"
+        class="anms-search-input"
+        type="text"
+        placeholder="[[=T('Search devices by name, IP, model, group...')]]"
+        data-i18n-placeholder="Search devices by name, IP, model, group..."
+        aria-label="[[=T('Search devices')]]"
+        data-i18n-aria-label="Search devices"
+      />
+      <button
+        type="button"
+        id="global-device-search-clear"
+        class="anms-search-clear hidden"
+        title="[[=T('Clear')]]"
+        data-i18n-title="Clear"
+        aria-label="[[=T('Clear')]]"
+        data-i18n-aria-label="Clear"
+      >
+        [[=XML(icon("close", 16))]]
+      </button>
+      <button
+        type="submit"
+        id="global-device-search-submit"
+        class="anms-search-submit-icon"
+        title="[[=T('Search')]]"
+        data-i18n-title="Search"
+        aria-label="[[=T('Search')]]"
+        data-i18n-aria-label="Search"
+      >
+        [[=XML(icon("search", 16))]]
+      </button>
+    </div>
+    <div id="global-search-results" class="anms-search-dropdown hidden" role="listbox"></div>
+  </form>
+
+  <div class="cds--header__global">
+    <a
+      id="hdr-api-docs-link"
+      class="cds--header__action [[if not api_enabled:]]hidden[[pass]]"
+      href="/api/docs"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="[[=T('Swagger / OpenAPI 3.0')]]"
+      data-i18n-title="Swagger / OpenAPI 3.0"
+    >
+      [[=XML(icon("api", 20))]]
+      <span data-i18n="API Docs (Swagger)">[[=T("API Docs (Swagger)")]]</span>
+    </a>
+    <a
+      id="hdr-help-link"
+      class="cds--header__action"
+      href="[[=help_url]]"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="[[=T('Help')]]"
+      data-i18n-title="Help"
+      aria-label="[[=T('Help')]]"
+      data-i18n-aria-label="Help"
+    >
+      [[=XML(icon("help", 20))]]
+    </a>
+    <a
+      id="hdr-user-link"
+      class="cds--header__action anms-header-user-btn"
+      href="/administration/users?edit=me"
+      title="[[=T('My Account')]]"
+      data-i18n-title="My Account"
+    >
+      [[=XML(icon("user-avatar", 20))]]
+      <span id="hdr-username">[[=user.get("username", "")]]</span>
+      <span id="hdr-user-role" class="anms-header-role-badge">[[=user.get("role", "")]]</span>
+    </a>
+    <button
+      type="button"
+      class="cds--header__action"
+      id="btn-logout"
+      title="[[=T('Sign Out')]]"
+      data-i18n-title="Sign Out"
+      aria-label="[[=T('Sign Out')]]"
+      data-i18n-aria-label="Sign Out"
+    >
+      [[=XML(icon("logout", 20))]]
+      <span data-i18n="Sign Out">[[=T("Sign Out")]]</span>
+    </button>
+  </div>
+  [[elif header_mode == "login":]]
+  <div class="cds--header__global">
+    [[if api_enabled:]]
+    <a
+      class="cds--header__action"
+      href="/api/docs"
+      title="[[=T('Swagger / OpenAPI 3.0')]]"
+      data-i18n-title="Swagger / OpenAPI 3.0"
+    >
+      [[=XML(icon("api", 20))]]
+      <span data-i18n="API Docs (Swagger)">[[=T("API Docs (Swagger)")]]</span>
+    </a>
+    [[pass]]
+    <a
+      class="cds--header__action"
+      href="[[=help_url]]"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="[[=T('Help')]]"
+      data-i18n-title="Help"
+      aria-label="[[=T('Help')]]"
+    >
+      [[=XML(icon("help", 20))]]
+    </a>
+  </div>
+  [[elif header_mode == "setup":]]
+  <div class="cds--header__global">
+    <a
+      class="cds--header__action"
+      href="[[=help_url]]"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="[[=T('Help')]]"
+      data-i18n-title="Help"
+      aria-label="[[=T('Help')]]"
+    >
+      [[=XML(icon("help", 20))]]
+    </a>
+  </div>
+  [[elif header_mode == "swagger":]]
+  <div class="cds--header__global">
+    <a class="cds--header__action" href="/api/openapi.json" target="_blank">openapi.json</a>
+    <a
+      class="cds--header__action"
+      href="[[=help_url]]"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="[[=T('Help')]]"
+      data-i18n-title="Help"
+      aria-label="[[=T('Help')]]"
+    >
+      [[=XML(icon("help", 20))]]
+    </a>
+    <a class="cds--header__action" href="/" data-i18n="Back to App">[[=T("Back to App")]]</a>
+  </div>
+  [[pass]]
+</header>

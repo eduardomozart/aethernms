@@ -5,8 +5,8 @@ from pathlib import Path
 
 from babel.messages import pofile
 
-from pssh_ui.common import format_operation_result_ui
-from pssh_ui.i18n import (
+from aethernms.common import format_operation_result_ui
+from aethernms.i18n import (
     Translator,
     _,
     available_languages,
@@ -57,7 +57,7 @@ def test_transifex_po_discovery_works_without_source_edits(tmp_path: Path):
     for lang, translated in (("es", "Hola Mundo"), ("de", "Hallo Welt")):
         po_dir = tmp_path / lang / "LC_MESSAGES"
         po_dir.mkdir(parents=True)
-        po_file = po_dir / "pssh_ui.po"
+        po_file = po_dir / "aethernms.po"
         po_file.write_text(
             'msgid ""\n'
             'msgstr "Content-Type: text/plain; charset=UTF-8\\n"\n\n'

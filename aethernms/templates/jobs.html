@@ -1,49 +1,85 @@
 [[extend 'layout.html']]
 
+<div class="anms-page-header">
+  <nav aria-label="Breadcrumb">
+    <ol class="anms-breadcrumb">
+      <li><a href="/">aether</a></li>
+      <li>/</li>
+      <li aria-current="page" data-i18n="Jobs">[[=T("Jobs")]]</li>
+    </ol>
+  </nav>
+  <div class="anms-page-header__row">
+    <div class="anms-page-header__main">
+      <h1 class="anms-page-title" data-i18n="Jobs">[[=T("Jobs")]]</h1>
+    </div>
+  </div>
+</div>
+
 <!-- AirWave Config & Audit Jobs Layout -->
 <section id="view-jobs" class="view-panel active">
-  <div class="cds--tile">
-    <div class="tile-header">
-      <h2 class="tile-title" data-i18n="Jobs">Jobs</h2>
-      <div class="tile-actions">
-        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-job">
+  <div class="anms-table-container">
+    <div class="anms-dt-toolbar">
+      <div class="anms-dt-search-wrap">
+        <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="jobs-dt-search"
+          class="anms-dt-search-input"
+          type="text"
+          placeholder="[[=T('Search table...')]]"
+          data-i18n-placeholder="Search table..."
+          aria-label="[[=T('Search table...')]]"
+        />
+        <button type="button" id="jobs-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+          [[=XML(icon("close", 16))]]
+        </button>
+      </div>
+      <div class="anms-dt-toolbar-actions">
+        <div class="anms-dt-filter-wrap">
+          <button type="button" id="jobs-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+            [[=XML(icon("filter", 16))]]
+            <span id="jobs-filter-badge" class="anms-filter-badge hidden">0</span>
+          </button>
+          <div id="jobs-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+            <div class="anms-filter-popover__body">
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-job-type" data-i18n="Job Type">[[=T("Job Type")]]</label>
+                <select id="flt-job-type" class="cds--select-input"></select>
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-job-os" data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</label>
+                <select id="flt-job-os" class="cds--select-input"></select>
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-job-status" data-i18n="Status">[[=T("Status")]]</label>
+                <select id="flt-job-status" class="cds--select-input"></select>
+              </div>
+            </div>
+            <div class="anms-filter-popover__footer">
+              <button type="button" id="jobs-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+              <button type="button" id="jobs-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="cds--btn cds--btn--primary" id="btn-add-job">
           [[=XML(icon("add", 16))]]
-          <span data-i18n="Add Job">Add Job</span>
+          <span data-i18n="Add Job">[[=T("Add Job")]]</span>
         </button>
       </div>
     </div>
-
-    <div class="filter-bar">
-      <div class="filter-field">
-        <label class="cds--label" for="flt-job-name" data-i18n="Job Name">Job Name</label>
-        <input id="flt-job-name" class="cds--text-input" type="text" />
-      </div>
-      <div class="filter-field compact">
-        <label class="cds--label" for="flt-job-type" data-i18n="Job Type">Job Type</label>
-        <select id="flt-job-type" class="cds--select-input"></select>
-      </div>
-      <div class="filter-field compact">
-        <label class="cds--label" for="flt-job-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
-        <select id="flt-job-os" class="cds--select-input"></select>
-      </div>
-      <div class="filter-field compact">
-        <label class="cds--label" for="flt-job-status" data-i18n="Status">Status</label>
-        <select id="flt-job-status" class="cds--select-input"></select>
-      </div>
-    </div>
+    <div id="jobs-active-filters" class="anms-active-filters hidden"></div>
 
     <div class="table-wrap">
       <table class="cds--data-table">
         <thead>
           <tr>
-            <th data-i18n="Job Name">Job Name</th>
-            <th data-i18n="Job Type">Job Type</th>
-            <th data-i18n="Netmiko Platform">Netmiko Platform</th>
-            <th data-i18n="Status">Status</th>
-            <th data-i18n="Creation Time">Creation Time</th>
-            <th data-i18n="Start Time">Start Time</th>
-            <th data-i18n="End Time">End Time</th>
-            <th class="col-actions" data-i18n="Action">Action</th>
+            <th data-i18n="Job Name">[[=T("Job Name")]]</th>
+            <th data-i18n="Job Type">[[=T("Job Type")]]</th>
+            <th data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</th>
+            <th data-i18n="Status">[[=T("Status")]]</th>
+            <th data-i18n="Creation Time">[[=T("Creation Time")]]</th>
+            <th data-i18n="Start Time">[[=T("Start Time")]]</th>
+            <th data-i18n="End Time">[[=T("End Time")]]</th>
+            <th class="col-actions" data-i18n="Action">[[=T("Action")]]</th>
           </tr>
         </thead>
         <tbody id="jobs-tbody"></tbody>
@@ -55,71 +91,96 @@
   <!-- Lower Split Panel: Job Details (Details / Devices) -->
   <div class="cds--tile" id="job-details-card">
     <div class="tile-header" style="margin-bottom:6px;">
-      <h3 id="job-details-title" class="tile-title" style="font-size:16px;" data-i18n="Job Details">Job Details</h3>
+      <h2 id="job-details-title" class="tile-title" style="font-size:18px;" data-i18n="Job Details">[[=T("Job Details")]]</h2>
     </div>
 
     <div class="cds--tabs" role="tablist">
-      <button type="button" class="cds--tabs__nav-link active" data-job-subtab="details" data-i18n="Details">Details</button>
-      <button type="button" class="cds--tabs__nav-link" data-job-subtab="devices" data-i18n="Devices">Devices</button>
+      <button type="button" class="cds--tabs__nav-link active" data-job-subtab="details" data-i18n="Details">[[=T("Details")]]</button>
+      <button type="button" class="cds--tabs__nav-link" data-job-subtab="devices" data-i18n="Devices">[[=T("Devices")]]</button>
     </div>
 
     <div id="job-subtab-details">
       <div class="metrics-strip">
-        <span class="metric-total"><span data-i18n="Total:">Total:</span> <span id="jd-total">0</span></span>
-        <span class="metric-ok">[[=XML(icon("checkmark-filled", 16))]] <span data-i18n="Success">Success</span>: <span id="jd-ok">0</span></span>
-        <span class="metric-fail">[[=XML(icon("error-filled", 16))]] <span data-i18n="Failed">Failed</span>: <span id="jd-fail">0</span></span>
+        <span class="metric-total"><span data-i18n="Total:">[[=T("Total:")]]</span> <span id="jd-total">0</span></span>
+        <span class="metric-ok">[[=XML(icon("checkmark-filled", 16))]] <span data-i18n="Success">[[=T("Success")]]</span>: <span id="jd-ok">0</span></span>
+        <span class="metric-fail">[[=XML(icon("error-filled", 16))]] <span data-i18n="Failed">[[=T("Failed")]]</span>: <span id="jd-fail">0</span></span>
         <span id="jd-meta-extra" class="metric-meta"></span>
       </div>
 
       <div class="cds--form-item" style="margin-bottom:10px;">
-        <label class="cds--label" data-i18n="Description">Description</label>
+        <label class="cds--label" data-i18n="Description">[[=T("Description")]]</label>
         <div id="jd-desc" class="cli-preview" style="max-height:76px;white-space:pre-wrap;">-</div>
       </div>
 
       <div class="cds--form-item" style="margin-bottom:10px;">
-        <label class="cds--label" data-i18n="Config Commands">Config Commands</label>
+        <label class="cds--label" data-i18n="Config Commands">[[=T("Config Commands")]]</label>
         <pre id="jd-cmds" class="cli-preview"></pre>
       </div>
 
       <div id="jd-audit-wrap" class="cds--form-item hidden">
-        <label class="cds--label" data-i18n="Audit Validation RegEx">Audit Validation RegEx</label>
+        <label class="cds--label" data-i18n="Audit Validation RegEx">[[=T("Audit Validation RegEx")]]</label>
         <pre id="jd-audit" class="cli-preview"></pre>
       </div>
     </div>
 
     <div id="job-subtab-devices" class="hidden">
-      <div class="filter-bar">
-        <div class="filter-field">
-          <label class="cds--label" for="flt-jd-name" data-i18n="Device">Device</label>
-          <input id="flt-jd-name" class="cds--text-input" type="text" />
+      <div class="anms-table-container">
+        <div class="anms-dt-toolbar">
+          <div class="anms-dt-search-wrap">
+            <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+            <input
+              id="jd-dt-search"
+              class="anms-dt-search-input"
+              type="text"
+              placeholder="[[=T('Search table...')]]"
+              data-i18n-placeholder="Search table..."
+              aria-label="[[=T('Search table...')]]"
+            />
+            <button type="button" id="jd-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+              [[=XML(icon("close", 16))]]
+            </button>
+          </div>
+          <div class="anms-dt-toolbar-actions">
+            <div class="anms-dt-filter-wrap">
+              <button type="button" id="jd-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+                [[=XML(icon("filter", 16))]]
+                <span id="jd-filter-badge" class="anms-filter-badge hidden">0</span>
+              </button>
+              <div id="jd-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+                <div class="anms-filter-popover__body">
+                  <div class="cds--form-item">
+                    <label class="cds--label" for="flt-jd-status" data-i18n="Status">[[=T("Status")]]</label>
+                    <select id="flt-jd-status" class="cds--select-input"></select>
+                  </div>
+                </div>
+                <div class="anms-filter-popover__footer">
+                  <button type="button" id="jd-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+                  <button type="button" id="jd-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="filter-field">
-          <label class="cds--label" for="flt-jd-ip" data-i18n="IP Address">IP Address</label>
-          <input id="flt-jd-ip" class="cds--text-input" type="text" />
-        </div>
-        <div class="filter-field compact">
-          <label class="cds--label" for="flt-jd-status" data-i18n="Status">Status</label>
-          <select id="flt-jd-status" class="cds--select-input"></select>
-        </div>
-      </div>
+        <div id="jd-active-filters" class="anms-active-filters hidden"></div>
 
-      <div class="table-wrap">
-        <table class="cds--data-table">
-          <thead>
-            <tr>
-              <th data-i18n="Device">Device</th>
-              <th data-i18n="IP Address">IP Address</th>
-              <th data-i18n="Status">Status</th>
-              <th data-i18n="Start Time">Start Time</th>
-              <th data-i18n="End Time">End Time</th>
-              <th data-i18n="Operation Result">Operation Result</th>
-              <th class="col-actions" data-i18n="Log">Log</th>
-            </tr>
-          </thead>
-          <tbody id="job-devices-tbody"></tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="cds--data-table">
+            <thead>
+              <tr>
+                <th data-i18n="Device">[[=T("Device")]]</th>
+                <th data-i18n="IP Address">[[=T("IP Address")]]</th>
+                <th data-i18n="Status">[[=T("Status")]]</th>
+                <th data-i18n="Start Time">[[=T("Start Time")]]</th>
+                <th data-i18n="End Time">[[=T("End Time")]]</th>
+                <th data-i18n="Operation Result">[[=T("Operation Result")]]</th>
+                <th class="col-actions" data-i18n="Log">[[=T("Log")]]</th>
+              </tr>
+            </thead>
+            <tbody id="job-devices-tbody"></tbody>
+          </table>
+        </div>
+        <div id="job-devices-pagination" class="cds--pagination"></div>
       </div>
-      <div id="job-devices-pagination" class="cds--pagination"></div>
     </div>
   </div>
 </section>

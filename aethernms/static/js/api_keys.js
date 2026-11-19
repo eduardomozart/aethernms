@@ -4,7 +4,12 @@
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, escHtml, hasPermission, toast, api, fillSelect, showConfirm } = UI;
+  const { $, t, escHtml, hasPermission, toast, api, fillSelect, showConfirm, wireDataTableToolbar } = UI;
+
+  const page = {
+    keys: [],
+    toolbar: null,
+  };
 
   async function reloadPageData() {
     const meta = UI.state.meta || {};
@@ -41,7 +46,29 @@
 
   async function refreshApiKeysList() {
     const data = await api("/api/auth/api-keys");
-    const items = data.items || [];
+    page.keys = data.items || [];
+    const roleNames = Array.from(new Set(page.keys.map((k) => k.role_name).filter(Boolean))).sort();
+    fillSelect(
+      $("flt-key-role"),
+      [{ value: "All", label: t("All") }].concat(roleNames.map((r) => ({ value: r, label: r }))),
+      true
+    );
+    if (page.toolbar) page.toolbar.sync();
+    renderApiKeysTable();
+  }
+
+  function renderApiKeysTable() {
+    const q = ($("apikeys-dt-search") ? $("apikeys-dt-search").value : "").trim().toLowerCase();
+    const roleQ = $("flt-key-role").value || "All";
+    const items = page.keys.filter((k) => {
+      if (q) {
+        const hay = [k.name, k.username, k.role_name, k.key_prefix].filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (roleQ !== "All" && k.role_name !== roleQ) return false;
+      return true;
+    });
+
     const tbody = $("api-keys-tbody");
     if (!items.length) {
       tbody.innerHTML = `<tr class="empty-row"><td colspan="7">${escHtml(t("No API keys created yet."))}</td></tr>`;
@@ -82,6 +109,21 @@
       });
     });
   }
+
+  page.toolbar = wireDataTableToolbar({
+    searchInputId: "apikeys-dt-search",
+    searchClearId: "apikeys-dt-search-clear",
+    filterBtnId: "apikeys-filter-btn",
+    filterBadgeId: "apikeys-filter-badge",
+    popoverId: "apikeys-filter-popover",
+    applyBtnId: "apikeys-filter-apply",
+    resetBtnId: "apikeys-filter-reset",
+    chipsContainerId: "apikeys-active-filters",
+    fields: [
+      { id: "flt-key-role", labelKey: "Role", defaultVal: "All" },
+    ],
+    onChange: renderApiKeysTable,
+  });
 
   $("btn-gen-key").addEventListener("click", async () => {
     const body = {

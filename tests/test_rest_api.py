@@ -1,4 +1,4 @@
-"""End-to-end WSGI REST API, Authentication, Swagger/OpenAPI, and Job Execution tests for Py4Web app."""
+"""End-to-end WSGI REST API, Setup Guide, RBAC, External API/IP Allowlist, Swagger/OpenAPI, and Job tests."""
 
 from __future__ import annotations
 
@@ -9,15 +9,16 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
 
-from pssh_ui.ssh_runner import BatchSSHExecutor, PSSHClient
-from pssh_ui.web_app import create_app
+from aethernms.ssh_runner import BatchSSHExecutor, PSSHClient
+from aethernms.web_app import create_app
 
 
 class _WSGIClient:
     """Minimal WSGI test client with automatic cookie persistence for Py4Web/ombott."""
 
-    def __init__(self, wsgi_app: Any) -> None:
+    def __init__(self, wsgi_app: Any, remote_addr: str = "127.0.0.1") -> None:
         self.app = wsgi_app
+        self.remote_addr = remote_addr
         self.cookies: Dict[str, str] = {}
 
     def request(
@@ -28,6 +29,7 @@ class _WSGIClient:
         raw_body: Optional[bytes] = None,
         headers: Optional[Dict[str, str]] = None,
         use_cookies: bool = True,
+        remote_addr: Optional[str] = None,
     ) -> Tuple[int, Dict[str, str], bytes]:
         parts = urlsplit(path)
         body = raw_body or b""
@@ -45,7 +47,8 @@ class _WSGIClient:
             "PATH_INFO": parts.path,
             "QUERY_STRING": parts.query,
             "SERVER_NAME": "127.0.0.1",
-            "SERVER_PORT": "8080",
+            "SERVER_PORT": "8000",
+            "REMOTE_ADDR": remote_addr if remote_addr is not None else self.remote_addr,
             "SERVER_PROTOCOL": "HTTP/1.1",
             "wsgi.version": (1, 0),
             "wsgi.url_scheme": "http",
@@ -179,7 +182,13 @@ _SAMPLE_AIRWAVE_XML = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 
-def _make_test_client(tmp_path: Path):
+def _make_test_client(
+    tmp_path: Path,
+    *,
+    db_path: Optional[Path] = None,
+    config_dir: Optional[Path] = None,
+    seed_snippets: bool = True,
+):
     def _exec_factory():
         return BatchSSHExecutor(
             client_factory=lambda: PSSHClient(
@@ -196,134 +205,373 @@ def _make_test_client(tmp_path: Path):
         return folders, _SAMPLE_AIRWAVE_XML
 
     app, ctx = create_app(
-        db_path=tmp_path / "pssh_ui.db",
+        db_path=db_path,
+        config_dir=config_dir,
         executor_factory=_exec_factory,
         ping_fn=_fake_ping,
         airwave_fetch_fn=_fake_airwave,
-        seed_snippets=True,
+        seed_snippets=seed_snippets,
         migrate_legacy_xml=False,
     )
     return _WSGIClient(app), ctx
 
 
-def test_openapi_swagger_and_auth_lifecycle(tmp_path: Path):
-    client, _ctx = _make_test_client(tmp_path)
+def test_uninitialized_setup_guide_redirects_lockout_and_no_premature_db(monkeypatch, tmp_path: Path):
+    monkeypatch.delenv("AETHERNMS_DB_URI", raising=False)
+    monkeypatch.delenv("AETHERNMS_ADMIN_USER", raising=False)
+    monkeypatch.delenv("AETHERNMS_ADMIN_PASSWORD", raising=False)
 
-    # OpenAPI & Swagger docs are publicly accessible
-    code, spec = client.get_json("/api/openapi.json")
-    assert code == 200
-    assert spec["openapi"] == "3.0.3"
-    assert "/api/jobs" in spec["paths"]
-    assert "/api/devices" in spec["paths"]
-    assert "/api/snippets/import" in spec["paths"]
-    assert "ApiKeyHeader" in spec["components"]["securitySchemes"]
-    assert "BearerAuth" in spec["components"]["securitySchemes"]
+    cfg_dir = tmp_path / "fresh_cfg"
+    client, ctx = _make_test_client(tmp_path, config_dir=cfg_dir)
 
-    for doc_path in ("/api/docs", "/swagger"):
-        c, hdrs, body = client.request("GET", doc_path)
-        assert c == 200
-        assert "text/html" in hdrs.get("content-type", "")
-        assert b"/api/openapi.json" in body
+    # Uninitialized startup must NOT create any .db or db_config.json prematurely
+    assert ctx.db is None
+    assert not (cfg_dir / "aethernms.db").exists()
+    assert not (cfg_dir / "db_config.json").exists()
 
-    # Unauthenticated UI routes redirect to /login; API returns 401
-    for ui_path in ("/", "/jobs", "/snippets", "/devices"):
-        c_ui, hdrs_ui, _ = client.request("GET", ui_path)
+    # All UI routes redirect cleanly to /setup
+    for path in (
+        "/",
+        "/login",
+        "/jobs",
+        "/snippets",
+        "/devices",
+        "/administration",
+        "/administration/settings",
+        "/administration/users",
+        "/administration/roles",
+        "/administration/api-keys",
+    ):
+        code, hdrs, _ = client.request("GET", path)
+        assert code in (302, 303), path
+        assert hdrs.get("location", "").endswith("/setup"), (path, hdrs)
+
+    # /api/* returns 503 setup_required while unconfigured
+    for api_path in ("/api/auth/status", "/api/devices", "/api/settings", "/api/meta", "/api/openapi.json"):
+        c_api, err_api = client.get_json(api_path)
+        assert c_api == 503, api_path
+        assert err_api["setup_required"] is True
+
+    c_sw, _, _ = client.request("GET", "/api/docs")
+    assert c_sw == 503
+
+    # /i18n works cleanly with AppSettings() fallback while ctx.db is None,
+    # and respects BCP-47 hyphenated / comma-separated browser navigator languages
+    c_i18n, i18n_data = client.get_json("/i18n")
+    assert c_i18n == 200
+    assert isinstance(i18n_data["catalog"], dict)
+
+    for q_lang in ("pt-BR", "pt-BR,pt,en-US"):
+        c_pt, pt_data = client.get_json(f"/i18n?lang={q_lang}")
+        assert c_pt == 200
+        assert pt_data["effective_language"] == "pt_BR"
+        assert (
+            pt_data["catalog"]["Initial administrator setup is required first."]
+            == "A configuração inicial do administrador é necessária primeiro."
+        )
+
+    # GET /setup & GET /setup/info work and use shared ÆTHER NMS wordmark header
+    c_pg, _, body_pg = client.request("GET", "/setup?lang=pt_BR")
+    assert c_pg == 200
+    assert b"setup-card" in body_pg
+    assert b"/static/js/setup.js" in body_pg
+    assert b"anms-brand-wordmark" in body_pg
+    assert "ÆTHER".encode("utf-8") in body_pg
+    assert b"anms-brand-sub" in body_pg
+    assert b"NMS" in body_pg
+    assert "Concluir".encode("utf-8") in body_pg
+    assert b"setup-seed-snippets" not in body_pg
+    assert b"aethernms-header.png" not in body_pg
+    assert b"aethernms.png" not in body_pg
+
+    c_info, info = client.get_json("/setup/info")
+    assert c_info == 200
+    assert info["needs_setup"] is True
+    assert info["db_configured"] is False
+    engine_ids = [e["id"] for e in info["engines"]]
+    assert engine_ids == ["sqlite", "postgres", "mysql", "mssql", "oracle", "custom"]
+
+    # POST /setup/test-db succeeds for SQLite without creating an orphan .db file
+    custom_db = cfg_dir / "custom_aethernms.db"
+    c_tdb, tdb = client.post_json(
+        "/setup/test-db",
+        {"engine": "sqlite", "sqlite_path": str(custom_db)},
+    )
+    assert c_tdb == 200
+    assert tdb["ok"] is True
+    assert not custom_db.exists()
+    assert not (cfg_dir / "aethernms.db").exists()
+
+    # Invalid Admin fields fail BEFORE creating DB on disk
+    c_short, _ = client.post_json(
+        "/setup",
+        {
+            "engine": "sqlite",
+            "sqlite_path": str(custom_db),
+            "username": "admin",
+            "password": "123",
+            "confirm_password": "123",
+        },
+    )
+    assert c_short == 400
+    assert not custom_db.exists()
+
+    c_mismatch, _ = client.post_json(
+        "/setup",
+        {
+            "engine": "sqlite",
+            "sqlite_path": str(custom_db),
+            "username": "admin",
+            "password": "StrongPassword123!",
+            "confirm_password": "DifferentPassword123!",
+        },
+    )
+    assert c_mismatch == 400
+    assert not custom_db.exists()
+
+    # Complete 3-step Setup -> initializes DB, seeds roles + snippets, writes db_config.json, hot-swaps ctx.db, sets session
+    c_done, done = client.post_json(
+        "/setup",
+        {
+            "engine": "sqlite",
+            "sqlite_path": str(custom_db),
+            "username": "admin",
+            "display_name": "Primary Admin",
+            "password": "StrongPassword123!",
+            "confirm_password": "StrongPassword123!",
+            "seed_snippets": True,
+        },
+    )
+    assert c_done == 201
+    assert done["authenticated"] is True
+    assert done["username"] == "admin"
+    assert done["role"] == "Admin"
+    assert done["db_engine"] == "sqlite"
+    assert done["redirect"] == "/jobs"
+    assert custom_db.is_file()
+    assert (cfg_dir / "db_config.json").is_file()
+    assert ctx.db is not None
+    assert len(ctx.db.list_snippets()) >= 1
+
+    # Immediate authenticated access to /jobs without server restart (with shared ÆTHER NMS header)
+    c_jobs, _, body_jobs = client.request("GET", "/jobs")
+    assert c_jobs == 200
+    assert b'id="view-jobs"' in body_jobs
+    assert b"anms-brand-wordmark" in body_jobs
+    assert "ÆTHER".encode("utf-8") in body_jobs
+    assert b"aethernms-header.png" not in body_jobs
+
+    # Setup endpoints are permanently locked out after completion
+    c_s_pg, hdrs_s_pg, _ = client.request("GET", "/setup")
+    assert c_s_pg in (302, 303)
+    assert "/jobs" in hdrs_s_pg.get("location", "")
+    c_s_info, _ = client.get_json("/setup/info")
+    assert c_s_info == 403
+    c_s_test, _ = client.post_json("/setup/test-db", {"engine": "sqlite"})
+    assert c_s_test == 403
+    c_s_post, _ = client.post_json("/setup", {"username": "rogue", "password": "Password123!"})
+    assert c_s_post == 403
+
+    # Restarting create_app(config_dir=cfg_dir) automatically reconnects via db_config.json
+    client2, ctx2 = _make_test_client(tmp_path, config_dir=cfg_dir)
+    assert ctx2.db is not None
+    assert ctx2.db_source == "config_file"
+    assert ctx2.db.user_count() == 1
+    c_login_redir, hdrs_lr, _ = client2.request("GET", "/jobs")
+    assert c_login_redir in (302, 303)
+    assert "/login" in hdrs_lr.get("location", "")
+
+
+def test_renoir_fixes_external_api_gate_rbac_and_global_search(tmp_path: Path):
+    client, _ctx = _make_test_client(tmp_path, db_path=tmp_path / "aethernms.db")
+
+    # DB exists (explicit --db-path) with 0 users -> / and /login redirect to /setup
+    for p in ("/", "/login", "/jobs", "/snippets", "/devices"):
+        c_ui, hdrs_ui, _ = client.request("GET", p)
         assert c_ui in (302, 303)
-        assert "/login" in hdrs_ui.get("location", "")
+        assert "/setup" in hdrs_ui.get("location", "")
 
-    c_unauth, err_unauth = client.get_json("/api/devices")
-    assert c_unauth == 401
-    assert "error" in err_unauth
-
-    # Status shows initial setup required
-    c_st, st = client.get_json("/api/auth/status")
-    assert c_st == 200
-    assert st["needs_setup"] is True
-    assert st["authenticated"] is False
-
-    # Complete first-time admin setup (auto-signs session in)
-    c_set, set_res = client.post_json("/api/auth/setup", {"username": "admin", "password": "Password123!"})
+    # Complete initial Admin setup
+    c_set, set_res = client.post_json(
+        "/setup",
+        {"username": "admin", "display_name": "NetOps Admin", "password": "Password123!"},
+    )
     assert c_set == 201
     assert set_res["authenticated"] is True
-    assert set_res["username"] == "admin"
 
-    # Second setup attempt is rejected
-    c_set2, _ = client.post_json("/api/auth/setup", {"username": "admin2", "password": "Password123!"})
-    assert c_set2 == 400
+    # Renoir fix check: layout.html renders aria-expanded="false" on /jobs, "true" on /administration/settings
+    c_jobs, _, body_jobs = client.request("GET", "/jobs")
+    assert c_jobs == 200
+    assert b'id="sidenav-admin-toggle"' in body_jobs
+    assert b'aria-expanded="false"' in body_jobs
 
-    # Authenticated session renders each split page cleanly via Py4Web layout.html
-    c_home, _, body_home = client.request("GET", "/")
-    assert c_home == 200
-    assert b'id="view-jobs"' in body_home
-    assert b"/static/js/core.js" in body_home
-    assert b"/static/js/jobs.js" in body_home
-    assert b'id="modal-add-job"' in body_home
-    assert b'id="view-snippets"' not in body_home
-    assert b'id="view-devices"' not in body_home
+    c_settings_pg, _, body_settings = client.request("GET", "/administration/settings")
+    assert c_settings_pg == 200
+    assert b'aria-expanded="true"' in body_settings
+    assert b'id="set-db-engine"' in body_settings
+    assert b'id="set-db-uri"' in body_settings
 
-    c_snips_pg, _, body_snips = client.request("GET", "/snippets")
-    assert c_snips_pg == 200
-    assert b'id="view-snippets"' in body_snips
-    assert b'href="/snippets" aria-current="page"' in body_snips
-    assert b"/static/js/snippets.js" in body_snips
-    assert b'id="modal-snippet"' in body_snips
-    assert b'id="modal-settings"' in body_snips
-    assert b'id="view-jobs"' not in body_snips
+    # Read-only db_engine & db_uri_masked in GET /api/settings (ignored on PUT)
+    c_gs, gs = client.get_json("/api/settings")
+    assert c_gs == 200
+    assert gs["api_enabled"] is False
+    assert gs["db_engine"] == "sqlite"
+    assert "aethernms.db" in gs["db_uri_masked"]
 
-    c_devs_pg, _, body_devs = client.request("GET", "/devices")
-    assert c_devs_pg == 200
-    assert b'id="view-devices"' in body_devs
-    assert b'href="/devices" aria-current="page"' in body_devs
-    assert b"/static/js/devices.js" in body_devs
-    assert b'id="modal-airwave"' in body_devs
-    assert b'id="modal-settings"' in body_devs
-    assert b'id="view-jobs"' not in body_devs
+    c_ps, ps = client.put_json(
+        "/api/settings",
+        {"db_engine": "oracle", "db_uri_masked": "oracle://spoofed", "ssh_username": "ops"},
+    )
+    assert c_ps == 200
+    assert ps["db_engine"] == "sqlite"
+    assert "aethernms.db" in ps["db_uri_masked"]
+    assert ps["ssh_username"] == "ops"
 
-    # Create API key, then logout and authenticate via X-API-Key & Bearer
+    # External API and Swagger are disabled by default -> 403
+    c_spec_off, _ = client.get_json("/api/openapi.json")
+    assert c_spec_off == 403
+    for doc_path in ("/api/docs", "/swagger"):
+        c_doc_off, _, _ = client.request("GET", doc_path)
+        assert c_doc_off == 403
+
+    # Create API key while External API is disabled (UI session allowed), then verify key is blocked until enabled
     c_key, key_obj = client.post_json("/api/auth/api-keys", {"name": "Automation"})
     assert c_key == 201
     token = key_obj["token"]
-    assert token.startswith("pssh_")
+    assert token.startswith("aethernms_")
 
-    c_out, _ = client.post_json("/api/auth/logout")
-    assert c_out == 200
-    c_after_out, _ = client.get_json("/api/devices")
-    assert c_after_out == 401
+    c_ext_blocked, _ = client.get_json("/api/meta", headers={"X-API-Key": token}, use_cookies=False)
+    assert c_ext_blocked == 403
 
-    c_xkey, meta = client.get_json("/api/meta", headers={"X-API-Key": token}, use_cookies=False)
-    assert c_xkey == 200
+    # Enable External API restricted to 127.0.0.1, ::1
+    c_en, en_s = client.put_json(
+        "/api/settings",
+        {"api_enabled": True, "api_allowed_ips": "127.0.0.1, ::1"},
+    )
+    assert c_en == 200
+    assert en_s["api_enabled"] is True
+
+    # Swagger & OpenAPI now accessible from allowed IP, blocked from external IP
+    c_spec, spec = client.get_json("/api/openapi.json")
+    assert c_spec == 200
+    assert spec["openapi"] == "3.0.3"
+    assert "/api/devices/search" in spec["paths"]
+    assert "ApiKeyHeader" in spec["components"]["securitySchemes"]
+
+    c_doc_on, doc_hdrs, doc_body = client.request("GET", "/api/docs")
+    assert c_doc_on == 200
+    assert "text/html" in doc_hdrs.get("content-type", "")
+    assert b"/api/openapi.json" in doc_body
+    assert b"anms-brand-wordmark" in doc_body
+    assert "ÆTHER".encode("utf-8") in doc_body
+    assert b"aethernms-header.png" not in doc_body
+
+    c_bad_ip, _ = client.get_json(
+        "/api/meta",
+        headers={"X-API-Key": token},
+        use_cookies=False,
+        remote_addr="203.0.113.50",
+    )
+    assert c_bad_ip == 403
+
+    c_ok_xkey, meta = client.get_json("/api/meta", headers={"X-API-Key": token}, use_cookies=False)
+    assert c_ok_xkey == 200
     assert meta["username"] == "admin"
-    assert "aruba_procurve" in meta["platforms"]
 
-    c_bearer, i18n = client.get_json(
+    c_ok_bearer, i18n = client.get_json(
         "/api/i18n",
         headers={"Authorization": f"Bearer {token}"},
         use_cookies=False,
     )
-    assert c_bearer == 200
+    assert c_ok_bearer == 200
     assert isinstance(i18n["catalog"], dict)
 
-    # Re-login with password and change password
-    c_log, log_res = client.post_json("/api/auth/login", {"username": "admin", "password": "Password123!"})
-    assert c_log == 200
-    assert log_res["authenticated"] is True
+    # Global Device Search (/api/devices/search)
+    client.post_json(
+        "/api/devices",
+        {
+            "name": "SW-CAMPUS-CORE",
+            "ip": "10.99.1.10",
+            "os_type": "aruba_aoscx",
+            "model": "8360",
+            "folder_path": "Campus/Core",
+        },
+    )
+    c_srch, srch = client.get_json("/api/devices/search?q=8360")
+    assert c_srch == 200
+    assert len(srch["items"]) == 1
+    assert srch["items"][0]["name"] == "SW-CAMPUS-CORE"
 
+    # RBAC: Custom role & scoped API key enforcement
+    c_role, role_obj = client.post_json(
+        "/api/roles",
+        {"name": "Device Reader", "permissions": ["devices:read"]},
+    )
+    assert c_role == 201
+    c_usr, _ = client.post_json(
+        "/api/users",
+        {"username": "reader1", "password": "ReaderPass123!", "role": "Device Reader"},
+    )
+    assert c_usr == 201
+
+    c_vkey, vkey = client.post_json(
+        "/api/auth/api-keys",
+        {"name": "Read-Only Key", "role_name": role_obj["name"]},
+    )
+    assert c_vkey == 201
+    c_read_dev, _ = client.get_json(
+        "/api/devices/search?q=CAMPUS",
+        headers={"X-API-Key": vkey["token"]},
+        use_cookies=False,
+    )
+    assert c_read_dev == 200
+    c_write_dev, _ = client.post_json(
+        "/api/devices",
+        {"name": "DENIED", "ip": "10.0.0.99", "os_type": "aruba_procurve"},
+        headers={"X-API-Key": vkey["token"]},
+        use_cookies=False,
+    )
+    assert c_write_dev == 403
+
+    # Logout -> login.html renders data-needs-setup="false", shared header wordmark,
+    # navigator.language lookup for /i18n, and forbidden 403 HTML uses shared header partial
+    client.post_json("/logout")
+    c_lpg, _, lpg_body = client.request("GET", "/login")
+    assert c_lpg == 200
+    assert b'data-needs-setup="false"' in lpg_body
+    assert b"anms-brand-wordmark" in lpg_body
+    assert "ÆTHER".encode("utf-8") in lpg_body
+    assert b"navigator.languages" in lpg_body
+    assert b"navigator.language" in lpg_body
+    assert b"aethernms-header.png" not in lpg_body
+    assert b"aethernms.png" not in lpg_body
+
+    c_rlog, _ = client.post_json("/login", {"username": "reader1", "password": "ReaderPass123!"})
+    assert c_rlog == 200
+    c_forb_users, _, forb_body = client.request("GET", "/administration/users")
+    assert c_forb_users == 403
+    assert b"anms-brand-wordmark" in forb_body
+    assert "ÆTHER".encode("utf-8") in forb_body
+    assert b"aethernms-header.png" not in forb_body
+
+    # Re-login as Admin, change password, revoke key
+    client.post_json("/logout")
+    c_alog, _ = client.post_json("/login", {"username": "admin", "password": "Password123!"})
+    assert c_alog == 200
     c_pw, _ = client.post_json(
-        "/api/auth/password",
+        "/account/password",
         {"current_password": "Password123!", "new_password": "UpdatedPass456!"},
     )
     assert c_pw == 200
-
-    # Revoke API key and confirm rejection
     c_rev, _ = client.delete_json(f"/api/auth/api-keys/{key_obj['id']}")
     assert c_rev == 200
-    c_rev_check, _ = client.get_json("/api/meta", headers={"X-API-Key": token}, use_cookies=False)
-    assert c_rev_check == 401
+    c_rev_chk, _ = client.get_json("/api/meta", headers={"X-API-Key": token}, use_cookies=False)
+    assert c_rev_chk == 401
 
 
 def test_settings_devices_airwave_snippets_and_jobs_rest_workflow(tmp_path: Path):
-    client, _ctx = _make_test_client(tmp_path)
-    c_set, _ = client.post_json("/api/auth/setup", {"username": "admin", "password": "Password123!"})
+    client, _ctx = _make_test_client(tmp_path, db_path=tmp_path / "aethernms.db")
+    c_set, _ = client.post_json("/setup", {"username": "admin", "password": "Password123!"})
     assert c_set == 201
 
     # 1. Settings update
@@ -391,7 +639,6 @@ def test_settings_devices_airwave_snippets_and_jobs_rest_workflow(tmp_path: Path
 
     aw_dev = next(d for d in awi["items"] if d["name"] == "SW-AW-ACCESS-1")
     assert aw_dev["is_airwave"] is True
-    # Attempt to overwrite read-only name/ip while changing port -> identity preserved, port updated
     c_aw_upd, aw_upd = client.put_json(
         f"/api/devices/{aw_dev['id']}",
         {
@@ -476,7 +723,6 @@ def test_settings_devices_airwave_snippets_and_jobs_rest_workflow(tmp_path: Path
     assert c_job == 201
     job_uid = job["job_id"]
 
-    # Poll until completed
     final_job = job
     for _ in range(50):
         c_g, final_job = client.get_json(f"/api/jobs/{job_uid}")
@@ -491,13 +737,11 @@ def test_settings_devices_airwave_snippets_and_jobs_rest_workflow(tmp_path: Path
     assert res_row["status"] == "Success"
     assert res_row["has_log"] is True
 
-    # Inspect JSON log endpoint
     c_log, log_data = client.get_json(f"/api/jobs/{job_uid}/results/{res_row['id']}/log")
     assert c_log == 200
     assert "ntp server 10.1.1.1" in log_data["formatted_log"]
     assert log_data["filename"].endswith(".log")
 
-    # Download plain-text .log attachment
     c_dl, dl_hdrs, dl_bytes = client.request(
         "GET", f"/api/jobs/{job_uid}/results/{res_row['id']}/log?download=1"
     )
@@ -535,3 +779,116 @@ def test_settings_devices_airwave_snippets_and_jobs_rest_workflow(tmp_path: Path
     assert c_del == 200
     c_gone, _ = client.get_json(f"/api/jobs/{job_uid}")
     assert c_gone == 404
+
+
+def test_phase2_ui_rbac_readonly_appearance_and_assets(tmp_path: Path):
+    client, ctx = _make_test_client(tmp_path, db_path=tmp_path / "aethernms.db")
+    c_set, _ = client.post_json(
+        "/setup",
+        {"username": "admin", "display_name": "Primary Admin", "password": "Password123!"},
+    )
+    assert c_set == 201
+
+    # Logout & login case-insensitively; verify /login omits marketing subtitle
+    client.post_json("/logout")
+    c_login_pg, _, login_body = client.request("GET", "/login")
+    assert c_login_pg == 200
+    assert b"Config &amp; Audit Automation" not in login_body
+    c_login, login_data = client.post_json("/login", {"username": "ADMIN", "password": "Password123!"})
+    assert c_login == 200
+    assert login_data["username"] == "admin"
+
+    # Friendly Netmiko platform labels
+    c_meta, meta = client.get_json("/api/meta")
+    assert c_meta == 200
+    assert meta["platform_labels"]["aruba_procurve"] == "ArubaOS-S"
+    assert meta["platform_labels"]["aruba_aoscx"] == "ArubaOS-CX"
+
+    # Served brand assets & touch icons
+    for asset_path in (
+        "/assets/aethernms.svg",
+        "/assets/favicon.ico",
+        "/assets/apple-touch-icon.png",
+        "/assets/site.webmanifest",
+    ):
+        c_asset, _, asset_bytes = client.request("GET", asset_path)
+        assert c_asset == 200 and len(asset_bytes) > 0
+
+    # Built-in snippets are read-only (403); custom snippets remain writable
+    c_snips, snips_data = client.get_json("/api/snippets")
+    assert c_snips == 200
+    builtin_snips = [s for s in snips_data["items"] if s.get("is_builtin")]
+    assert builtin_snips
+    b_id = builtin_snips[0]["id"]
+    c_edit_b, _ = client.put_json(f"/api/snippets/{b_id}", {"name": "Hacked", "commands": "show ver"})
+    assert c_edit_b == 403
+    c_del_b, _ = client.delete_json(f"/api/snippets/{b_id}")
+    assert c_del_b == 403
+
+    # Built-in system roles are read-only (403)
+    c_roles, roles_data = client.get_json("/api/roles")
+    assert c_roles == 200
+    sys_roles = [r for r in roles_data["items"] if r.get("is_system")]
+    assert {r["name"] for r in sys_roles} == {"Admin", "Operator", "Viewer"}
+    for r in sys_roles:
+        c_edit_r, _ = client.put_json(f"/api/roles/{r['id']}", {"name": r["name"], "description": "hacked"})
+        assert c_edit_r == 403
+        c_del_r, _ = client.delete_json(f"/api/roles/{r['id']}")
+        assert c_del_r == 403
+
+    # Per-user language & theme SSR hydration + window title + header help/user links
+    c_me_upd, me_upd = client.put_json(
+        "/api/users/1",
+        {"language": "pt_BR", "theme_mode": "dark", "display_name": "Admin PT"},
+    )
+    assert c_me_upd == 200
+    assert me_upd["language"] == "pt_BR"
+    assert me_upd["theme_mode"] == "dark"
+
+    c_jobs_pt, _, jobs_pt_body = client.request("GET", "/jobs")
+    assert c_jobs_pt == 200
+    assert b'lang="pt-BR"' in jobs_pt_body
+    assert b'data-carbon-theme="g100"' in jobs_pt_body
+    assert b"<title>Tarefas - aether</title>" in jobs_pt_body
+    assert b'id="anms-initial-i18n"' in jobs_pt_body
+    assert b'href="/administration/users?edit=me"' in jobs_pt_body
+    assert b"/user-guide/jobs/" in jobs_pt_body
+    assert b'id="hdr-about-btn"' not in jobs_pt_body
+
+    # Non-admin self-profile (?edit=me) vs blocked full admin (/administration/users)
+    c_new_u, reader_u = client.post_json(
+        "/api/users",
+        {
+            "username": "viewer1",
+            "display_name": "Viewer One",
+            "password": "ViewerPass123!",
+            "role": "Viewer",
+            "language": "en",
+            "theme_mode": "light",
+        },
+    )
+    assert c_new_u == 201
+    reader_id = reader_u["id"]
+
+    client.post_json("/logout")
+    c_rlog, _ = client.post_json("/login", {"username": "viewer1", "password": "ViewerPass123!"})
+    assert c_rlog == 200
+
+    c_full_forb, _, _ = client.request("GET", "/administration/users")
+    assert c_full_forb == 403
+    c_me_page, _, me_page_body = client.request("GET", "/administration/users?edit=me")
+    assert c_me_page == 200
+    assert b'id="view-admin-users"' in me_page_body
+
+    c_self_ok, self_data = client.put_json(
+        f"/api/users/{reader_id}",
+        {"display_name": "Updated Viewer", "language": "pt_BR", "theme_mode": "dark"},
+    )
+    assert c_self_ok == 200
+    assert self_data["display_name"] == "Updated Viewer"
+    assert self_data["theme_mode"] == "dark"
+
+    c_esc, _ = client.put_json(f"/api/users/{reader_id}", {"role": "Admin"})
+    assert c_esc == 403
+    assert ctx.db is not None
+

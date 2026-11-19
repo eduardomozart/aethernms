@@ -1,39 +1,42 @@
-<!-- Role Editor Modal -->
+<!-- Role Editor / Viewer Modal -->
 <div id="modal-role-editor" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
   <div class="cds--modal-container lg">
     <div class="cds--modal-header">
-      <h3 id="modal-role-title" class="cds--modal-header__heading" data-i18n="Add Role">Add Role</h3>
-      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+      <h3 id="modal-role-title" class="cds--modal-header__heading" data-i18n="Add Role">[[=T("Add Role")]]</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="[[=T('Close')]]">
         [[=XML(icon("close", 20))]]
       </button>
     </div>
     <div class="cds--modal-content">
+      <div id="role-readonly-note" class="cds--inline-notification hidden" data-i18n="Built-in system roles are read-only and cannot be modified or deleted.">
+        [[=T("Built-in system roles are read-only and cannot be modified or deleted.")]]
+      </div>
       <div id="role-editor-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
       <div class="form-grid" style="margin-bottom:16px;">
         <div class="cds--form-item">
-          <label class="cds--label" for="role-name" data-i18n="Role Name *">Role Name *</label>
+          <label class="cds--label" for="role-name" data-i18n="Role Name *">[[=T("Role Name *")]]</label>
           <input id="role-name" class="cds--text-input" type="text" />
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="role-desc" data-i18n="Description">Description</label>
+          <label class="cds--label" for="role-desc" data-i18n="Description">[[=T("Description")]]</label>
           <input id="role-desc" class="cds--text-input" type="text" />
         </div>
       </div>
 
       <div class="cds--form-item">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <label class="cds--label" style="margin:0;" data-i18n="Permissions">Permissions</label>
+          <label class="cds--label" style="margin:0;" data-i18n="Permissions">[[=T("Permissions")]]</label>
           <div style="display:flex;gap:8px;">
-            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-role-perms-all" data-i18n="Select All">Select All</button>
-            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-role-perms-none" data-i18n="Clear Selection">Clear Selection</button>
+            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-role-perms-all" data-i18n="Select All">[[=T("Select All")]]</button>
+            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-role-perms-none" data-i18n="Clear Selection">[[=T("Clear Selection")]]</button>
           </div>
         </div>
         <div id="role-perms-grid" class="settings-grid"></div>
       </div>
     </div>
     <div class="cds--modal-footer">
-      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
-      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-role" data-i18n="Save">Save</button>
+      <button type="button" id="btn-cancel-role" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">[[=T("Cancel")]]</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-role" data-i18n="Save">[[=T("Save")]]</button>
     </div>
   </div>
 </div>

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from pssh_ui.db import DatabaseStore
-from pssh_ui.models import (
+from aethernms.db import DatabaseStore
+from aethernms.models import (
     AirWaveFilter,
     AppSettings,
     CommandStepResult,
@@ -20,15 +20,15 @@ from pssh_ui.models import (
     SnippetSeverity,
     SnippetType,
 )
-from pssh_ui.snippet_store import snippet_from_xml_string, snippet_to_xml_string
+from aethernms.snippet_store import snippet_from_xml_string, snippet_to_xml_string
 
 
 def test_user_auth_api_keys_and_env_bootstrap(monkeypatch, tmp_path: Path):
-    db = DatabaseStore(tmp_path / "pssh_ui.db")
+    db = DatabaseStore(tmp_path / "aethernms.db")
     assert db.user_count() == 0
 
-    monkeypatch.setenv("PSSH_UI_ADMIN_USER", "netops")
-    monkeypatch.setenv("PSSH_UI_ADMIN_PASSWORD", "Secret123!")
+    monkeypatch.setenv("AETHERNMS_ADMIN_USER", "netops")
+    monkeypatch.setenv("AETHERNMS_ADMIN_PASSWORD", "Secret123!")
     boot = db.bootstrap_admin_from_env()
     assert boot is not None
     assert boot["username"] == "netops"
@@ -52,7 +52,7 @@ def test_user_auth_api_keys_and_env_bootstrap(monkeypatch, tmp_path: Path):
         db.create_user("short", "123")
 
     created_key = db.create_api_key(authed["id"], "CI Runner")
-    assert created_key["token"].startswith("pssh_")
+    assert created_key["token"].startswith("aethernms_")
     assert created_key["name"] == "CI Runner"
 
     keys = db.list_api_keys(authed["id"])
@@ -70,7 +70,7 @@ def test_user_auth_api_keys_and_env_bootstrap(monkeypatch, tmp_path: Path):
 
 
 def test_settings_roundtrip_in_sqlite(tmp_path: Path):
-    db = DatabaseStore(tmp_path / "pssh_ui.db")
+    db = DatabaseStore(tmp_path / "aethernms.db")
     defaults = db.get_settings()
     assert defaults.language == "auto"
     assert defaults.theme_mode == "auto"
@@ -116,7 +116,7 @@ def test_settings_roundtrip_in_sqlite(tmp_path: Path):
 
 
 def test_snippet_seeding_sha256_edits_deletes_and_xml_roundtrip(tmp_path: Path):
-    db = DatabaseStore(tmp_path / "pssh_ui.db")
+    db = DatabaseStore(tmp_path / "aethernms.db")
     src_v1 = tmp_path / "bundled_v1"
     (src_v1 / "aruba" / "aruba_procurve").mkdir(parents=True)
 
@@ -160,33 +160,65 @@ def test_snippet_seeding_sha256_edits_deletes_and_xml_roundtrip(tmp_path: Path):
     assert db.seed_bundled_snippets(src_v1) == 3
     all_snips = {s.name: s for s in db.list_snippets()}
     assert set(all_snips.keys()) == {"Auto Update Me", "User Edited", "User Deleted"}
+    assert all(s.is_builtin for s in all_snips.values())
 
-    # User edits one and deletes one
+    # Built-in snippets are strictly read-only and cannot be modified or deleted
     edited = all_snips["User Edited"]
     assert edited.id is not None
-    db.update_snippet(
-        edited.id,
+    with pytest.raises(ValueError, match="read-only"):
+        db.update_snippet(
+            edited.id,
+            Snippet(
+                name="User Edited",
+                folder=edited.folder,
+                snippet_type=SnippetType.AUDIT,
+                device_type="aruba_procurve",
+                severity=SnippetSeverity.CRITICAL,
+                description="custom override",
+                commands="show custom",
+                audit_regex="custom-regex",
+            ),
+        )
+    deleted = all_snips["User Deleted"]
+    assert deleted.id is not None
+    with pytest.raises(ValueError, match="read-only"):
+        db.delete_snippet(deleted.id)
+
+    # Custom user snippet supports full edit, XML export/import, and delete
+    custom = db.create_snippet(
         Snippet(
-            name="User Edited",
-            folder=edited.folder,
+            name="Custom Template",
+            folder="custom",
             snippet_type=SnippetType.AUDIT,
             device_type="aruba_procurve",
             severity=SnippetSeverity.CRITICAL,
             description="custom override",
             commands="show custom",
             audit_regex="custom-regex",
+        )
+    )
+    assert custom.id is not None and custom.is_builtin is False
+    updated_custom = db.update_snippet(
+        custom.id,
+        Snippet(
+            name="Custom Template",
+            folder="custom",
+            snippet_type=SnippetType.AUDIT,
+            device_type="aruba_procurve",
+            severity=SnippetSeverity.CRITICAL,
+            description="custom v2",
+            commands="show custom v2",
+            audit_regex="custom-regex",
         ),
     )
-    deleted = all_snips["User Deleted"]
-    assert deleted.id is not None
-    assert db.delete_snippet(deleted.id) is True
+    assert updated_custom.description == "custom v2"
 
-    # Upstream v2 modifies all 3 bundled XML files and adds a 4th
+    # Upstream v2 refreshes all changed built-in XML files cleanly and adds a 4th
     src_v2 = tmp_path / "bundled_v2"
     (src_v2 / "aruba" / "aruba_procurve").mkdir(parents=True)
     s_auto.description = "v2 updated desc"
-    s_edit.description = "v2 should NOT overwrite"
-    s_del.description = "v2 should stay deleted"
+    s_edit.description = "v2 updated audit"
+    s_del.description = "v2 updated time"
     s_new = Snippet(
         name="Brand New",
         folder="aruba/aruba_procurve",
@@ -207,24 +239,31 @@ def test_snippet_seeding_sha256_edits_deletes_and_xml_roundtrip(tmp_path: Path):
         snippet_to_xml_string(s_new), encoding="utf-8"
     )
 
-    assert db.seed_bundled_snippets(src_v2) == 2
+    assert db.seed_bundled_snippets(src_v2) == 4
     after = {s.name: s for s in db.list_snippets()}
-    assert set(after.keys()) == {"Auto Update Me", "User Edited", "Brand New"}
+    assert set(after.keys()) == {
+        "Auto Update Me",
+        "User Edited",
+        "User Deleted",
+        "Brand New",
+        "Custom Template",
+    }
     assert after["Auto Update Me"].description == "v2 updated desc"
-    assert after["User Edited"].description == "custom override"
-    assert after["User Edited"].severity == SnippetSeverity.CRITICAL
+    assert after["User Edited"].description == "v2 updated audit"
+    assert after["Custom Template"].description == "custom v2"
 
-    # XML export/import string roundtrip
-    xml_out = snippet_to_xml_string(after["User Edited"])
+    # XML export/import string roundtrip on custom snippet and delete cleanup
+    xml_out = snippet_to_xml_string(after["Custom Template"])
     parsed = snippet_from_xml_string(xml_out)
-    assert parsed.name == "User Edited"
+    assert parsed.name == "Custom Template"
     assert parsed.snippet_type == SnippetType.AUDIT
     assert parsed.audit_regex == "custom-regex"
     assert parsed.severity == SnippetSeverity.CRITICAL
+    assert db.delete_snippet(custom.id) is True
 
 
 def test_devices_airwave_readonly_and_jobs_sqlite_logs(tmp_path: Path):
-    db = DatabaseStore(tmp_path / "pssh_ui.db")
+    db = DatabaseStore(tmp_path / "aethernms.db")
 
     # Manual device allows full edits
     manual = db.create_or_replace_device(
@@ -407,7 +446,7 @@ def test_legacy_xml_migration_settings_devices_jobs_and_logs(tmp_path: Path):
         encoding="utf-8",
     )
 
-    db = DatabaseStore(cfg / "pssh_ui.db")
+    db = DatabaseStore(cfg / "aethernms.db")
     counts = db.migrate_legacy_xml_files(cfg)
     assert counts == {"settings": 1, "devices": 1, "jobs": 1}
 

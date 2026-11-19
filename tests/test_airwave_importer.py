@@ -2,7 +2,7 @@
 
 from httmock import HTTMock, urlmatch
 
-from pssh_ui.airwave_importer import (
+from aethernms.airwave_importer import (
     build_folder_hierarchy_options,
     build_folder_options_from_hosts,
     fetch_airwave_inventory,
@@ -12,7 +12,7 @@ from pssh_ui.airwave_importer import (
     parse_airwave_devices,
     parse_airwave_folders,
 )
-from pssh_ui.models import AirWaveFilter, AppSettings, ConnectionProtocol, HostEntry, is_airwave_host
+from aethernms.models import AirWaveFilter, AppSettings, ConnectionProtocol, HostEntry, is_airwave_host
 
 
 SAMPLE_FOLDER_XML = """<?xml version="1.0" encoding="utf-8"?>

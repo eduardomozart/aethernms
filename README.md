@@ -1,74 +1,62 @@
-<img src="assets/pssh-ui.png" width="96" height="96" align="top" alt="pssh-ui logo" />
+# ÆTHER NMS
 
-# pssh-ui
+[![Release Version](https://img.shields.io/github/v/release/eduardomozart/aethernms?style=for-the-badge&logo=github)](https://github.com/eduardomozart/aethernms/releases/latest)
 
-[![Release Version](https://img.shields.io/github/v/release/eduardomozart/pssh-ui?style=for-the-badge&logo=github)](https://github.com/eduardomozart/pssh-ui/releases/latest)
-
-Multiplatform web application built with **Py4Web**, **SQLite (`PyDAL`)**, **IBM Carbon Design System (v11)**, and **Netmiko** for parallel SSH and Telnet configuration and audit automation across managed network devices — featuring an AirWave Config & Audit Jobs interface and an authenticated **REST API** with interactive **OpenAPI 3.0.3 / Swagger UI** documentation.
+Multiplatform web application built with **Py4Web**, **PyDAL** (SQLite default + PostgreSQL, MySQL/MariaDB, MSSQL, Oracle, or Custom PyDAL URI), **IBM Carbon Design System (v11)**, and **Netmiko** for parallel SSH and Telnet configuration and audit automation across managed network devices — featuring an AirWave-inspired UI, granular RBAC, Global Device Search, and an authenticated **REST API** with interactive **OpenAPI 3.0.3 / Swagger UI** documentation.
 
 ## Key Features
 
-### Py4Web + SQLite + IBM Carbon v11 Web UI
-- Styled with the **IBM Carbon Design System (v11)** (`g10` Light and `g100` Dark themes, with **Auto (OS Default)** support) and laid out after **AirWave Config & Audit Jobs** (`Jobs`, `Snippets`, `Devices`).
-- Backed by a single **SQLite** database (`%APPDATA%\pssh-ui\pssh_ui.db` on Windows or `~/.pssh-ui/pssh_ui.db` on Linux/macOS) storing users, hashed API keys, settings, seeded snippets, devices, jobs, and per-device execution logs — with automatic one-time migration from legacy XML state files (`settings.xml`, `devices.xml`, `jobs.xml`, `session.xml`).
-- Protected by local administrator sign-in (with guided first-run administrator setup or `PSSH_UI_ADMIN_USER` / `PSSH_UI_ADMIN_PASSWORD` bootstrap) and per-user **API Keys** (`X-API-Key` or `Authorization: Bearer <token>`).
+### First-Run 3-Step Setup Guide & Multi-Backend PyDAL Persistence
+- Starts cleanly without creating an empty `.db` file prematurely when unconfigured, redirecting visitors automatically to the 3-step **Initial Setup Guide (`/setup`)**:
+  1. **Database Backend**: Choose **SQLite (Local — Default)** (`%USERPROFILE%\.aethernms\aethernms.db` on Windows or `~/.aethernms/aethernms.db` on Linux/macOS), **PostgreSQL**, **MySQL / MariaDB**, **Microsoft SQL Server (MSSQL)**, **Oracle Database**, or a **Custom PyDAL URI**, with live Python driver checks, `pip install` hints, and a **Test Connection** check.
+  2. **Administrator Account**: Create the initial `Admin` user (bundled Netmiko snippets are automatically seeded as read-only templates).
+  3. **Review & Complete**: Review the masked connection URI, persist `db_config.json`, hot-swap the live database connection without restarting, sign into `aethernms_session`, and lock `/setup` permanently.
+- Supports `--db-uri` / `AETHERNMS_DB_URI` and `--db-path` / `AETHERNMS_CONFIG_DIR` overrides, automatic one-time migration from legacy XML files (`settings.xml`, `devices.xml`, `jobs.xml`, `session.xml`), and read-only `db_engine` / `db_uri_masked` inspection in **Administration → System Settings**.
 
-### Authenticated REST API & Interactive Swagger UI
-- Every GUI workflow (creating/stopping/deleting jobs, managing devices & AirWave imports, managing & importing/exporting snippets, parsing `${...}` variables, running ICMP ping checks, downloading per-device `.log` transcripts, and updating settings) is exposed over JSON REST endpoints under `/api/...`.
-- Open **`/api/docs`** (or **`/swagger`**) in your browser for interactive **Swagger UI** documentation, or fetch **`/api/openapi.json`** for the OpenAPI 3.0.3 specification.
+### Py4Web + IBM Carbon Design System v11 Web UI
+- Built with Composer-managed `@carbon/styles` v11, `@fontsource/ibm-plex-sans`, `@fontsource/ibm-plex-mono`, `@iconify-json/carbon`, and `swagger-ui-dist` (`White` light and `g100` dark themes, defaulting to **Auto (OS Default)**).
+- Features an always-dark 48px Carbon UI Shell header (`partials/header.html`) with the **ÆTHER NMS** wordmark, **Global Device Search** bar (`/api/devices/search`), and a collapsible 256px SideNav (`Jobs`, `Snippets`, `Devices`, and expandable `Administration` submenu).
+- Automatically localizes `/login` and `/setup` using the browser's `navigator.languages` / `navigator.language`.
 
-### Netmiko Multi-Platform Engine & Connection Defaults
-Backed directly by **Netmiko** (`CLASS_MAPPER`), `pssh-ui` supports all non-serial Netmiko platforms (such as `aruba_procurve`, `aruba_aoscx`, `cisco_ios`, `juniper_junos`, `arista_eos`, `hp_comware`, and more) using native SSH and Telnet drivers—without custom CLI prompt regexes or manual paging/config wrappers.
+### RBAC, External API Security & Interactive Swagger UI
+- Granular Role-Based Access Control across UI and `/api/*` with built-in **Admin**, **Operator**, and **Viewer** roles plus custom roles (`/administration/roles`), user management (`/administration/users`), and scoped API Keys (`/administration/api-keys`, `X-API-Key` or `Authorization: Bearer aethernms_...`).
+- **External API & Swagger UI** (`/api/docs`, `/swagger`, `/api/openapi.json`) are disabled by default (`api_enabled=False`) and restricted to an IP/CIDR allowlist (`127.0.0.1, ::1` default) under **Administration → System Settings**. External API clients authenticate exclusively via API keys.
 
-In **Settings (`⚙`) → Connection Defaults**, you can set **Default Protocol** (`SSH` / `Telnet`), **Default SSH Port** (`22`), and **Default Telnet Port** (`23`). These defaults apply only when creating devices manually or importing devices from AirWave, and can always be overridden per device.
-
-### Device Inventory & AirWave Import
-Manage switches manually with **+ Add Device** (restricted exclusively to Netmiko-supported platforms and their native protocols) or connect directly to **Aruba AirWave** via **Import from AirWave...**:
-- Inventory stays empty until credentials are entered and **Fetch Inventory** completes.
-- AirWave **OS Type**, firmware, and hardware metadata are mapped automatically to native Netmiko platforms (`AOS-S` → `aruba_procurve`, `AOS-CX` → `aruba_aoscx`, etc.), prompting manually only when an unmatched device is selected for import.
-- Imported AirWave devices lock **Device Name**, **IP Address**, **Model**, and **Group** as read-only while leaving **Netmiko Platform**, **Protocol**, and **Port** editable.
-
-### Reusable Command Snippets (SQLite + XML Import/Export)
-Store and share **Config** and **Audit and Remediate** command templates centrally inside SQLite (auto-seeded from bundled `snippets/<vendor>/<platform>/*.xml` with SHA-256 upgrade tracking), preview syntax-highlighted CLI scripts, and import or export portable `<Snippet>` XML files via either the web UI or the REST API.
-
-### Guided Task Creation Wizard
-Run configuration or audit tasks across multiple devices through a dynamic Carbon Progress Indicator wizard:
-1. **Config Command** — Pick **Config** or **Audit and Remediate**, enter a job name, choose the **Netmiko Platform**, select a snippet, and customize CLI commands (and **Audit Validation RegEx** for audit jobs).
-2. **Parameters** — Shown automatically whenever a snippet uses `${var|type|regex}` or `${var|["A", "B"]}` interactive variables, with real-time validation.
-3. **Select Device** — Filter by device, IP, platform, group, or live ICMP ping status and select target devices (`Protocol:Port`).
-4. **Confirm & Run** — Enter device/enable credentials, choose parallel or sequential execution, optionally enable **Save configuration** (`save_config()`), review rendered commands, and click **Run Job** (with per-device transcripts stored in SQLite and viewable/downloadable as `.log`).
+### Netmiko Multi-Platform Engine & AirWave Import
+- Backed directly by **Netmiko** (`CLASS_MAPPER`), supporting all non-serial Netmiko platforms (`aruba_procurve`, `aruba_aoscx`, `cisco_ios`, `juniper_junos`, `arista_eos`, `hp_comware`, etc.) over native `SSH` / `Telnet` drivers.
+- Connects to **Aruba AirWave** via **Import from AirWave...**, auto-mapping **OS Type** and hardware models to native Netmiko platforms and keeping AirWave identity fields (**Device Name**, **IP Address**, **Model**, **Group**) read-only while allowing **Netmiko Platform**, **Protocol**, and **Port** edits.
+- Stores **Config** and **Audit and Remediate** snippets centrally with SHA-256 upgrade tracking, XML import/export, `${var|type|regex}` & `${var|["A", "B"]}` parameterized variables, and per-device execution transcripts viewable in-browser or downloadable as `.log`.
 
 ## Quick Start
 
 ```bash
 pip install -r requirements.txt
+composer install
 python main.py --open-browser
 ```
 
-Open **`http://127.0.0.1:8080`** for the web UI and **`http://127.0.0.1:8080/api/docs`** for Swagger UI. You can also run via the standard Py4Web CLI:
+Open **`http://127.0.0.1:8000`** to launch the **3-Step Initial Setup Guide** (`/setup`). Once configured, Swagger UI (when enabled in **Administration → System Settings**) is available at **`http://127.0.0.1:8000/api/docs`**.
+
+You can also serve the app via the Py4Web CLI:
 
 ```bash
-py4web run apps --host 127.0.0.1 --port 8080
+py4web run apps --host 127.0.0.1 --port 8000
 ```
 
-CLI options for `main.py`: `--host 127.0.0.1`, `--port 8080`, `--db-path /custom/path/pssh_ui.db`, `--open-browser`.
-
-Prebuilt portable Windows packages (`pssh-ui-win-x64.zip`) are available on the **[Releases](https://github.com/eduardomozart/pssh-ui/releases/latest)** page — extract the `.zip` archive anywhere and launch `pssh-ui-x64.exe` directly with no temporary-folder extraction.
+CLI options for `main.py`: `--host 127.0.0.1`, `--port 8000`, `--db-path /custom/path/aethernms.db`, `--db-uri postgres://user:pass@host:5432/aethernms`, `--open-browser`.
 
 ## Running Tests
 
 ```bash
 pip install -r requirements-dev.txt
+composer install
 python -m pytest tests/ -v
 ```
 
 ## Documentation & Translations
 
-Full guides and technical architecture details are available in the **[Wiki](https://github.com/eduardomozart/pssh-ui/wiki)** (published from [`wiki/`](wiki/)):
-- **[User Guide](https://github.com/eduardomozart/pssh-ui/wiki/User-Guide)** — Installation, first-time setup, global defaults, AirWave rules, job wizard, and SQLite log downloads
-- **[REST API & Swagger](https://github.com/eduardomozart/pssh-ui/wiki/REST-API)** — OpenAPI 3.0.3, Swagger UI (`/api/docs`), API key authentication, and `curl`/Python examples
-- **[Snippets & Variables](https://github.com/eduardomozart/pssh-ui/wiki/Snippets-and-Variables)** — SQLite-backed snippets, XML import/export, parameterized inputs, and Audit RegEx rules
-- **[Developer Design Choices](https://github.com/eduardomozart/pssh-ui/wiki/Developer-Design-Choices)** — Py4Web + PyDAL SQLite architecture, Carbon v11 UI, Netmiko integration, security, and release packaging
-- **[Localization & Transifex](https://github.com/eduardomozart/pssh-ui/wiki/Localization-and-Transifex)** — Multi-language `.po`/`.mo` catalog workflow
+Full guides, per-page architecture specs, and technical documentation are published on **[GitHub Pages Documentation](https://eduardomozart.github.io/aethernms/)** (built from [`wiki/`](wiki/) for the **User Guide** and [`docs/`](docs/) for the **Developer Guide**):
+- **User Guide** ([`wiki/`](wiki/)) — Installation, 3-step `/setup` guide, multi-backend DB setup, per-user appearance, RBAC, AirWave rules, DataTable filtering, job wizard, log downloads, and REST API / Swagger UI
+- **Developer Guide & Page Specs** ([`docs/`](docs/)) — Py4Web + multi-backend PyDAL architecture, Carbon v11 UI shell, per-page specifications (`docs/pages/*.md`), localization workflow, and security invariants
 
-Help translate **`pssh-ui`** into more languages on **[Transifex](https://app.transifex.com/eduardomozart/pssh-ui/)**.
+Help translate **`aethernms`** into more languages on **[Transifex](https://app.transifex.com/eduardomozart/aethernms/)** (using [`locales/aethernms.pot`](locales/aethernms.pot)).

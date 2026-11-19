@@ -1,1 +1,1 @@
-This wiki is published from the [`wiki/`](https://github.com/eduardomozart/pssh-ui/tree/main/wiki) directory of the repository: to fix or update a page, edit it there.
+This User Guide is published from [`wiki/`](https://github.com/eduardomozart/aethernms/tree/main/wiki); technical architecture and per-page specifications live in [`docs/`](https://github.com/eduardomozart/aethernms/tree/main/docs).

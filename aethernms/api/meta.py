@@ -22,9 +22,13 @@ from aethernms.job_builder import (
     job_platform_choices,
 )
 from aethernms.models import ConnectionProtocol, SnippetSeverity, SnippetType
-from aethernms.netmiko_catalog import get_supported_platforms, get_supported_protocols
+from aethernms.netmiko_catalog import (
+    get_platform_labels,
+    get_supported_platforms,
+    get_supported_protocols,
+)
 from aethernms.os_integration import detect_os_theme
-from aethernms.paths import get_repository_url
+from aethernms.paths import get_docs_base_url, get_repository_url
 
 
 def register_meta_routes(get_ctx: CtxGetter, session: Any) -> None:
@@ -46,22 +50,28 @@ def register_meta_routes(get_ctx: CtxGetter, session: Any) -> None:
         protocols_by_platform = {
             plat: [p.value for p in get_supported_protocols(plat)] for plat in platforms
         }
+        perms = list(user.get("permissions") or [])
         return json_response(
             {
                 "app_name": __app_name__,
                 "version": __version__,
                 "repository_url": get_repository_url(),
+                "docs_base_url": get_docs_base_url(),
                 "user_id": user["id"],
                 "username": user["username"],
                 "display_name": user.get("display_name", ""),
                 "role": user.get("role", "Viewer"),
-                "permissions": list(user.get("permissions") or []),
+                "language": user.get("language", "auto"),
+                "theme_mode": user.get("theme_mode", "auto"),
+                "permissions": perms,
+                "can_manage_users": "users:manage" in perms,
                 "all_permissions": list(ALL_PERMISSIONS),
                 "api_enabled": bool(settings.api_enabled),
                 "client_ip": get_client_ip(),
                 "icons": export_ui_icon_subset(),
                 "os_theme": detect_os_theme(),
                 "platforms": platforms,
+                "platform_labels": get_platform_labels(),
                 "job_platform_choices": job_platform_choices(snippets),
                 "used_platforms": discover_used_platforms(snippets, devices, jobs),
                 "protocols_by_platform": protocols_by_platform,

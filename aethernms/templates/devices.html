@@ -1,67 +1,99 @@
 [[extend 'layout.html']]
 
+<div class="anms-page-header">
+  <nav aria-label="Breadcrumb">
+    <ol class="anms-breadcrumb">
+      <li><a href="/">aether</a></li>
+      <li>/</li>
+      <li aria-current="page" data-i18n="Devices">[[=T("Devices")]]</li>
+    </ol>
+  </nav>
+  <div class="anms-page-header__row">
+    <div class="anms-page-header__main">
+      <h1 class="anms-page-title" data-i18n="Devices">[[=T("Devices")]]</h1>
+    </div>
+  </div>
+</div>
+
 <!-- Devices Inventory & AirWave Integration -->
 <section id="view-devices" class="view-panel active">
-  <div class="cds--tile">
-    <div class="tile-header">
-      <h2 class="tile-title" data-i18n="Devices">Devices</h2>
-      <div class="tile-actions">
-        <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-ping-devices">
+  <div id="dev-global-query-banner" class="cds--inline-notification hidden" style="margin-bottom:0;">
+    <span><strong data-i18n="Global Search Filter:">[[=T("Global Search Filter:")]]</strong> <code id="dev-global-query-text" class="mono"></code></span>
+    <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-clear-global-query" data-i18n="Clear Filter">[[=T("Clear Filter")]]</button>
+  </div>
+
+  <div class="anms-table-container">
+    <div class="anms-dt-toolbar">
+      <div class="anms-dt-search-wrap">
+        <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="devices-dt-search"
+          class="anms-dt-search-input"
+          type="text"
+          placeholder="[[=T('Search table...')]]"
+          data-i18n-placeholder="Search table..."
+          aria-label="[[=T('Search table...')]]"
+        />
+        <button type="button" id="devices-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+          [[=XML(icon("close", 16))]]
+        </button>
+      </div>
+      <div class="anms-dt-toolbar-actions">
+        <div class="anms-dt-filter-wrap">
+          <button type="button" id="devices-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+            [[=XML(icon("filter", 16))]]
+            <span id="devices-filter-badge" class="anms-filter-badge hidden">0</span>
+          </button>
+          <div id="devices-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+            <div class="anms-filter-popover__body">
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-dev-os" data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</label>
+                <select id="flt-dev-os" class="cds--select-input"></select>
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-dev-group" data-i18n="Group">[[=T("Group")]]</label>
+                <input id="flt-dev-group" class="cds--text-input" type="text" />
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-dev-status" data-i18n="Status">[[=T("Status")]]</label>
+                <select id="flt-dev-status" class="cds--select-input"></select>
+              </div>
+            </div>
+            <div class="anms-filter-popover__footer">
+              <button type="button" id="devices-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+              <button type="button" id="devices-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="cds--btn cds--btn--ghost" id="btn-ping-devices">
           [[=XML(icon("renew", 16))]]
-          <span data-i18n="Refresh Status">Refresh Status</span>
+          <span data-i18n="Refresh Status">[[=T("Refresh Status")]]</span>
         </button>
-        <button type="button" class="cds--btn cds--btn--tertiary cds--btn--sm" id="btn-open-airwave">
+        <button type="button" class="cds--btn cds--btn--tertiary" id="btn-open-airwave">
           [[=XML(icon("cloud-download", 16))]]
-          <span data-i18n="Import from AirWave...">Import from AirWave...</span>
+          <span data-i18n="Import from AirWave...">[[=T("Import from AirWave...")]]</span>
         </button>
-        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-device">
+        <button type="button" class="cds--btn cds--btn--primary" id="btn-add-device">
           [[=XML(icon("add", 16))]]
-          <span data-i18n="Add Device">Add Device</span>
+          <span data-i18n="Add Device">[[=T("Add Device")]]</span>
         </button>
       </div>
     </div>
-
-    <div id="dev-global-query-banner" class="cds--inline-notification hidden">
-      <span><strong data-i18n="Global Search Filter:">Global Search Filter:</strong> <code id="dev-global-query-text" class="mono"></code></span>
-      <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="btn-clear-global-query" data-i18n="Clear Filter">Clear Filter</button>
-    </div>
-
-    <div class="filter-bar">
-      <div class="filter-field">
-        <label class="cds--label" for="flt-dev-name" data-i18n="Device">Device</label>
-        <input id="flt-dev-name" class="cds--text-input" type="text" />
-      </div>
-      <div class="filter-field">
-        <label class="cds--label" for="flt-dev-ip" data-i18n="IP Address">IP Address</label>
-        <input id="flt-dev-ip" class="cds--text-input" type="text" />
-      </div>
-      <div class="filter-field compact">
-        <label class="cds--label" for="flt-dev-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
-        <select id="flt-dev-os" class="cds--select-input"></select>
-      </div>
-      <div class="filter-field">
-        <label class="cds--label" for="flt-dev-group" data-i18n="Group">Group</label>
-        <input id="flt-dev-group" class="cds--text-input" type="text" />
-      </div>
-      <div class="filter-field compact">
-        <label class="cds--label" for="flt-dev-status" data-i18n="Status">Status</label>
-        <select id="flt-dev-status" class="cds--select-input"></select>
-      </div>
-    </div>
+    <div id="devices-active-filters" class="anms-active-filters hidden"></div>
 
     <div class="table-wrap">
       <table class="cds--data-table">
         <thead>
           <tr>
-            <th data-i18n="Device">Device</th>
-            <th data-i18n="Status">Status</th>
-            <th data-i18n="IP Address">IP Address</th>
-            <th data-i18n="Netmiko Platform">Netmiko Platform</th>
-            <th data-i18n="Protocol">Protocol</th>
-            <th data-i18n="Port">Port</th>
-            <th data-i18n="Model">Model</th>
-            <th data-i18n="Group">Group</th>
-            <th class="col-actions" data-i18n="Action">Action</th>
+            <th data-i18n="Device">[[=T("Device")]]</th>
+            <th data-i18n="Status">[[=T("Status")]]</th>
+            <th data-i18n="IP Address">[[=T("IP Address")]]</th>
+            <th data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</th>
+            <th data-i18n="Protocol">[[=T("Protocol")]]</th>
+            <th data-i18n="Port">[[=T("Port")]]</th>
+            <th data-i18n="Model">[[=T("Model")]]</th>
+            <th data-i18n="Group">[[=T("Group")]]</th>
+            <th class="col-actions" data-i18n="Action">[[=T("Action")]]</th>
           </tr>
         </thead>
         <tbody id="devices-tbody"></tbody>

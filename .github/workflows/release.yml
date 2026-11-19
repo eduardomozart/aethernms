@@ -50,7 +50,7 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onedir --icon assets/aethernms.ico --name aethernms-x64 --collect-all py4web --collect-all pydal --collect-all yatl --collect-all ombott --collect-all renoir --collect-all rocket3 --collect-all netmiko --add-data "aethernms/templates;aethernms/templates" --add-data "aethernms/static;aethernms/static" --add-data "snippets;snippets" --add-data "locales;locales" --add-data "assets;assets" --hidden-import airwaveapiclient main.py
+        pyinstaller --onedir --name aethernms-x64 --icon=assets/favicon.ico --collect-all py4web --collect-all pydal --collect-all yatl --collect-all ombott --collect-all renoir --collect-all rocket3 --collect-all netmiko --add-data "aethernms/templates;aethernms/templates" --add-data "aethernms/static;aethernms/static" --add-data "assets;assets" --add-data "snippets;snippets" --add-data "locales;locales" --hidden-import airwaveapiclient main.py
 
     - name: Prepare Release Package
       run: |

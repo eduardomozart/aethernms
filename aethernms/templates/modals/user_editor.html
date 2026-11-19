@@ -1,9 +1,9 @@
-<!-- User Editor Modal -->
+<!-- User Editor Modal (includes per-user Appearance settings & self-profile support) -->
 <div id="modal-user-editor" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
   <div class="cds--modal-container">
     <div class="cds--modal-header">
-      <h3 id="modal-user-title" class="cds--modal-header__heading" data-i18n="Add User">Add User</h3>
-      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+      <h3 id="modal-user-title" class="cds--modal-header__heading" data-i18n="Add User">[[=T("Add User")]]</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="[[=T('Close')]]">
         [[=XML(icon("close", 20))]]
       </button>
     </div>
@@ -11,33 +11,46 @@
       <div id="user-editor-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
       <div class="form-grid">
         <div class="cds--form-item">
-          <label class="cds--label" for="usr-username" data-i18n="Username *">Username *</label>
+          <label class="cds--label" for="usr-username" data-i18n="Username *">[[=T("Username *")]]</label>
           <input id="usr-username" class="cds--text-input" type="text" autocomplete="off" />
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="usr-display-name" data-i18n="Display Name">Display Name</label>
+          <label class="cds--label" for="usr-display-name" data-i18n="Display Name">[[=T("Display Name")]]</label>
           <input id="usr-display-name" class="cds--text-input" type="text" autocomplete="off" />
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="usr-role" data-i18n="Role *">Role *</label>
+          <label class="cds--label" for="usr-role" data-i18n="Role *">[[=T("Role *")]]</label>
           <select id="usr-role" class="cds--select-input"></select>
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="usr-password" id="usr-password-label" data-i18n="Password *">Password *</label>
+          <label class="cds--label" for="usr-lang" data-i18n="Language">[[=T("Language")]]</label>
+          <select id="usr-lang" class="cds--select-input"></select>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-theme" data-i18n="Theme">[[=T("Theme")]]</label>
+          <select id="usr-theme" class="cds--select-input"></select>
+        </div>
+        <div id="usr-cur-password-wrap" class="cds--form-item hidden">
+          <label class="cds--label" for="usr-cur-password" data-i18n="Current Password">[[=T("Current Password")]]</label>
+          <input id="usr-cur-password" class="cds--text-input" type="password" autocomplete="current-password" />
+          <span class="cds--helper-text" data-i18n="Required only when changing your password.">[[=T("Required only when changing your password.")]]</span>
+        </div>
+        <div class="cds--form-item">
+          <label class="cds--label" for="usr-password" id="usr-password-label" data-i18n="Password *">[[=T("Password *")]]</label>
           <input id="usr-password" class="cds--text-input" type="password" autocomplete="new-password" />
-          <span id="usr-password-hint" class="cds--helper-text hidden" data-i18n="Leave blank to keep existing password.">Leave blank to keep existing password.</span>
+          <span id="usr-password-hint" class="cds--helper-text hidden" data-i18n="Leave blank to keep existing password.">[[=T("Leave blank to keep existing password.")]]</span>
         </div>
         <div class="cds--form-item span-2">
           <label class="checkbox-label">
             <input id="usr-active" type="checkbox" checked />
-            <span data-i18n="Active Account">Active Account</span>
+            <span data-i18n="Active Account">[[=T("Active Account")]]</span>
           </label>
         </div>
       </div>
     </div>
     <div class="cds--modal-footer">
-      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
-      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-user" data-i18n="Save">Save</button>
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">[[=T("Cancel")]]</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-user" data-i18n="Save">[[=T("Save")]]</button>
     </div>
   </div>
 </div>

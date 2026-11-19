@@ -74,7 +74,9 @@ def register_roles_routes(get_ctx: CtxGetter, session: Any) -> None:
                 description=str(body["description"]).strip() if "description" in body else None,
             )
         except ValueError as exc:
-            return json_error(400, str(exc))
+            msg = str(exc)
+            status = 403 if "read-only" in msg.lower() else 400
+            return json_error(status, msg)
         if updated is None:
             return json_error(404, "Role not found.")
         return json_response(updated)
@@ -89,7 +91,9 @@ def register_roles_routes(get_ctx: CtxGetter, session: Any) -> None:
         try:
             deleted = ctx.db.delete_role(role_id)
         except ValueError as exc:
-            return json_error(400, str(exc))
+            msg = str(exc)
+            status = 403 if "system role" in msg.lower() else 400
+            return json_error(status, msg)
         if not deleted:
             return json_error(404, "Role not found.")
         return json_response({"ok": True})

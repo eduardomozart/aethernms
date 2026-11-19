@@ -1,6 +1,6 @@
 """Tests for job_builder platform filtering, dynamic assigned models/groups, and validation."""
 
-from pssh_ui.job_builder import (
+from aethernms.job_builder import (
     build_commands_for_job,
     discover_used_platforms,
     filter_hosts_by_platform,
@@ -9,7 +9,7 @@ from pssh_ui.job_builder import (
     job_platform_choices,
     validate_job_inputs,
 )
-from pssh_ui.models import ConnectionProtocol, HostEntry, Snippet
+from aethernms.models import ConnectionProtocol, HostEntry, Snippet
 
 
 def test_get_assigned_models_and_groups_track_active_devices():

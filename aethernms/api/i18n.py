@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from py4web.core import action, request
 
@@ -12,21 +12,27 @@ from aethernms.api.common import (
     json_response,
     require_api_user,
 )
-from aethernms.i18n import available_languages, export_translations, get_language_label
+from aethernms.i18n import available_languages, get_catalog, get_language_label
+from aethernms.models import AppSettings
 
 
-def build_i18n_payload(ctx: Any, requested_lang: str = "") -> Dict[str, Any]:
+def build_i18n_payload(
+    ctx: Any,
+    requested_lang: str = "",
+    user: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """Return UI translation catalog and available locale metadata."""
-    settings = ctx.db.get_settings()
-    eff = effective_language(settings, requested_lang=requested_lang)
+    settings = ctx.db.get_settings() if ctx.db is not None else AppSettings()
+    eff = effective_language(settings, requested_lang=requested_lang, user=user)
     langs = available_languages()
+    pref_lang = str(user.get("language") or "auto") if user is not None else settings.language
     return {
-        "language": settings.language,
+        "language": pref_lang,
         "effective_language": eff,
         "available_languages": [
             {"code": code, "label": get_language_label(code)} for code in langs
         ],
-        "catalog": export_translations(eff),
+        "catalog": dict(get_catalog(eff)),
     }
 
 
@@ -37,8 +43,8 @@ def register_i18n_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_i18n():
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session)
+        user, err = require_api_user(ctx, session)
         if err:
             return err
         req_lang = str(request.query.get("lang") or "").strip()
-        return json_response(build_i18n_payload(ctx, requested_lang=req_lang))
+        return json_response(build_i18n_payload(ctx, requested_lang=req_lang, user=user))

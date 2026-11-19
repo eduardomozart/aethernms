@@ -3,8 +3,8 @@
 from datetime import datetime
 from pathlib import Path
 
-from pssh_ui.logger import create_run_log_dir, sanitize_log_filename, write_host_log
-from pssh_ui.models import CommandStepResult, ConnectionProtocol, HostEntry, HostExecutionResult
+from aethernms.logger import create_run_log_dir, sanitize_log_filename, write_host_log
+from aethernms.models import CommandStepResult, ConnectionProtocol, HostEntry, HostExecutionResult
 
 
 def test_log_directory_uses_yyyy_mm_dd_hh_mm_ss_and_host_filename(tmp_path: Path):

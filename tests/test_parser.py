@@ -1,6 +1,6 @@
 """Tests for ! comment parsing and Aruba CLI error detection."""
 
-from pssh_ui.parser import detect_output_errors, parse_commands, validate_audit_regex
+from aethernms.parser import detect_output_errors, parse_commands, validate_audit_regex
 
 
 def test_parse_commands_ignores_bang_comments_and_preserves_inline_bang():

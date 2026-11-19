@@ -1,4 +1,4 @@
-/* Shared IBM Carbon v11 UI core, REST API client, RBAC, Global Device Search, SideNav, i18n, and modals for aethernms */
+/* Shared IBM Carbon v11 UI core, REST API client, RBAC, Global Device Search, SideNav Rail, DataTable Toolbar, i18n, and modals for aethernms */
 
 (function () {
   "use strict";
@@ -14,18 +14,30 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // Hydrate SSR translation catalog immediately so dynamic UI helpers have strings before async fetches settle.
+  try {
+    const initEl = $("anms-initial-i18n");
+    if (initEl && initEl.textContent) {
+      const parsed = JSON.parse(initEl.textContent);
+      if (parsed && typeof parsed === "object") {
+        shared.i18n = parsed;
+      }
+    }
+  } catch (_e) {}
+
   const FALLBACK_ICONS = {
     "trash-can": '<path d="M12 12h2v12h-2zm6 0h2v12h-2z"/><path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20zm4-26h8v2h-8z"/>',
     edit: '<path d="M2 26h28v2H2zM25.4 9c.8-.8.8-2 0-2.8l-3.6-3.6c-.8-.8-2-.8-2.8 0l-15 15V24h6.4l15-15zm-5-5L24 7.6l-3 3L17.4 7l3-3zM6 22v-3.6l10-10l3.6 3.6l-10 10H6z"/>',
+    view: '<path d="M30.94 15.66A16.69 16.69 0 0 0 16 5A16.69 16.69 0 0 0 1.06 15.66a1 1 0 0 0 0 .68A16.69 16.69 0 0 0 16 27a16.69 16.69 0 0 0 14.94-10.66a1 1 0 0 0 0-.68ZM16 25c-5.3 0-10.9-3.93-12.93-9C5.1 10.93 10.7 7 16 7s10.9 3.93 12.93 9C26.9 21.07 21.3 25 16 25Z"/><path d="M16 10a6 6 0 1 0 6 6a6 6 0 0 0-6-6Zm0 10a4 4 0 1 1 4-4a4 4 0 0 1-4 4Z"/>',
     renew: '<path d="M12 10H6.78A11 11 0 0 1 27 16h2A13 13 0 0 0 6 7.68V4H4v8h8zm8 12h5.22A11 11 0 0 1 5 16H3a13 13 0 0 0 23 8.32V28h2v-8h-8z"/>',
     "stop-outline": '<path d="M16 4A12 12 0 1 1 4 16A12 12 0 0 1 16 4m0-2a14 14 0 1 0 14 14A14 14 0 0 0 16 2z"/><path d="M12 12h8v8h-8z"/>',
     document: '<path d="m25.7 9.3l-7-7c-.2-.2-.4-.3-.7-.3H8c-1.1 0-2 .9-2 2v24c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V10c0-.3-.1-.5-.3-.7zM18 4.4l5.6 5.6H18V4.4zM24 28H8V4h8v6c0 1.1.9 2 2 2h6v16z"/><path d="M10 22h12v2H10zm0-6h12v2H10z"/>',
-    "checkmark-filled": '<path d="M16 2a14 14 0 1 0 14 14A14 14 0 0 0 16 2zm-2 19.59l-5-5L10.59 15L14 18.41L21.41 11l1.596 1.586z"/>',
     "error-filled": '<path d="M16 2C8.2 2 2 8.2 2 16s6.2 14 14 14s14-6.2 14-14S23.8 2 16 2zm5.4 21L9 10.6L10.6 9L23 21.4L21.4 23z"/>',
     "page-first": '<path d="M14 16L24 6l1.4 1.4L16.8 16l8.6 8.6L24 26zM8 4h2v24H8z"/>',
     "page-last": '<path d="M18 16L8 26l-1.4-1.4l8.6-8.6l-8.6-8.6L8 6zM22 4h2v24h-2z"/>',
     "chevron-left": '<path d="M10 16L20 6l1.4 1.4l-8.6 8.6l8.6 8.6L20 26z"/>',
     "chevron-right": '<path d="M22 16L12 26l-1.4-1.4l8.6-8.6l-8.6-8.6L12 6z"/>',
+    close: '<path d="M24 9.4L22.6 8L16 14.6L9.4 8L8 9.4l6.6 6.6L8 22.6L9.4 24l6.6-6.6l6.6 6.6l1.4-1.4l-6.6-6.6L24 9.4z"/>',
   };
 
   function icon(name, size) {
@@ -34,8 +46,6 @@
     const body = map[name] || FALLBACK_ICONS[name] || "";
     return `<svg viewBox="0 0 32 32" width="${sz}" height="${sz}" fill="currentColor" focusable="false" aria-hidden="true">${body}</svg>`;
   }
-
-  const TRASH_SVG = icon("trash-can", 16);
 
   function hasPermission(perm) {
     if (!perm) return true;
@@ -51,6 +61,18 @@
       }
     }
     return text;
+  }
+
+  function platformLabel(key) {
+    if (!key) return "-";
+    const map = (shared.meta && shared.meta.platform_labels) || {};
+    return map[key] || key;
+  }
+
+  function platformOptions(keys) {
+    return (keys || [])
+      .map((k) => ({ value: k, label: platformLabel(k) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }
 
   function escHtml(str) {
@@ -122,6 +144,10 @@
     const res = await fetch(path, options);
     const ctype = (res.headers.get("Content-Type") || "").toLowerCase();
     const data = ctype.includes("application/json") ? await res.json() : await res.text();
+    if (res.status === 503 && data && data.setup_required) {
+      window.location.href = "/setup";
+      throw new Error("Initial setup required");
+    }
     if (res.status === 401 || (res.status === 403 && data && data.auth_required)) {
       redirectToLogin();
       throw new Error("Authentication required");
@@ -158,7 +184,13 @@
     document.querySelectorAll("[data-i18n-title]").forEach((el) => {
       el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
     });
-    document.title = `aethernms — ${t("Config & Audit Automation")}`;
+    document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+      el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria-label")));
+    });
+    const pageKey = document.documentElement.getAttribute("data-page-title");
+    if (pageKey) {
+      document.title = `${t(pageKey)} - aether`;
+    }
   }
 
   function statusTagHtml(status) {
@@ -190,18 +222,18 @@
     }
   }
 
-  // ---------- Modal Manager (Esc closes topmost modal via Cancel/Close) ----------
+  // ---------- Modal Manager (syncs .open and Carbon .is-visible; Esc closes topmost modal) ----------
   function openModal(id) {
     const el = $(id);
     if (!el) return;
-    el.classList.add("open");
+    el.classList.add("open", "is-visible");
     shared.modalStack = shared.modalStack.filter((m) => m !== id);
     shared.modalStack.push(id);
   }
 
   function closeModal(id) {
     const el = $(id);
-    if (el) el.classList.remove("open");
+    if (el) el.classList.remove("open", "is-visible");
     shared.modalStack = shared.modalStack.filter((m) => m !== id);
   }
 
@@ -232,6 +264,176 @@
     okBtn.className = `cds--btn ${isDanger ? "cds--btn--danger" : "cds--btn--primary"}`;
     shared.confirmCallback = onConfirm;
     openModal("modal-confirm");
+  }
+
+  // ---------- Reusable Carbon DataTable Toolbar + Popover Filter Controller ----------
+  function wireDataTableToolbar(cfg) {
+    const searchEl = $(cfg.searchInputId);
+    const clearEl = cfg.searchClearId ? $(cfg.searchClearId) : null;
+    const filterBtn = cfg.filterBtnId ? $(cfg.filterBtnId) : null;
+    const filterBadge = cfg.filterBadgeId ? $(cfg.filterBadgeId) : null;
+    const popoverEl = cfg.popoverId ? $(cfg.popoverId) : null;
+    const applyBtn = cfg.applyBtnId ? $(cfg.applyBtnId) : null;
+    const resetBtn = cfg.resetBtnId ? $(cfg.resetBtnId) : null;
+    const chipsEl = cfg.chipsContainerId ? $(cfg.chipsContainerId) : null;
+    const fields = cfg.fields || [];
+
+    function updateClearBtn() {
+      if (clearEl && searchEl) {
+        clearEl.classList.toggle("hidden", !searchEl.value);
+      }
+    }
+
+    function renderChips() {
+      const active = [];
+      fields.forEach((f) => {
+        const el = $(f.id);
+        if (!el) return;
+        const val = String(el.value || "").trim();
+        const def = String(f.defaultVal != null ? f.defaultVal : "");
+        if (val && val !== def) {
+          const displayVal = f.formatValue ? f.formatValue(val, el) : val;
+          active.push({ field: f, val, displayVal });
+        }
+      });
+
+      if (filterBadge) {
+        filterBadge.textContent = String(active.length);
+        filterBadge.classList.toggle("hidden", active.length === 0);
+      }
+      if (!chipsEl) return;
+
+      const searchVal = searchEl ? searchEl.value.trim() : "";
+      if (!active.length && !searchVal) {
+        chipsEl.innerHTML = "";
+        chipsEl.classList.add("hidden");
+        return;
+      }
+
+      const chipsHtml = active
+        .map(
+          (item) => `
+          <span class="anms-filter-chip" data-fid="${escHtml(item.field.id)}">
+            <span>${escHtml(t(item.field.labelKey))}: <strong>${escHtml(item.displayVal)}</strong></span>
+            <button type="button" class="anms-chip-remove" data-fid="${escHtml(item.field.id)}" title="${escHtml(t("Clear"))}">
+              ${icon("close", 12)}
+            </button>
+          </span>`
+        )
+        .join("");
+
+      const clearAllHtml = `<button type="button" class="anms-filter-clear-all">${escHtml(t("Clear Filters"))}</button>`;
+      chipsEl.innerHTML = chipsHtml + clearAllHtml;
+      chipsEl.classList.remove("hidden");
+
+      chipsEl.querySelectorAll(".anms-chip-remove").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const fid = btn.getAttribute("data-fid");
+          const spec = fields.find((f) => f.id === fid);
+          const el = $(fid);
+          if (el && spec) {
+            el.value = spec.defaultVal != null ? String(spec.defaultVal) : "";
+          }
+          renderChips();
+          if (cfg.onChange) cfg.onChange();
+        });
+      });
+
+      const clearAllBtn = chipsEl.querySelector(".anms-filter-clear-all");
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener("click", () => resetAll());
+      }
+    }
+
+    function resetAll() {
+      if (searchEl) searchEl.value = "";
+      updateClearBtn();
+      fields.forEach((f) => {
+        const el = $(f.id);
+        if (el) el.value = f.defaultVal != null ? String(f.defaultVal) : "";
+      });
+      if (popoverEl) popoverEl.classList.add("hidden");
+      if (filterBtn) filterBtn.classList.remove("active");
+      renderChips();
+      if (cfg.onChange) cfg.onChange();
+    }
+
+    if (searchEl) {
+      searchEl.addEventListener("input", () => {
+        updateClearBtn();
+        renderChips();
+        if (cfg.onChange) cfg.onChange();
+      });
+    }
+    if (clearEl && searchEl) {
+      clearEl.addEventListener("click", () => {
+        searchEl.value = "";
+        updateClearBtn();
+        renderChips();
+        if (cfg.onChange) cfg.onChange();
+        searchEl.focus();
+      });
+    }
+
+    if (filterBtn && popoverEl) {
+      filterBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const willOpen = popoverEl.classList.contains("hidden");
+        popoverEl.classList.toggle("hidden", !willOpen);
+        filterBtn.classList.toggle("active", willOpen);
+      });
+
+      document.addEventListener("click", (ev) => {
+        if (
+          !popoverEl.classList.contains("hidden") &&
+          !popoverEl.contains(ev.target) &&
+          !filterBtn.contains(ev.target)
+        ) {
+          popoverEl.classList.add("hidden");
+          filterBtn.classList.remove("active");
+        }
+      });
+
+      document.addEventListener("keydown", (ev) => {
+        if (
+          ev.key === "Escape" &&
+          shared.modalStack.length === 0 &&
+          !popoverEl.classList.contains("hidden")
+        ) {
+          popoverEl.classList.add("hidden");
+          filterBtn.classList.remove("active");
+        }
+      });
+    }
+
+    if (applyBtn) {
+      applyBtn.addEventListener("click", () => {
+        if (popoverEl) popoverEl.classList.add("hidden");
+        if (filterBtn) filterBtn.classList.remove("active");
+        renderChips();
+        if (cfg.onChange) cfg.onChange();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => resetAll());
+    }
+
+    // Immediate update on select/enter inside popover if desired, plus chip sync
+    fields.forEach((f) => {
+      const el = $(f.id);
+      if (!el) return;
+      el.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" && applyBtn) {
+          ev.preventDefault();
+          applyBtn.click();
+        }
+      });
+    });
+
+    updateClearBtn();
+    renderChips();
+    return { sync: renderChips, reset: resetAll };
   }
 
   // ---------- Reusable Pagination ----------
@@ -298,7 +500,7 @@
     shared.settings = settingsData;
     shared.meta = metaData;
 
-    applyTheme(shared.settings.theme_mode);
+    applyTheme(shared.meta.theme_mode || shared.settings.theme_mode);
     applyI18nDom();
     if ($("hdr-username")) $("hdr-username").textContent = shared.meta.username || "";
     if ($("hdr-user-role")) $("hdr-user-role").textContent = shared.meta.role || "";
@@ -307,27 +509,26 @@
     }
   }
 
-  // ---------- SideNav & Global Device Search ----------
+  // ---------- SideNav Rail & Global Device Search ----------
   function wireSideNav() {
     const sidenav = $("app-sidenav");
     const toggleBtn = $("btn-toggle-sidenav");
     if (sidenav && toggleBtn) {
-      const setOpen = (isOpen) => {
-        sidenav.classList.toggle("cds--side-nav--expanded", isOpen);
-        sidenav.classList.toggle("cds--side-nav--hidden", !isOpen);
-        toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      const setPinned = (isPinned) => {
+        sidenav.classList.toggle("cds--side-nav--expanded", isPinned);
+        toggleBtn.setAttribute("aria-expanded", isPinned ? "true" : "false");
         try {
-          sessionStorage.setItem("anms_sidenav_open", isOpen ? "1" : "0");
+          sessionStorage.setItem("anms_sidenav_pinned", isPinned ? "1" : "0");
         } catch (_e) {}
       };
       try {
-        if (sessionStorage.getItem("anms_sidenav_open") === "0") {
-          setOpen(false);
-        }
-      } catch (_e) {}
+        setPinned(sessionStorage.getItem("anms_sidenav_pinned") === "1");
+      } catch (_e) {
+        setPinned(false);
+      }
       toggleBtn.addEventListener("click", () => {
-        const currentlyOpen = sidenav.classList.contains("cds--side-nav--expanded");
-        setOpen(!currentlyOpen);
+        const currentlyPinned = sidenav.classList.contains("cds--side-nav--expanded");
+        setPinned(!currentlyPinned);
       });
     }
 
@@ -369,7 +570,7 @@
           <a class="anms-search-item" href="/devices?highlight=${encodeURIComponent(d.id)}&q=${encodeURIComponent(query)}">
             <div class="anms-search-item-main">
               <span class="anms-search-item-title">${escHtml(d.display_label)}</span>
-              <span class="anms-search-item-sub mono">${escHtml(d.ip)}:${escHtml(d.port)} (${escHtml(d.os_type || "-")})${d.folder_path ? ` · ${escHtml(d.folder_path)}` : ""}</span>
+              <span class="anms-search-item-sub mono">${escHtml(d.ip)}:${escHtml(d.port)} (${escHtml(d.os_type_label || platformLabel(d.os_type) || "-")})${d.folder_path ? ` · ${escHtml(d.folder_path)}` : ""}</span>
             </div>
             <div>${statusTagHtml(d.ping_status || "Unknown")}</div>
           </a>`
@@ -446,54 +647,6 @@
       });
     }
 
-    if ($("btn-open-about")) {
-      $("btn-open-about").addEventListener("click", () => {
-        const meta = shared.meta || {};
-        $("about-title").textContent = t("About {app}", { app: meta.app_name || "aethernms" });
-        $("about-version").textContent = `${meta.version || "DEV_BUILD"} — ${t("Config & Audit Automation")}`;
-        $("about-repo").textContent = meta.repository_url || "";
-        $("about-repo").href = meta.repository_url || "#";
-        openModal("modal-about");
-      });
-    }
-
-    if ($("btn-open-account")) {
-      $("btn-open-account").addEventListener("click", () => {
-        const meta = shared.meta || {};
-        if ($("acc-username")) $("acc-username").textContent = meta.username || "";
-        if ($("acc-role")) $("acc-role").textContent = meta.role || "";
-        if ($("pw-msg")) $("pw-msg").classList.add("hidden");
-        if ($("pw-cur")) $("pw-cur").value = "";
-        if ($("pw-new")) $("pw-new").value = "";
-        openModal("modal-account");
-      });
-    }
-
-    if ($("btn-change-pw")) {
-      $("btn-change-pw").addEventListener("click", async () => {
-        const msg = $("pw-msg");
-        msg.classList.add("hidden");
-        try {
-          await api("/account/password", {
-            method: "POST",
-            body: {
-              current_password: $("pw-cur").value,
-              new_password: $("pw-new").value,
-            },
-          });
-          $("pw-cur").value = "";
-          $("pw-new").value = "";
-          msg.className = "cds--inline-notification cds--inline-notification--success";
-          msg.textContent = t("Password updated successfully.");
-          msg.classList.remove("hidden");
-        } catch (err) {
-          msg.className = "cds--inline-notification cds--inline-notification--error";
-          msg.textContent = err.message;
-          msg.classList.remove("hidden");
-        }
-      });
-    }
-
     if ($("btn-logout")) {
       $("btn-logout").addEventListener("click", async () => {
         try {
@@ -519,9 +672,10 @@
     state: shared,
     $,
     icon,
-    TRASH_SVG,
     hasPermission,
     t,
+    platformLabel,
+    platformOptions,
     escHtml,
     highlightCliHtml,
     toast,
@@ -533,10 +687,10 @@
     openModal,
     closeModal,
     showConfirm,
+    wireDataTableToolbar,
     renderPagination,
     pingDevices,
     loadCoreData,
     bootstrap,
   };
-  window.PsshUI = window.AetherNMS;
 })();

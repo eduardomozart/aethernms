@@ -143,10 +143,10 @@ def register_devices_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_list_devices():
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session, permission="devices:read")
+        user, err = require_api_user(ctx, session, permission="devices:read")
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         hosts = ctx.db.list_devices()
         _indexed, filtered = filter_device_hosts(
             hosts,

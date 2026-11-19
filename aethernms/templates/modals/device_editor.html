@@ -2,50 +2,50 @@
 <div id="modal-device" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
   <div class="cds--modal-container">
     <div class="cds--modal-header">
-      <h3 id="modal-device-title" class="cds--modal-header__heading" data-i18n="Add Device">Add Device</h3>
-      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+      <h3 id="modal-device-title" class="cds--modal-header__heading" data-i18n="Add Device">[[=T("Add Device")]]</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="[[=T('Close')]]">
         [[=XML(icon("close", 20))]]
       </button>
     </div>
     <div class="cds--modal-content">
-      <div id="dev-airwave-note" class="cds--inline-notification hidden" data-i18n="AirWave-managed device: Device Name, IP, Model, and Group are read-only. Netmiko Platform, Protocol, and Port can be edited."></div>
+      <div id="dev-airwave-note" class="cds--inline-notification hidden" data-i18n="AirWave-managed device: Device Name, IP, Model, and Group are read-only. Netmiko Platform, Protocol, and Port can be edited.">[[=T("AirWave-managed device: Device Name, IP, Model, and Group are read-only. Netmiko Platform, Protocol, and Port can be edited.")]]</div>
       <div id="dev-err" class="cds--inline-notification cds--inline-notification--error hidden"></div>
       <div class="form-grid">
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-name" data-i18n="Device Name">Device Name</label>
+          <label class="cds--label" for="dev-name" data-i18n="Device Name">[[=T("Device Name")]]</label>
           <input id="dev-name" class="cds--text-input" type="text" />
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-ip" data-i18n="IP Address *">IP Address *</label>
+          <label class="cds--label" for="dev-ip" data-i18n="IP Address *">[[=T("IP Address *")]]</label>
           <input id="dev-ip" class="cds--text-input" type="text" />
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-model" data-i18n="Model">Model</label>
+          <label class="cds--label" for="dev-model" data-i18n="Model">[[=T("Model")]]</label>
           <input id="dev-model" class="cds--text-input" type="text" list="dl-models" />
           <datalist id="dl-models"></datalist>
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-os" data-i18n="Netmiko Platform *">Netmiko Platform *</label>
+          <label class="cds--label" for="dev-os" data-i18n="Netmiko Platform *">[[=T("Netmiko Platform *")]]</label>
           <select id="dev-os" class="cds--select-input"></select>
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-proto" data-i18n="Protocol *">Protocol *</label>
+          <label class="cds--label" for="dev-proto" data-i18n="Protocol *">[[=T("Protocol *")]]</label>
           <select id="dev-proto" class="cds--select-input"></select>
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" for="dev-port" data-i18n="Port *">Port *</label>
+          <label class="cds--label" for="dev-port" data-i18n="Port *">[[=T("Port *")]]</label>
           <input id="dev-port" class="cds--text-input" type="number" min="1" max="65535" />
         </div>
         <div class="cds--form-item span-2">
-          <label class="cds--label" for="dev-group" data-i18n="Group">Group</label>
+          <label class="cds--label" for="dev-group" data-i18n="Group">[[=T("Group")]]</label>
           <input id="dev-group" class="cds--text-input" type="text" list="dl-groups" />
           <datalist id="dl-groups"></datalist>
         </div>
       </div>
     </div>
     <div class="cds--modal-footer">
-      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
-      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-device" data-i18n="Save">Save</button>
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">[[=T("Cancel")]]</button>
+      <button type="button" class="cds--btn cds--btn--primary" id="btn-save-device" data-i18n="Save">[[=T("Save")]]</button>
     </div>
   </div>
 </div>

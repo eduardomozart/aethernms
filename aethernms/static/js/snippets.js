@@ -1,24 +1,40 @@
-/* Snippets page controller: Snippets CRUD, CLI syntax preview, and XML Import/Export */
+/* Snippets page controller: Built-in read-only templates, Custom Snippets CRUD, CLI syntax preview, and XML Import/Export */
 
 (function () {
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, escHtml, highlightCliHtml, toast, api, fillSelect, openModal, closeModal, showConfirm, renderPagination, icon, hasPermission } = UI;
+  const {
+    $,
+    t,
+    platformLabel,
+    platformOptions,
+    escHtml,
+    highlightCliHtml,
+    toast,
+    api,
+    fillSelect,
+    openModal,
+    closeModal,
+    showConfirm,
+    wireDataTableToolbar,
+    renderPagination,
+    icon,
+    hasPermission,
+  } = UI;
 
   const page = {
     snippets: [],
     selectedSnippetId: null,
     editingSnippetId: null,
+    toolbar: null,
     pagination: { page: 1, size: 25 },
   };
 
   function populateFilterDropdowns() {
     const meta = UI.state.meta || {};
     const usedPlatforms = meta.used_platforms || [];
-    const osOpts = [{ value: "All", label: t("All") }].concat(
-      usedPlatforms.map((p) => ({ value: p, label: p }))
-    );
+    const osOpts = [{ value: "All", label: t("All") }].concat(platformOptions(usedPlatforms));
     const typeOpts = [
       { value: "All", label: t("All") },
       { value: "Config", label: t("Config") },
@@ -34,6 +50,7 @@
     fillSelect($("flt-snip-type"), typeOpts, true);
     fillSelect($("flt-snip-sev"), sevOpts, true);
     fillSelect($("flt-snip-os"), osOpts, true);
+    if (page.toolbar) page.toolbar.sync();
   }
 
   async function reloadPageData() {
@@ -47,18 +64,23 @@
   }
 
   function renderSnippetsView() {
-    const nameQ = $("flt-snip-name").value.trim().toLowerCase();
+    const q = ($("snippets-dt-search") ? $("snippets-dt-search").value : "").trim().toLowerCase();
     const typeQ = $("flt-snip-type").value || "All";
     const sevQ = $("flt-snip-sev").value || "All";
     const osQ = $("flt-snip-os").value || "All";
-    const descQ = $("flt-snip-desc").value.trim().toLowerCase();
 
     const filtered = page.snippets.filter((s) => {
-      if (nameQ && !(s.name || "").toLowerCase().includes(nameQ)) return false;
+      if (q) {
+        const platDisp = s.device_type_label || platformLabel(s.device_type);
+        const hay = [s.name, s.description, s.commands, s.device_type, platDisp, t(s.snippet_type), s.severity]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       if (typeQ !== "All" && s.snippet_type !== typeQ) return false;
       if (sevQ !== "All" && s.severity !== sevQ) return false;
       if (osQ !== "All" && s.device_type !== osQ) return false;
-      if (descQ && !(s.description || "").toLowerCase().includes(descQ)) return false;
       return true;
     });
 
@@ -75,21 +97,33 @@
     } else {
       const canWrite = hasPermission("snippets:write");
       tbody.innerHTML = pageItems
-        .map(
-          (s) => `
+        .map((s) => {
+          const isBuiltin = Boolean(s.is_builtin);
+          const platDisp = s.device_type_label || platformLabel(s.device_type);
+          const builtinTag = isBuiltin
+            ? ` <span class="cds--tag cds--tag--purple">${escHtml(t("Built-in"))}</span>`
+            : "";
+          const showEdit = canWrite && !isBuiltin;
+          const actBtn = showEdit
+            ? `<button type="button" class="cds--btn--icon act-snip-edit" data-id="${s.id}" title="${escHtml(t("Edit"))}">${icon("edit", 16)}</button>`
+            : `<button type="button" class="cds--btn--icon act-snip-edit" data-id="${s.id}" title="${escHtml(t("View"))}">${icon("view", 16)}</button>`;
+          const delBtn = showEdit
+            ? `<button type="button" class="cds--btn--icon danger act-snip-del" data-id="${s.id}" title="${escHtml(t("Delete"))}">${icon("trash-can", 16)}</button>`
+            : "";
+          return `
         <tr class="${s.id === page.selectedSnippetId ? "selected" : ""}" data-snip-id="${s.id}">
-          <td><strong>${escHtml(s.name)}</strong></td>
+          <td><strong>${escHtml(s.name)}</strong>${builtinTag}</td>
           <td>${escHtml(t(s.snippet_type))}</td>
           <td>${escHtml(s.severity)}</td>
-          <td class="mono">${escHtml(s.device_type)}</td>
+          <td>${escHtml(platDisp)}</td>
           <td class="nowrap">${escHtml(s.created_at || "-")}</td>
           <td>${escHtml(s.description || "")}</td>
           <td class="col-actions">
-            ${canWrite ? `<button type="button" class="cds--btn--icon act-snip-edit" data-id="${s.id}" title="${escHtml(t("Edit"))}">${icon("edit", 16)}</button>` : ""}
-            ${canWrite ? `<button type="button" class="cds--btn--icon danger act-snip-del" data-id="${s.id}" title="${escHtml(t("Delete"))}">${icon("trash-can", 16)}</button>` : ""}
+            ${actBtn}
+            ${delBtn}
           </td>
-        </tr>`
-        )
+        </tr>`;
+        })
         .join("");
 
       tbody.querySelectorAll("tr[data-snip-id]").forEach((tr) => {
@@ -98,12 +132,10 @@
           page.selectedSnippetId = parseInt(tr.getAttribute("data-snip-id"), 10);
           renderSnippetsView();
         });
-        if (canWrite) {
-          tr.addEventListener("dblclick", () => {
-            const s = page.snippets.find((x) => x.id === parseInt(tr.getAttribute("data-snip-id"), 10));
-            if (s) openSnippetModal(s);
-          });
-        }
+        tr.addEventListener("dblclick", () => {
+          const s = page.snippets.find((x) => x.id === parseInt(tr.getAttribute("data-snip-id"), 10));
+          if (s) openSnippetModal(s);
+        });
       });
       tbody.querySelectorAll(".act-snip-edit").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -115,7 +147,7 @@
         btn.addEventListener("click", () => {
           const sid = parseInt(btn.getAttribute("data-id"), 10);
           const s = page.snippets.find((x) => x.id === sid);
-          if (!s) return;
+          if (!s || s.is_builtin) return;
           showConfirm(
             t("Delete Snippet"),
             t("Delete snippet '{name}'?", { name: s.name }),
@@ -138,35 +170,65 @@
 
   function openSnippetModal(snip) {
     const meta = UI.state.meta || {};
+    const canWrite = hasPermission("snippets:write");
+    const isBuiltin = Boolean(snip && snip.is_builtin);
+    const isReadOnly = Boolean(snip && (isBuiltin || !canWrite));
+
     page.editingSnippetId = snip ? snip.id : null;
-    $("modal-snippet-title").textContent = snip ? t("Edit Snippet") : t("Add Snippet");
+    $("modal-snippet-title").textContent = snip
+      ? (isReadOnly ? t("View Snippet") : t("Edit Snippet"))
+      : t("Add Snippet");
     $("snip-err").classList.add("hidden");
+    $("snip-builtin-note").classList.toggle("hidden", !isBuiltin);
 
     const platforms = meta.platforms || ["aruba_procurve", "aruba_aoscx"];
-    fillSelect($("snip-os"), platforms, false);
+    fillSelect($("snip-os"), platformOptions(platforms), false);
     fillSelect($("snip-sev"), meta.severities || ["Info", "Warning", "Critical"], false);
 
     const stype = snip ? snip.snippet_type : "Config";
     document.querySelectorAll('input[name="snip-type"]').forEach((r) => {
       r.checked = r.value === stype;
+      r.disabled = isReadOnly;
     });
     $("snip-name").value = snip ? snip.name : "";
+    $("snip-name").readOnly = isReadOnly;
     $("snip-os").value = snip && platforms.includes(snip.device_type)
       ? snip.device_type
       : (platforms.includes("aruba_procurve") ? "aruba_procurve" : platforms[0]);
+    $("snip-os").disabled = isReadOnly;
     $("snip-sev").value = snip ? snip.severity : "Info";
+    $("snip-sev").disabled = isReadOnly;
     $("snip-desc").value = snip ? snip.description : "";
+    $("snip-desc").readOnly = isReadOnly;
     $("snip-cmds").value = snip ? snip.commands : "";
+    $("snip-cmds").readOnly = isReadOnly;
     $("snip-audit").value = snip ? snip.audit_regex : "";
+    $("snip-audit").readOnly = isReadOnly;
     $("snip-audit-wrap").classList.toggle("hidden", stype !== "Audit and Remediate");
+
+    $("btn-save-snippet").classList.toggle("hidden", isReadOnly);
+    $("btn-cancel-snippet").textContent = isReadOnly ? t("Close") : t("Cancel");
     openModal("modal-snippet");
   }
 
   function wirePageEvents() {
-    ["flt-snip-name", "flt-snip-type", "flt-snip-sev", "flt-snip-os", "flt-snip-desc"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pagination.page = 1; renderSnippetsView(); });
-      $(id).addEventListener("change", () => { page.pagination.page = 1; renderSnippetsView(); });
+    page.toolbar = wireDataTableToolbar({
+      searchInputId: "snippets-dt-search",
+      searchClearId: "snippets-dt-search-clear",
+      filterBtnId: "snippets-filter-btn",
+      filterBadgeId: "snippets-filter-badge",
+      popoverId: "snippets-filter-popover",
+      applyBtnId: "snippets-filter-apply",
+      resetBtnId: "snippets-filter-reset",
+      chipsContainerId: "snippets-active-filters",
+      fields: [
+        { id: "flt-snip-type", labelKey: "Snippet Type", defaultVal: "All", formatValue: t },
+        { id: "flt-snip-sev", labelKey: "Severity", defaultVal: "All" },
+        { id: "flt-snip-os", labelKey: "Netmiko Platform", defaultVal: "All", formatValue: platformLabel },
+      ],
+      onChange: () => { page.pagination.page = 1; renderSnippetsView(); },
     });
+
     $("btn-add-snippet").addEventListener("click", () => openSnippetModal(null));
     document.querySelectorAll('input[name="snip-type"]').forEach((r) => {
       r.addEventListener("change", () => {

@@ -1,26 +1,26 @@
-# Welcome to the `pssh-ui` Wiki
+# Welcome to `aethernms` (ÆTHER NMS)
 
-**`pssh-ui`** is a multiplatform Python web application built with **Py4Web**, **SQLite (`PyDAL`)**, **IBM Carbon Design System (v11)**, **`netmiko`**, and **`airwaveapiclient`** for executing parallel SSH and Telnet configuration and audit automation across network devices via both an AirWave-style browser UI and an authenticated REST API with Swagger UI.
+**`aethernms`** (**ÆTHER NMS**) is a multiplatform Python web application built with **Py4Web**, **PyDAL**, **IBM Carbon Design System (v11)**, **`netmiko`**, and **`airwaveapiclient`** for running parallel SSH and Telnet configuration and audit jobs across network devices from a role-based web interface and authenticated REST API.
 
----
+## Documentation Sections
 
-## Wiki Navigation
-
-* **[User Guide](User-Guide)** — Installation (`pssh-ui-win-x64.zip` or `python main.py`), initial admin setup, SQLite database storage (`%APPDATA%\pssh-ui\pssh_ui.db` & `~/.pssh-ui/pssh_ui.db`), global defaults, `Jobs` / `Snippets` / `Devices` workflow, AirWave OS mapping & read-only rules, dynamic job wizard, and execution logs.
-* **[REST API & Swagger](REST-API)** — Interactive Swagger UI (`/api/docs` & `/swagger`), OpenAPI 3.0.3 schema (`/api/openapi.json`), API Keys (`X-API-Key` / `Bearer`), and automation examples.
-* **[Snippets & Variables Reference](Snippets-and-Variables)** — Bundled XML templates auto-seeded into SQLite with SHA-256 upgrade tracking, XML import/export, `${var|type|regex}` & `${var|["Item 1", "Item 2"]}` templates, and Audit RegEx checks.
-* **[Developer Design Choices](Developer-Design-Choices)** — Py4Web + PyDAL SQLite architecture, IBM Carbon v11 UI tokens, authentication & API keys, native Netmiko `CLASS_MAPPER` & `ConnectHandler` automation, security decisions, and PyInstaller release workflow.
-* **[Localization & Transifex](Localization-and-Transifex)** — Zero-code `.po` discovery, dynamic Babel native locale labels, `.pot` extraction, and community translations on **[Transifex](https://app.transifex.com/eduardomozart/pssh-ui/)**.
-
----
+* **[User Guide](User-Guide)** — Installation, first-run 3-step `/setup`, daily workflows (**Jobs**, **Snippets**, **Devices**, **Administration**), and **REST API & Swagger**.
+* **[Getting Started](Getting-Started)** — Installing dependencies, running Initial Setup (`/setup`), signing in, and locating `~/.aethernms` configuration files.
+* **[Jobs](Jobs)** — Creating Config and Audit automation jobs, passing dynamic variables, monitoring progress live, and downloading wire logs.
+* **[Snippets & Variables](Snippets-and-Variables)** — Using read-only built-in templates, creating/importing/exporting custom XML snippets, and parameterizing commands with `${var|type|regex}` rules.
+* **[Devices](Devices)** — Managing manual devices, friendly Netmiko platform names (e.g., `ArubaOS-S`, `ArubaOS-CX`), ICMP ping checks, and HPE Aruba AirWave imports.
+* **[Administration: System Settings](Administration-Settings)** — Execution/connection defaults, External REST API IP allowlist, read-only Database Backend summary, and AirWave OS mappings.
+* **[Administration: Users](Administration-Users)** — Account lifecycle, role assignments, personal Language/Theme preferences, and clicking your username (`?edit=me`) to edit your profile.
+* **[Administration: Roles](Administration-Roles)** — Understanding built-in read-only roles (`Admin`, `Operator`, `Viewer`) and creating custom RBAC roles.
+* **[Administration: API Keys](Administration-API-Keys)** — Issuing and revoking scoped API tokens (`aethernms_...`) for external automation.
+* **[REST API & Swagger](REST-API)** — Enabling external API access safely, using `X-API-Key` / `Bearer` authentication, and exploring endpoints via Swagger UI.
 
 ## Key Capabilities at a Glance
 
 | Capability | Description |
 | :--- | :--- |
-| **IBM Carbon v11 Web UI** | AirWave Config & Audit Jobs layout styled with Carbon `g10` (Light) and `g100` (Dark) tokens, defaulting to **Auto (OS Default)** for theme and language. |
-| **Authenticated REST API & Swagger** | Full JSON REST API (`/api/...`) secured via Py4Web sessions or SHA-256 hashed API keys (`X-API-Key` / `Bearer`), documented live at `/api/docs` and `/api/openapi.json`. |
-| **Single SQLite Database (`PyDAL`)** | Stores users, API keys, settings, snippets, devices, jobs, and per-device execution logs in `%APPDATA%\pssh-ui\pssh_ui.db` (Windows) or `~/.pssh-ui/pssh_ui.db` (Linux/macOS), with automatic one-time legacy XML migration. |
-| **Native Netmiko Multi-Platform Support** | Dynamically discovers all non-serial Netmiko platforms (`CLASS_MAPPER`) and native `SSH` / `Telnet` transport drivers without custom prompt regexes or CLI wrappers. |
-| **AirWave OS Mapping & Read-Only Safety** | Stays empty until inventory is fetched; auto-maps AirWave OS metadata to Netmiko (prompting only when unmatched) and locks Name, IP, Model, and Group as read-only while allowing Platform, Protocol, and Port edits. |
-| **Dynamic Job Wizard & Password-Free State** | Guided flow (`Config Command` → `[Parameters]` → `Select Device` → `Confirm`) with syntax-highlighted editing, Audit RegEx checks, and strict scrubbing of device/AirWave/`|password|` secrets from SQLite. |
+| **3-Step First-Run Setup (`/setup`)** | Guides **Database Backend** selection & automatic connection verification, **Administrator Account** creation, and **Review & Complete** without creating premature `.db` files. |
+| **Multi-Backend PyDAL Persistence** | Defaults to local WAL-mode **SQLite** (`~/.aethernms/aethernms.db`) and supports **PostgreSQL**, **MySQL / MariaDB**, **MSSQL**, **Oracle**, and custom PyDAL URIs. |
+| **IBM Carbon v11 Workspace** | Dark 48px global header with **ÆTHER NMS** wordmark, aligned full-height **Global Device Search**, expandable left **SideNav Rail**, per-user Light (`white`) / Dark (`g100`) themes, and contextual **Help** links. |
+| **RBAC & Secure External REST API** | Read-only system roles (`Admin`, `Operator`, `Viewer`) plus custom roles, per-user localization & theme, scoped `aethernms_...` API keys, and IP-allowlisted Swagger UI (`/api/docs`). |
+| **Native Netmiko Multi-Platform Engine** | Supports every non-serial Netmiko driver with friendly display labels (e.g., `ArubaOS-S`) and automatic built-in template seeding. |

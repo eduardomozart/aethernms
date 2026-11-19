@@ -1,83 +1,66 @@
-# REST API & Swagger Documentation
+# REST API & Swagger Documentation (`/api/docs`)
 
-**`pssh-ui`** exposes every GUI backend action through an authenticated JSON REST API served by **Py4Web**, documented automatically via **OpenAPI 3.0.3** and an interactive **Swagger UI**.
+**`aethernms`** (**ÆTHER NMS**) exposes every workspace workflow through an authenticated JSON REST API documented with **OpenAPI 3.0.3** and interactive **Swagger UI**.
 
----
+## 1. Enabling External API Access & Swagger UI
 
-## 1. Interactive Swagger UI & OpenAPI Schema
+For security, **External REST API & Swagger UI** are **disabled by default** (`api_enabled = False`) and restricted to `127.0.0.1, ::1` (`api_allowed_ips`).
 
-When `pssh-ui` is running (default `http://127.0.0.1:8080`):
+1. Complete initial setup at **`/setup`**, sign in as an Administrator, and open **Administration → System Settings**.
+2. Toggle **External REST API & Swagger UI** to **Enabled**.
+3. Configure **Allowed IP Addresses / CIDRs** (comma-separated IPv4/IPv6 addresses, CIDR subnets like `10.0.0.0/8`, or `*`).
+4. Click **Save Settings**, then open **API Docs (Swagger)** (`GET /api/docs` or `GET /swagger`) or fetch **`GET /api/openapi.json`**.
 
-| Endpoint | Description |
-| :--- | :--- |
-| **`GET /api/docs`** (alias **`GET /swagger`**) | Interactive Swagger UI (with built-in offline OpenAPI explorer fallback when no internet CDN is reachable). |
-| **`GET /api/openapi.json`** | Raw OpenAPI 3.0.3 specification JSON (importable into Postman, Insomnia, or SDK code generators). |
-
----
+> Note: Interactive Web UI password login lives strictly on `/login` and `/setup`. External `/api/*` clients and Swagger UI authenticate via API Keys only. While unconfigured, `/api/*` endpoints return HTTP `503` with `{"setup_required": true}`.
 
 ## 2. Authentication
 
-All `/api/*` endpoints (except `/api/openapi.json`, `/api/i18n`, and `/api/auth/{status,setup,login,logout}`) require authentication via one of three methods:
+All external `/api/*` requests require a valid API key (created under **Administration → API Keys** or via `POST /api/auth/api-keys`) from an allowed IP:
 
-1. **API Key Header (recommended for scripts & CI/CD):**
+1. **API Key Header (recommended):**
    ```http
-   X-API-Key: pssh_<your_token>
+   X-API-Key: aethernms_<your_token>
    ```
 2. **Bearer Token Header:**
    ```http
-   Authorization: Bearer pssh_<your_token>
+   Authorization: Bearer aethernms_<your_token>
    ```
-3. **Browser Session Cookie:**
-   Signed Py4Web `pssh_ui_session` cookie obtained via `POST /api/auth/setup` (first run) or `POST /api/auth/login`.
 
-Create and revoke API keys from the **API Keys** button (`🔑`) in the top header bar or via `POST /api/auth/api-keys`. Keys are hashed with SHA-256 in SQLite; the plaintext token is shown once upon creation.
-
-For headless / automated deployments, you may pre-seed the initial administrator account before first boot using environment variables:
-
-```bash
-PSSH_UI_ADMIN_USER=admin
-PSSH_UI_ADMIN_PASSWORD=StrongPassword123!
-python main.py --host 0.0.0.0 --port 8080
-```
-
----
+API keys can optionally bind to a specific RBAC role (`role_name`) or inherit their owning user's role. Keys are stored as SHA-256 digests; the plaintext token is displayed once upon creation.
 
 ## 3. Endpoints Overview
 
 | Area | Method & Path | Purpose |
 | :--- | :--- | :--- |
-| **Auth** | `GET /api/auth/status` | Check whether initial admin setup is needed or current user is signed in |
-| **Auth** | `POST /api/auth/setup` | Create the first administrator account (when DB has 0 users) |
-| **Auth** | `POST /api/auth/login` / `POST /api/auth/logout` | Sign in / sign out with session cookie |
-| **Auth** | `POST /api/auth/password` | Change the authenticated user's password |
-| **Auth** | `GET / POST /api/auth/api-keys`, `DELETE /api/auth/api-keys/{id}` | List, generate, or revoke personal API keys |
-| **Metadata** | `GET /api/meta`, `GET /api/i18n` | Supported Netmiko platforms, native protocols, app version, and UI translations |
-| **Settings** | `GET / PUT /api/settings` | Read or update Appearance, Execution Defaults, Connection Defaults, and AirWave OS mappings |
-| **Devices** | `GET / POST /api/devices`, `PUT / DELETE /api/devices/{id}` | Manage devices (enforces AirWave read-only identity fields & native Netmiko protocols) |
+| **Setup** | `GET /setup/info`, `POST /setup/test-db`, `POST /setup` | Inspect DB engine/driver readiness, test connectivity, and perform initial setup (locked out with `403` once Admin exists) |
+| **Auth & Keys** | `GET /api/auth/status` | Verify API key identity, effective role, and granted permissions |
+| **Auth & Keys** | `GET / POST /api/auth/api-keys`, `DELETE /api/auth/api-keys/{id}` | List, generate, or revoke scoped REST API keys |
+| **RBAC** | `GET / POST /api/users`, `PUT / DELETE /api/users/{id}` | Manage user accounts (`users:manage`) or update own profile (`?edit=me` scope) |
+| **RBAC** | `GET / POST /api/roles`, `PUT / DELETE /api/roles/{id}` | Manage custom RBAC roles (`roles:manage`; built-in system roles return `403`) |
+| **Metadata** | `GET /api/meta`, `GET /api/i18n`, `GET /i18n` | Supported Netmiko platforms + friendly labels, native protocols, icons, and UI translations |
+| **Settings** | `GET / PUT /api/settings` | Read or update Execution/Connection Defaults, External API & IP allowlist, AirWave mappings, and read-only `db_engine` / `db_uri_masked` |
+| **Devices** | `GET / POST /api/devices`, `PUT / DELETE /api/devices/{id}`, `GET /api/devices/search` | Manage devices and run global device search (`?q=...&limit=...`) |
 | **Devices** | `POST /api/devices/ping` | Run concurrent ICMP reachability probes and persist `"Up"` / `"Down"` statuses |
 | **AirWave** | `POST /api/airwave/fetch`, `POST /api/airwave/import` | Fetch live AirWave inventory XML and merge selected switches with optional custom OS mappings |
-| **Snippets** | `GET / POST /api/snippets`, `PUT / DELETE /api/snippets/{id}` | Manage Config and Audit snippets stored in SQLite |
+| **Snippets** | `GET / POST /api/snippets`, `PUT / DELETE /api/snippets/{id}` | Manage custom snippets (read-only built-in snippets return `403` on modify/delete) |
 | **Snippets** | `POST /api/snippets/import`, `GET /api/snippets/{id}/export` | Import or export portable `<Snippet>` XML files |
 | **Variables** | `POST /api/variables/parse` | Extract `${...}` template variables, validate values, and preview masked rendered commands |
-| **Jobs** | `GET / POST /api/jobs`, `GET / DELETE /api/jobs/{job_id}` | List jobs, create and launch a new Netmiko Config/Audit job, inspect status, or delete finished jobs |
-| **Jobs** | `POST /api/jobs/{job_id}/stop` | Signal cancellation to a running background job |
-| **Logs** | `GET /api/jobs/{job_id}/results/{result_id}/log` | Fetch per-device execution log JSON from SQLite (append `?download=1` to download `.log` plain text) |
-
----
+| **Jobs** | `GET / POST /api/jobs`, `GET / DELETE /api/jobs/{job_id}`, `POST /api/jobs/{job_id}/stop` | List, launch, inspect, cancel, or delete Netmiko Config/Audit jobs |
+| **Logs** | `GET /api/jobs/{job_id}/results/{result_id}/log` | Fetch per-device execution log JSON (append `?download=1` to download `.log` plain text) |
 
 ## 4. Examples (`curl` & Python)
 
 ### List Devices
 ```bash
-curl -s http://127.0.0.1:8080/api/devices \
-  -H "X-API-Key: pssh_YOUR_API_KEY"
+curl -s http://127.0.0.1:8000/api/devices \
+  -H "X-API-Key: aethernms_YOUR_API_KEY"
 ```
 
 ### Launch a Config Job
 ```bash
-curl -s -X POST http://127.0.0.1:8080/api/jobs \
+curl -s -X POST http://127.0.0.1:8000/api/jobs \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: pssh_YOUR_API_KEY" \
+  -H "X-API-Key: aethernms_YOUR_API_KEY" \
   -d '{
     "name": "Configure NTP",
     "job_type": "Config",
@@ -98,8 +81,8 @@ curl -s -X POST http://127.0.0.1:8080/api/jobs \
 import time
 import requests
 
-BASE = "http://127.0.0.1:8080"
-HEADERS = {"Authorization": "Bearer pssh_YOUR_API_KEY"}
+BASE = "http://127.0.0.1:8000"
+HEADERS = {"Authorization": "Bearer aethernms_YOUR_API_KEY"}
 
 job_id = "a1b2c3d4e5"
 while True:
@@ -109,9 +92,10 @@ while True:
     time.sleep(1)
 
 for res in job["results"]:
-    log_text = requests.get(
+    log_res = requests.get(
         f"{BASE}/api/jobs/{job_id}/results/{res['id']}/log?download=1",
         headers=HEADERS,
-    ).text
-    print(f"=== {res['host_name']} ({res['status']}) ===\n{log_text}")
+    )
+    print(f"=== {res['host_name']} ({res['host_ip']}) ===")
+    print(log_res.text)
 ```

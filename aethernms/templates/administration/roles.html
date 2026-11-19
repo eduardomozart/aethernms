@@ -1,38 +1,79 @@
 [[extend 'layout.html']]
 
-<nav aria-label="Breadcrumb">
-  <ol class="anms-breadcrumb">
-    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
-    <li>/</li>
-    <li aria-current="page" data-i18n="Roles">Roles</li>
-  </ol>
-</nav>
+<div class="anms-page-header">
+  <nav aria-label="Breadcrumb">
+    <ol class="anms-breadcrumb">
+      <li><a href="/">aether</a></li>
+      <li>/</li>
+      <li><a href="/administration" data-i18n="Administration">[[=T("Administration")]]</a></li>
+      <li>/</li>
+      <li aria-current="page" data-i18n="Roles">[[=T("Roles")]]</li>
+    </ol>
+  </nav>
+  <div class="anms-page-header__row">
+    <div class="anms-page-header__main">
+      <h1 class="anms-page-title" data-i18n="Roles">[[=T("Roles")]]</h1>
+      <p class="anms-page-subtitle" data-i18n="Manage built-in and custom RBAC roles and granular permission sets.">
+        [[=T("Manage built-in and custom RBAC roles and granular permission sets.")]]
+      </p>
+    </div>
+  </div>
+</div>
 
 <section id="view-admin-roles" class="view-panel active">
-  <div class="cds--tile">
-    <div class="tile-header">
-      <div>
-        <h2 class="tile-title" data-i18n="Roles">Roles</h2>
-        <span class="cds--helper-text" data-i18n="Manage built-in and custom RBAC roles and granular permission sets.">Manage built-in and custom RBAC roles and granular permission sets.</span>
+  <div class="anms-table-container">
+    <div class="anms-dt-toolbar">
+      <div class="anms-dt-search-wrap">
+        <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="roles-dt-search"
+          class="anms-dt-search-input"
+          type="text"
+          placeholder="[[=T('Search table...')]]"
+          data-i18n-placeholder="Search table..."
+          aria-label="[[=T('Search table...')]]"
+        />
+        <button type="button" id="roles-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+          [[=XML(icon("close", 16))]]
+        </button>
       </div>
-      <div class="tile-actions">
-        <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-add-role">
+      <div class="anms-dt-toolbar-actions">
+        <div class="anms-dt-filter-wrap">
+          <button type="button" id="roles-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+            [[=XML(icon("filter", 16))]]
+            <span id="roles-filter-badge" class="anms-filter-badge hidden">0</span>
+          </button>
+          <div id="roles-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+            <div class="anms-filter-popover__body">
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-role-type" data-i18n="Type">[[=T("Type")]]</label>
+                <select id="flt-role-type" class="cds--select-input"></select>
+              </div>
+            </div>
+            <div class="anms-filter-popover__footer">
+              <button type="button" id="roles-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+              <button type="button" id="roles-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="cds--btn cds--btn--primary" id="btn-add-role">
           [[=XML(icon("add", 16))]]
-          <span data-i18n="Add Role">Add Role</span>
+          <span data-i18n="Add Role">[[=T("Add Role")]]</span>
         </button>
       </div>
     </div>
+    <div id="roles-active-filters" class="anms-active-filters hidden"></div>
 
     <div class="table-wrap">
       <table class="cds--data-table">
         <thead>
           <tr>
-            <th data-i18n="Role Name">Role Name</th>
-            <th data-i18n="Type">Type</th>
-            <th data-i18n="Permissions">Permissions</th>
-            <th data-i18n="Users">Users</th>
-            <th data-i18n="Description">Description</th>
-            <th class="col-actions" data-i18n="Action">Action</th>
+            <th data-i18n="Role Name">[[=T("Role Name")]]</th>
+            <th data-i18n="Type">[[=T("Type")]]</th>
+            <th data-i18n="Permissions">[[=T("Permissions")]]</th>
+            <th data-i18n="Users">[[=T("Users")]]</th>
+            <th data-i18n="Description">[[=T("Description")]]</th>
+            <th class="col-actions" data-i18n="Action">[[=T("Action")]]</th>
           </tr>
         </thead>
         <tbody id="roles-tbody"></tbody>

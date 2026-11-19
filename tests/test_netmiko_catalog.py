@@ -2,8 +2,8 @@
 
 import pytest
 
-from pssh_ui.models import AppSettings, ConnectionProtocol
-from pssh_ui.netmiko_catalog import (
+from aethernms.models import AppSettings, ConnectionProtocol
+from aethernms.netmiko_catalog import (
     canonical_platform,
     default_port_for_protocol,
     default_protocol_for_platform,

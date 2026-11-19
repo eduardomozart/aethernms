@@ -102,13 +102,21 @@ def register_snippets_routes(get_ctx: CtxGetter, session: Any) -> None:
         _user, err = require_api_user(ctx, session, permission="snippets:write")
         if err:
             return err
+        existing = ctx.db.get_snippet(snippet_id)
+        if existing is None:
+            return json_error(404, "Snippet not found.")
+        if existing.is_builtin:
+            return json_error(403, "Built-in snippets are read-only and cannot be modified.")
         body = read_json_body()
         if body is None:
             return json_error(400, "Invalid JSON payload.")
         snip, val_err = _validate_snippet_payload(body)
         if val_err or snip is None:
             return json_error(400, val_err or "Invalid snippet payload.")
-        updated = ctx.db.update_snippet(snippet_id, snip)
+        try:
+            updated = ctx.db.update_snippet(snippet_id, snip)
+        except ValueError as exc:
+            return json_error(403, str(exc))
         if updated is None:
             return json_error(404, "Snippet not found.")
         return json_response(serialize_snippet(updated))
@@ -120,7 +128,11 @@ def register_snippets_routes(get_ctx: CtxGetter, session: Any) -> None:
         _user, err = require_api_user(ctx, session, permission="snippets:write")
         if err:
             return err
-        if not ctx.db.delete_snippet(snippet_id):
+        try:
+            deleted = ctx.db.delete_snippet(snippet_id)
+        except ValueError as exc:
+            return json_error(403, str(exc))
+        if not deleted:
             return json_error(404, "Snippet not found.")
         return json_response({"ok": True})
 

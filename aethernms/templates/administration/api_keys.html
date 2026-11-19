@@ -1,71 +1,116 @@
 [[extend 'layout.html']]
 
-<nav aria-label="Breadcrumb">
-  <ol class="anms-breadcrumb">
-    <li><a href="/administration" data-i18n="Administration">Administration</a></li>
-    <li>/</li>
-    <li aria-current="page" data-i18n="API Keys">API Keys</li>
-  </ol>
-</nav>
+<div class="anms-page-header">
+  <nav aria-label="Breadcrumb">
+    <ol class="anms-breadcrumb">
+      <li><a href="/">aether</a></li>
+      <li>/</li>
+      <li><a href="/administration" data-i18n="Administration">[[=T("Administration")]]</a></li>
+      <li>/</li>
+      <li aria-current="page" data-i18n="API Keys">[[=T("API Keys")]]</li>
+    </ol>
+  </nav>
+  <div class="anms-page-header__row">
+    <div class="anms-page-header__main">
+      <h1 class="anms-page-title" data-i18n="API Keys">[[=T("API Keys")]]</h1>
+      <p class="anms-page-subtitle" data-i18n="Generate and revoke REST API keys for external automation (X-API-Key or Authorization: Bearer).">
+        [[=T("Generate and revoke REST API keys for external automation (X-API-Key or Authorization: Bearer).")]]
+      </p>
+    </div>
+  </div>
+</div>
 
 <section id="view-admin-apikeys" class="view-panel active">
+  <div id="apikeys-disabled-banner" class="cds--inline-notification cds--inline-notification--warning hidden" style="margin-bottom:0;">
+    <span>
+      <strong data-i18n="External API is currently disabled.">[[=T("External API is currently disabled.")]]</strong>
+      <span data-i18n="Enable External REST API & Swagger UI in System Settings before using API keys externally.">[[=T("Enable External REST API & Swagger UI in System Settings before using API keys externally.")]]</span>
+    </span>
+    <a href="/administration/settings" class="cds--btn cds--btn--tertiary cds--btn--sm" data-i18n="Go to System Settings">[[=T("Go to System Settings")]]</a>
+  </div>
+
   <div class="cds--tile">
-    <div class="tile-header">
-      <div>
-        <h2 class="tile-title" data-i18n="API Keys">API Keys</h2>
-        <span class="cds--helper-text" data-i18n="Generate and revoke REST API keys for external automation (X-API-Key or Authorization: Bearer).">Generate and revoke REST API keys for external automation (X-API-Key or Authorization: Bearer).</span>
-      </div>
-    </div>
-
-    <div id="apikeys-disabled-banner" class="cds--inline-notification cds--inline-notification--warning hidden">
-      <span>
-        <strong data-i18n="External API is currently disabled.">External API is currently disabled.</strong>
-        <span data-i18n="Enable External REST API & Swagger UI in System Settings before using API keys externally.">Enable External REST API &amp; Swagger UI in System Settings before using API keys externally.</span>
-      </span>
-      <a href="/administration/settings" class="cds--btn cds--btn--tertiary cds--btn--sm" data-i18n="Go to System Settings">Go to System Settings</a>
-    </div>
-
-    <div class="filter-bar" style="padding:14px;background:var(--anms-workspace-bg);border:1px solid var(--anms-tile-border);">
+    <div class="filter-bar" style="margin-bottom:0;">
       <div class="filter-field">
-        <label class="cds--label" for="new-key-name" data-i18n="API Key Name">API Key Name</label>
+        <label class="cds--label" for="new-key-name" data-i18n="API Key Name">[[=T("API Key Name")]]</label>
         <input id="new-key-name" class="cds--text-input" type="text" placeholder="e.g. CI Pipeline / Ansible" />
       </div>
       <div id="new-key-role-wrap" class="filter-field compact hidden">
-        <label class="cds--label" for="new-key-role" data-i18n="Role Scope">Role Scope</label>
+        <label class="cds--label" for="new-key-role" data-i18n="Role Scope">[[=T("Role Scope")]]</label>
         <select id="new-key-role" class="cds--select-input"></select>
       </div>
       <div id="new-key-user-wrap" class="filter-field compact hidden">
-        <label class="cds--label" for="new-key-user" data-i18n="Owner">Owner</label>
+        <label class="cds--label" for="new-key-user" data-i18n="Owner">[[=T("Owner")]]</label>
         <select id="new-key-user" class="cds--select-input"></select>
       </div>
       <button type="button" class="cds--btn cds--btn--primary cds--btn--sm" id="btn-gen-key">
-        [[=XML(icon("key", 16))]]
-        <span data-i18n="Generate Key">Generate Key</span>
+        [[=XML(icon("password", 16))]]
+        <span data-i18n="Generate Key">[[=T("Generate Key")]]</span>
       </button>
     </div>
 
-    <div id="new-key-banner" class="cds--inline-notification cds--inline-notification--success hidden" style="flex-wrap:wrap;">
+    <div id="new-key-banner" class="cds--inline-notification cds--inline-notification--success hidden" style="flex-wrap:wrap;margin-top:14px;margin-bottom:0;">
       <div style="flex:1 1 320px;">
-        <div style="font-weight:600;margin-bottom:4px;" data-i18n="Copy this API key now — it will not be shown again:">Copy this API key now — it will not be shown again:</div>
+        <div style="font-weight:600;margin-bottom:4px;" data-i18n="Copy this API key now — it will not be shown again:">[[=T("Copy this API key now — it will not be shown again:")]]</div>
         <input id="new-key-value" class="cds--text-input mono" type="text" readonly />
       </div>
       <button type="button" class="cds--btn cds--btn--secondary cds--btn--sm" id="btn-copy-key">
         [[=XML(icon("copy", 16))]]
-        <span data-i18n="Copy">Copy</span>
+        <span data-i18n="Copy">[[=T("Copy")]]</span>
       </button>
     </div>
+  </div>
+
+  <div class="anms-table-container">
+    <div class="anms-dt-toolbar">
+      <div class="anms-dt-search-wrap">
+        <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+        <input
+          id="apikeys-dt-search"
+          class="anms-dt-search-input"
+          type="text"
+          placeholder="[[=T('Search table...')]]"
+          data-i18n-placeholder="Search table..."
+          aria-label="[[=T('Search table...')]]"
+        />
+        <button type="button" id="apikeys-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+          [[=XML(icon("close", 16))]]
+        </button>
+      </div>
+      <div class="anms-dt-toolbar-actions">
+        <div class="anms-dt-filter-wrap">
+          <button type="button" id="apikeys-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+            [[=XML(icon("filter", 16))]]
+            <span id="apikeys-filter-badge" class="anms-filter-badge hidden">0</span>
+          </button>
+          <div id="apikeys-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+            <div class="anms-filter-popover__body">
+              <div class="cds--form-item">
+                <label class="cds--label" for="flt-key-role" data-i18n="Role">[[=T("Role")]]</label>
+                <select id="flt-key-role" class="cds--select-input"></select>
+              </div>
+            </div>
+            <div class="anms-filter-popover__footer">
+              <button type="button" id="apikeys-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+              <button type="button" id="apikeys-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="apikeys-active-filters" class="anms-active-filters hidden"></div>
 
     <div class="table-wrap">
       <table class="cds--data-table">
         <thead>
           <tr>
-            <th data-i18n="Name">Name</th>
-            <th data-i18n="Owner">Owner</th>
-            <th data-i18n="Role">Role</th>
-            <th data-i18n="Prefix">Prefix</th>
-            <th data-i18n="Created">Created</th>
-            <th data-i18n="Last Used">Last Used</th>
-            <th class="col-actions" data-i18n="Action">Action</th>
+            <th data-i18n="Name">[[=T("Name")]]</th>
+            <th data-i18n="Owner">[[=T("Owner")]]</th>
+            <th data-i18n="Role">[[=T("Role")]]</th>
+            <th data-i18n="Prefix">[[=T("Prefix")]]</th>
+            <th data-i18n="Created">[[=T("Created")]]</th>
+            <th data-i18n="Last Used">[[=T("Last Used")]]</th>
+            <th class="col-actions" data-i18n="Action">[[=T("Action")]]</th>
           </tr>
         </thead>
         <tbody id="api-keys-tbody"></tbody>

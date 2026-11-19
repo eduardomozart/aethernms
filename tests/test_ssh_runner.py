@@ -12,11 +12,11 @@ from netmiko.exceptions import (
     NetmikoTimeoutException,
 )
 
-from pssh_ui.common import format_operation_result_ui
-from pssh_ui.i18n import get_language, set_language
-from pssh_ui.logger import write_host_log
-from pssh_ui.models import ConnectionProtocol, HostEntry, ScheduleSequence, SnippetType
-from pssh_ui.ssh_runner import BatchSSHExecutor, PSSHClient, clean_terminal_text
+from aethernms.common import format_operation_result_ui
+from aethernms.i18n import get_language, set_language
+from aethernms.logger import write_host_log
+from aethernms.models import ConnectionProtocol, HostEntry, ScheduleSequence, SnippetType
+from aethernms.ssh_runner import BatchSSHExecutor, PSSHClient, clean_terminal_text
 
 
 class FakeNetmikoConnection:

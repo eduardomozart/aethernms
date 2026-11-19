@@ -4,7 +4,7 @@
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, toast, api, fillSelect } = UI;
+  const { $, t, toast, api } = UI;
 
   let apiEnabledState = false;
 
@@ -23,24 +23,6 @@
 
   function populateSettingsForm() {
     const s = UI.state.settings || {};
-    const i18n = UI.state.i18n || {};
-
-    const langOpts = [{ value: "auto", label: t("Auto (OS Default)") }].concat(
-      (i18n.available_languages || []).map((l) => ({ value: l.code, label: l.label }))
-    );
-    fillSelect($("set-lang"), langOpts, false);
-    $("set-lang").value = s.language || "auto";
-
-    fillSelect(
-      $("set-theme"),
-      [
-        { value: "auto", label: t("Auto (OS Default)") },
-        { value: "light", label: t("Light") },
-        { value: "dark", label: t("Dark") },
-      ],
-      false
-    );
-    $("set-theme").value = s.theme_mode || "auto";
 
     $("set-user").value = s.ssh_username || "";
     $("set-parallel").value = s.max_parallel || 10;
@@ -55,14 +37,18 @@
     if ($("set-client-ip")) {
       $("set-client-ip").textContent = s.client_ip || (UI.state.meta && UI.state.meta.client_ip) || "127.0.0.1";
     }
+    if ($("set-db-engine")) {
+      $("set-db-engine").value = s.db_engine || "sqlite";
+    }
+    if ($("set-db-uri")) {
+      $("set-db-uri").value = s.db_uri_masked || "";
+    }
   }
 
   async function saveSettings() {
     const msg = $("settings-msg");
     msg.classList.add("hidden");
     const body = {
-      language: $("set-lang").value,
-      theme_mode: $("set-theme").value,
       ssh_username: $("set-user").value.trim(),
       max_parallel: parseInt($("set-parallel").value, 10) || 10,
       connect_timeout: parseInt($("set-conn-to").value, 10) || 10,

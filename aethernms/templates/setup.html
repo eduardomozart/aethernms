@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="[[=html_lang]]" class="cds--[[=initial_theme]]" data-carbon-theme="[[=initial_theme]]" data-theme-mode="[[=theme_mode]]" data-page-title="Initial Setup Guide">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[[=page_title]] - aether</title>
+  [[include 'partials/head_icons.html']]
+  <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/300.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/500.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/400.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/500.css" />
+  <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-mono/600.css" />
+  <link rel="stylesheet" href="/static/css/aethernms-carbon.css" />
+  <script>
+    (function () {
+      var el = document.documentElement;
+      if (el.getAttribute("data-theme-mode") === "auto" && window.matchMedia) {
+        var isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = isDark ? "g100" : "white";
+        el.setAttribute("data-carbon-theme", theme);
+        el.className = "cds--" + theme;
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="login-shell">
+    [[include 'partials/header.html']]
+
+    <main class="login-main">
+      <section id="setup-card" class="setup-card">
+        <div class="login-brand">
+          <div class="anms-brand-lockup" aria-label="ÆTHER NMS">
+            <span class="anms-brand-wordmark anms-brand-wordmark--lg">ÆTHER</span>
+            <span class="anms-brand-sub anms-brand-sub--lg">NMS</span>
+          </div>
+          <div>
+            <h1 class="tile-title" style="font-size:24px;font-weight:400;" data-i18n="Initial Setup Guide">[[=T("Initial Setup Guide")]]</h1>
+            <div class="cds--helper-text" data-i18n="Configure your database backend and create the first administrator account.">
+              [[=T("Configure your database backend and create the first administrator account.")]]
+            </div>
+          </div>
+        </div>
+
+        <div id="setup-steps-bar" class="wizard-steps" role="tablist" aria-label="[[=T('Setup steps')]]">
+          <button type="button" class="wizard-step active" data-step="1">
+            <span class="step-circle">1</span>
+            <span>[[=T("Database Backend")]]</span>
+          </button>
+          <button type="button" class="wizard-step" data-step="2">
+            <span class="step-circle">2</span>
+            <span>[[=T("Administrator Account")]]</span>
+          </button>
+          <button type="button" class="wizard-step" data-step="3">
+            <span class="step-circle">3</span>
+            <span>[[=T("Review & Complete")]]</span>
+          </button>
+        </div>
+
+        <div id="setup-error" class="cds--inline-notification cds--inline-notification--error hidden" role="alert">
+          <span id="setup-error-msg"></span>
+        </div>
+
+        <!-- Step 1: Database Backend -->
+        <section id="setup-step-1" aria-label="[[=T('Database Backend')]]">
+          <div id="setup-db-locked-banner" class="cds--inline-notification hidden" role="status">
+            <span id="setup-db-locked-msg"></span>
+          </div>
+
+          <div class="form-grid">
+            <div class="cds--form-item span-2">
+              <label class="cds--label" for="setup-engine" data-i18n="Database Engine *">[[=T("Database Engine *")]]</label>
+              <select id="setup-engine" class="cds--select-input"></select>
+            </div>
+
+            <div class="cds--form-item span-2">
+              <div id="setup-driver-bar" class="setup-driver-bar">
+                <span class="setup-driver-title">
+                  [[=XML(icon("plug", 16))]]
+                  <span data-i18n="Python Driver Status:">[[=T("Python Driver Status:")]]</span>
+                </span>
+                <span id="setup-driver-badge" class="cds--tag cds--tag--gray">...</span>
+                <code id="setup-driver-hint" class="mono setup-driver-hint hidden"></code>
+              </div>
+            </div>
+
+            <!-- SQLite path -->
+            <div id="setup-sqlite-wrap" class="cds--form-item span-2">
+              <label class="cds--label" for="setup-sqlite-path" data-i18n="SQLite Database File Path *">[[=T("SQLite Database File Path *")]]</label>
+              <input id="setup-sqlite-path" class="cds--text-input mono" type="text" autocomplete="off" />
+              <span class="cds--helper-text" data-i18n="Local WAL-mode SQLite database file created upon completing setup.">
+                [[=T("Local WAL-mode SQLite database file created upon completing setup.")]]
+              </span>
+            </div>
+
+            <!-- Network PyDAL DB fields -->
+            <div id="setup-netdb-wrap" class="span-2 hidden">
+              <div class="form-grid">
+                <div class="cds--form-item">
+                  <label class="cds--label" for="setup-db-host" data-i18n="Host *">[[=T("Host *")]]</label>
+                  <input id="setup-db-host" class="cds--text-input" type="text" placeholder="127.0.0.1" autocomplete="off" />
+                </div>
+                <div class="cds--form-item">
+                  <label class="cds--label" for="setup-db-port" data-i18n="Port *">[[=T("Port *")]]</label>
+                  <input id="setup-db-port" class="cds--text-input" type="number" min="1" max="65535" />
+                </div>
+                <div class="cds--form-item">
+                  <label class="cds--label" for="setup-db-name" data-i18n="Database Name / Service *">[[=T("Database Name / Service *")]]</label>
+                  <input id="setup-db-name" class="cds--text-input" type="text" placeholder="aethernms" autocomplete="off" />
+                </div>
+                <div class="cds--form-item">
+                  <label class="cds--label" for="setup-db-user" data-i18n="Database Username *">[[=T("Database Username *")]]</label>
+                  <input id="setup-db-user" class="cds--text-input" type="text" autocomplete="off" />
+                </div>
+                <div class="cds--form-item">
+                  <label class="cds--label" for="setup-db-pass" data-i18n="Database Password">[[=T("Database Password")]]</label>
+                  <input id="setup-db-pass" class="cds--text-input" type="password" autocomplete="new-password" />
+                </div>
+                <div id="setup-odbc-wrap" class="cds--form-item hidden">
+                  <label class="cds--label" for="setup-odbc-driver" data-i18n="ODBC Driver">[[=T("ODBC Driver")]]</label>
+                  <input id="setup-odbc-driver" class="cds--text-input" type="text" placeholder="ODBC Driver 17 for SQL Server" autocomplete="off" />
+                </div>
+                <div class="cds--form-item span-2">
+                  <label class="cds--label" for="setup-db-extra" data-i18n="Extra URI Query Parameters">[[=T("Extra URI Query Parameters")]]</label>
+                  <input id="setup-db-extra" class="cds--text-input mono" type="text" placeholder="sslmode=require" autocomplete="off" />
+                  <span class="cds--helper-text" data-i18n="Optional query parameters appended to the PyDAL connection URI (e.g. sslmode=require or charset=utf8mb4).">
+                    [[=T("Optional query parameters appended to the PyDAL connection URI (e.g. sslmode=require or charset=utf8mb4).")]]
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom PyDAL URI -->
+            <div id="setup-custom-wrap" class="cds--form-item span-2 hidden">
+              <label class="cds--label" for="setup-custom-uri" data-i18n="Custom PyDAL URI *">[[=T("Custom PyDAL URI *")]]</label>
+              <input id="setup-custom-uri" class="cds--text-input mono" type="text" placeholder="postgres://user:password@host:5432/aethernms" autocomplete="off" />
+              <span class="cds--helper-text" data-i18n="Provide any valid PyDAL connection string (credentials will be stored in db_config.json and masked in UI/logs).">
+                [[=T("Provide any valid PyDAL connection string (credentials will be stored in db_config.json and masked in UI/logs).")]]
+              </span>
+            </div>
+          </div>
+
+          <div id="setup-db-test-result" class="cds--inline-notification hidden" style="margin-top:14px;" role="status">
+            <span id="setup-db-test-msg"></span>
+          </div>
+
+          <div class="setup-actions spread">
+            <button type="button" id="btn-setup-test-db" class="cds--btn cds--btn--tertiary">
+              [[=XML(icon("data-base", 16))]]
+              <span data-i18n="Test Connection">[[=T("Test Connection")]]</span>
+            </button>
+            <button type="button" id="btn-setup-step1-next" class="cds--btn cds--btn--primary">
+              <span data-i18n="Next >">[[=T("Next >")]]</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Step 2: Administrator Account -->
+        <section id="setup-step-2" class="hidden" aria-label="[[=T('Administrator Account')]]">
+          <form id="setup-admin-form" novalidate>
+            <div class="form-grid">
+              <div class="cds--form-item">
+                <label class="cds--label" for="setup-admin-user" data-i18n="Username *">[[=T("Username *")]]</label>
+                <input id="setup-admin-user" class="cds--text-input" type="text" autocomplete="username" required />
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="setup-admin-display" data-i18n="Display Name">[[=T("Display Name")]]</label>
+                <input id="setup-admin-display" class="cds--text-input" type="text" autocomplete="name" />
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="setup-admin-pass" data-i18n="Password *">[[=T("Password *")]]</label>
+                <input id="setup-admin-pass" class="cds--text-input" type="password" autocomplete="new-password" minlength="6" required />
+                <span class="cds--helper-text" data-i18n="Minimum 6 characters.">[[=T("Minimum 6 characters.")]]</span>
+              </div>
+              <div class="cds--form-item">
+                <label class="cds--label" for="setup-admin-confirm" data-i18n="Confirm Password *">[[=T("Confirm Password *")]]</label>
+                <input id="setup-admin-confirm" class="cds--text-input" type="password" autocomplete="new-password" minlength="6" required />
+              </div>
+            </div>
+
+            <div class="setup-actions spread">
+              <button type="button" id="btn-setup-step2-back" class="cds--btn cds--btn--tertiary">
+                <span data-i18n="< Back">[[=T("< Back")]]</span>
+              </button>
+              <button type="submit" id="btn-setup-step2-next" class="cds--btn cds--btn--primary">
+                <span data-i18n="Next >">[[=T("Next >")]]</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Step 3: Review & Complete -->
+        <section id="setup-step-3" class="hidden" aria-label="[[=T('Review & Complete')]]">
+          <div class="setup-summary-grid">
+            <div class="setup-summary-row">
+              <span class="setup-summary-key" data-i18n="Database Engine">[[=T("Database Engine")]]</span>
+              <span id="sum-db-engine" class="setup-summary-val"></span>
+            </div>
+            <div class="setup-summary-row">
+              <span class="setup-summary-key" data-i18n="Connection URI">[[=T("Connection URI")]]</span>
+              <code id="sum-db-uri" class="setup-summary-val mono"></code>
+            </div>
+            <div class="setup-summary-row">
+              <span class="setup-summary-key" data-i18n="Administrator Username">[[=T("Administrator Username")]]</span>
+              <span id="sum-admin-user" class="setup-summary-val"></span>
+            </div>
+            <div class="setup-summary-row">
+              <span class="setup-summary-key" data-i18n="Display Name">[[=T("Display Name")]]</span>
+              <span id="sum-admin-display" class="setup-summary-val"></span>
+            </div>
+            <div class="setup-summary-row">
+              <span class="setup-summary-key" data-i18n="Default RBAC Roles">[[=T("Default RBAC Roles")]]</span>
+              <span class="setup-summary-val">Admin, Operator, Viewer</span>
+            </div>
+          </div>
+
+          <div class="setup-actions spread">
+            <button type="button" id="btn-setup-step3-back" class="cds--btn cds--btn--tertiary">
+              <span data-i18n="< Back">[[=T("< Back")]]</span>
+            </button>
+            <button type="button" id="btn-setup-complete" class="cds--btn cds--btn--primary">
+              <span data-i18n="Complete">[[=T("Complete")]]</span>
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script id="anms-initial-i18n" type="application/json">[[=XML(initial_i18n_json)]]</script>
+  <script src="/static/js/setup.js"></script>
+</body>
+</html>

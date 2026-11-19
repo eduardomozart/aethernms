@@ -28,7 +28,7 @@ def register_settings_routes(get_ctx: CtxGetter, session: Any) -> None:
         _user, err = require_api_user(ctx, session)
         if err:
             return err
-        return json_response(serialize_settings(ctx.db.get_settings(), include_client_ip=True))
+        return json_response(serialize_settings(ctx.db.get_settings(), include_client_ip=True, db=ctx.db))
 
     @action("/api/settings", method="PUT")
     @action.uses(session)
@@ -106,4 +106,4 @@ def register_settings_routes(get_ctx: CtxGetter, session: Any) -> None:
             api_allowed_ips=norm_ips,
         )
         saved = ctx.db.save_settings(updated)
-        return json_response(serialize_settings(saved, include_client_ip=True))
+        return json_response(serialize_settings(saved, include_client_ip=True, db=ctx.db))

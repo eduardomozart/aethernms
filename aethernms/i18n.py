@@ -5,6 +5,7 @@ from __future__ import annotations
 import gettext
 from pathlib import Path
 import re
+import threading
 from typing import Callable, Dict, List, Optional, Tuple
 
 from babel import Locale, UnknownLocaleError
@@ -271,6 +272,41 @@ class Translator:
 
 
 _translator = Translator()
+_CATALOG_LOCK = threading.RLock()
+_CATALOG_CACHE: Dict[str, Tuple[Tuple[float, float], Dict[str, str]]] = {}
+
+
+def get_catalog(lang: Optional[str] = None, locales_dir: Optional[Path] = None) -> Dict[str, str]:
+    """Thread-safe cached `{msgid: translation}` dictionary lookup for a target locale."""
+    base_dir = Path(locales_dir) if locales_dir else _translator.locales_dir
+    target = (lang or _translator.language or "en").strip() or "en"
+    if target == "en":
+        return {}
+    lc_dir = base_dir / target / "LC_MESSAGES"
+    po_path = lc_dir / f"{DOMAIN}.po"
+    mo_path = lc_dir / f"{DOMAIN}.mo"
+    po_mt = po_path.stat().st_mtime if po_path.is_file() else -1.0
+    mo_mt = mo_path.stat().st_mtime if mo_path.is_file() else -1.0
+    stamp = (po_mt, mo_mt)
+    cache_key = f"{base_dir}::{target}"
+    with _CATALOG_LOCK:
+        cached = _CATALOG_CACHE.get(cache_key)
+        if cached is not None and cached[0] == stamp:
+            return cached[1]
+        if base_dir == _translator.locales_dir:
+            cat = _translator.export_catalog(lang=target)
+        else:
+            cat = Translator(locales_dir=base_dir, default_lang=target).export_catalog(lang=target)
+        _CATALOG_CACHE[cache_key] = (stamp, cat)
+        return cat
+
+
+def translate_for_lang(lang: Optional[str], message: str, locales_dir: Optional[Path] = None) -> str:
+    """Translate a singular UI message for a specific locale without mutating global translator state."""
+    if not message:
+        return ""
+    cat = get_catalog(lang=lang, locales_dir=locales_dir)
+    return cat.get(message, message)
 
 
 def get_translator() -> Translator:

@@ -70,6 +70,7 @@ class Snippet:
     created_at: str = ""
     file_path: Optional[str] = None
     id: Optional[int] = None
+    is_builtin: bool = False
 
     @property
     def relative_id(self) -> str:

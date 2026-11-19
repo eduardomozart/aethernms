@@ -4,7 +4,26 @@
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, escHtml, highlightCliHtml, toast, api, statusTagHtml, fillSelect, openModal, closeModal, showConfirm, renderPagination, pingDevices, icon, hasPermission } = UI;
+  const {
+    $,
+    t,
+    platformLabel,
+    platformOptions,
+    escHtml,
+    highlightCliHtml,
+    toast,
+    api,
+    statusTagHtml,
+    fillSelect,
+    openModal,
+    closeModal,
+    showConfirm,
+    wireDataTableToolbar,
+    renderPagination,
+    pingDevices,
+    icon,
+    hasPermission,
+  } = UI;
 
   const page = {
     jobs: [],
@@ -12,6 +31,7 @@
     devices: [],
     selectedJobId: null,
     activeJobSubtab: "details",
+    toolbars: {},
     pages: {
       jobs: { page: 1, size: 25 },
       jobDevices: { page: 1, size: 25 },
@@ -32,9 +52,7 @@
   function populateFilterDropdowns() {
     const meta = UI.state.meta || {};
     const usedPlatforms = meta.used_platforms || [];
-    const osOpts = [{ value: "All", label: t("All") }].concat(
-      usedPlatforms.map((p) => ({ value: p, label: p }))
-    );
+    const osOpts = [{ value: "All", label: t("All") }].concat(platformOptions(usedPlatforms));
     const typeOpts = [
       { value: "All", label: t("All") },
       { value: "Config", label: t("Config") },
@@ -66,6 +84,7 @@
     fillSelect($("flt-jd-status"), devResStatusOpts, true);
     fillSelect($("wiz-flt-os"), osOpts, true);
     fillSelect($("wiz-flt-status"), pingStatusOpts, true);
+    Object.values(page.toolbars).forEach((tb) => tb && tb.sync());
   }
 
   async function reloadPageData() {
@@ -108,13 +127,20 @@
   }
 
   function renderJobsView() {
-    const nameQ = $("flt-job-name").value.trim().toLowerCase();
+    const q = ($("jobs-dt-search") ? $("jobs-dt-search").value : "").trim().toLowerCase();
     const typeQ = $("flt-job-type").value || "All";
     const osQ = $("flt-job-os").value || "All";
     const stQ = $("flt-job-status").value || "All";
 
     const filtered = page.jobs.filter((j) => {
-      if (nameQ && !(j.name || "").toLowerCase().includes(nameQ)) return false;
+      if (q) {
+        const platLbl = j.device_type_label || platformLabel(j.device_type);
+        const hay = [j.name, t(j.job_type), j.device_type, platLbl, t(j.status), j.snippet_name]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       if (typeQ !== "All" && j.job_type !== typeQ) return false;
       if (osQ !== "All" && j.device_type !== osQ) return false;
       if (stQ !== "All" && j.status !== stQ) return false;
@@ -137,6 +163,7 @@
       tbody.innerHTML = pageItems
         .map((j) => {
           const sel = j.job_id === page.selectedJobId ? "selected" : "";
+          const platDisp = j.device_type_label || platformLabel(j.device_type);
           const replayBtn = canRun
             ? `<button type="button" class="cds--btn--icon act-replay" data-id="${escHtml(j.job_id)}" title="${escHtml(t("Replay Job"))}">${icon("renew", 16)}</button>`
             : "";
@@ -148,7 +175,7 @@
             <tr class="${sel}" data-job-id="${escHtml(j.job_id)}">
               <td><strong>${escHtml(j.name)}</strong></td>
               <td>${escHtml(t(j.job_type))}</td>
-              <td class="mono">${escHtml(j.device_type)}</td>
+              <td>${escHtml(platDisp)}</td>
               <td>${statusTagHtml(j.status)}</td>
               <td class="nowrap">${escHtml(j.creation_time || "-")}</td>
               <td class="nowrap">${escHtml(j.start_time || "-")}</td>
@@ -227,7 +254,8 @@
     $("jd-total").textContent = String(job.counts.total);
     $("jd-ok").textContent = String(job.counts.success);
     $("jd-fail").textContent = String(job.counts.failed);
-    const metaBits = [job.snippet_name, job.device_type, job.schedule_sequence].filter(Boolean);
+    const platDisp = job.device_type_label || platformLabel(job.device_type);
+    const metaBits = [job.snippet_name, platDisp, job.schedule_sequence].filter(Boolean);
     $("jd-meta-extra").textContent = metaBits.join("  |  ");
     $("jd-desc").textContent = job.description || "-";
     $("jd-cmds").innerHTML = highlightCliHtml(job.commands_rendered || job.commands_raw || "");
@@ -239,12 +267,16 @@
       $("jd-audit-wrap").classList.add("hidden");
     }
 
-    const nameQ = $("flt-jd-name").value.trim().toLowerCase();
-    const ipQ = $("flt-jd-ip").value.trim().toLowerCase();
+    const q = ($("jd-dt-search") ? $("jd-dt-search").value : "").trim().toLowerCase();
     const stQ = $("flt-jd-status").value || "All";
     const results = (job.results || []).filter((r) => {
-      if (nameQ && !(r.host_name || "").toLowerCase().includes(nameQ)) return false;
-      if (ipQ && !(r.host_ip || "").toLowerCase().includes(ipQ)) return false;
+      if (q) {
+        const hay = [r.host_name, r.host_ip, r.host_protocol, r.operation_result_localized, r.operation_result]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       if (stQ !== "All" && r.status !== stQ) return false;
       return true;
     });
@@ -355,7 +387,7 @@
       [{ value: "", label: "" }].concat(matching.map((s) => ({ value: String(s.id), label: s.name }))),
       false
     );
-    $("wiz-snippet-desc").textContent = matching.length ? "" : `${jtype} / ${plat}: 0`;
+    $("wiz-snippet-desc").textContent = matching.length ? "" : `${t(jtype)} / ${platformLabel(plat)}: 0`;
   }
 
   async function refreshWizardVariables() {
@@ -450,15 +482,19 @@
 
   function getWizardFilteredDevices() {
     const targetOs = $("wiz-os").value.toLowerCase();
-    const nq = $("wiz-flt-name").value.trim().toLowerCase();
-    const iq = $("wiz-flt-ip").value.trim().toLowerCase();
+    const q = ($("wiz-dt-search") ? $("wiz-dt-search").value : "").trim().toLowerCase();
     const oq = $("wiz-flt-os").value || "All";
     const gq = $("wiz-flt-group").value.trim().toLowerCase();
     const sq = $("wiz-flt-status").value || "All";
 
     const list = page.devices.filter((d) => {
-      if (nq && !(d.name || "").toLowerCase().includes(nq)) return false;
-      if (iq && !(d.ip || "").toLowerCase().includes(iq)) return false;
+      if (q) {
+        const hay = [d.name, d.ip, d.os_type, d.os_type_label || platformLabel(d.os_type), d.folder_path]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       if (oq !== "All" && d.os_type !== oq) return false;
       if (gq && !(d.folder_path || "").toLowerCase().includes(gq)) return false;
       if (sq !== "All" && (d.ping_status || "Unknown") !== sq) return false;
@@ -474,7 +510,9 @@
   }
 
   function renderWizardDevices() {
-    $("wiz-target-os-hint").textContent = t("Snippet Target Platform: {os}", { os: $("wiz-os").value });
+    $("wiz-target-os-hint").textContent = t("Snippet Target Platform: {os}", {
+      os: platformLabel($("wiz-os").value),
+    });
     const filtered = getWizardFilteredDevices();
     const pageItems = renderPagination(
       "wiz-devices-pagination",
@@ -491,6 +529,7 @@
     tbody.innerHTML = pageItems
       .map((d) => {
         const chk = page.wizard.selectedDeviceIds.has(d.id) ? "checked" : "";
+        const platDisp = d.os_type_label || platformLabel(d.os_type);
         return `
           <tr>
             <td class="col-check"><input type="checkbox" class="wiz-dev-chk" data-id="${d.id}" ${chk} /></td>
@@ -498,7 +537,7 @@
             <td>${statusTagHtml(d.ping_status || "Unknown")}</td>
             <td class="mono">${escHtml(d.ip)}</td>
             <td class="mono">${escHtml(`${d.protocol}:${d.port}`)}</td>
-            <td class="mono">${escHtml(d.os_type || "-")}</td>
+            <td>${escHtml(platDisp || "-")}</td>
             <td>${escHtml(d.folder_path || "")}</td>
           </tr>`;
       })
@@ -550,7 +589,7 @@
       const selCount = page.wizard.selectedDeviceIds.size;
       const snipOpt = $("wiz-snippet").selectedOptions[0];
       $("wiz-confirm-summary").textContent =
-        `${t("Job Name")}: ${$("wiz-name").value.trim()}   |   ${t("Netmiko Platform")}: ${$("wiz-os").value}   |   ` +
+        `${t("Job Name")}: ${$("wiz-name").value.trim()}   |   ${t("Netmiko Platform")}: ${platformLabel($("wiz-os").value)}   |   ` +
         `${t("Snippets")}: ${(snipOpt && snipOpt.textContent) || "-"}   |   ${t("Devices")}: ${selCount}`;
       $("wiz-confirm-preview").innerHTML = highlightCliHtml(parsed.rendered_commands || "");
     }
@@ -569,7 +608,7 @@
       pinged: false,
     };
     const choices = meta.job_platform_choices || ["aruba_procurve", "aruba_aoscx"];
-    fillSelect($("wiz-os"), choices, false);
+    fillSelect($("wiz-os"), platformOptions(choices), false);
 
     if (replayJob) {
       document.querySelectorAll('input[name="wiz-job-type"]').forEach((r) => {
@@ -625,14 +664,55 @@
   }
 
   function wirePageEvents() {
-    ["flt-job-name", "flt-job-type", "flt-job-os", "flt-job-status"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pages.jobs.page = 1; renderJobsView(); });
-      $(id).addEventListener("change", () => { page.pages.jobs.page = 1; renderJobsView(); });
+    page.toolbars.jobs = wireDataTableToolbar({
+      searchInputId: "jobs-dt-search",
+      searchClearId: "jobs-dt-search-clear",
+      filterBtnId: "jobs-filter-btn",
+      filterBadgeId: "jobs-filter-badge",
+      popoverId: "jobs-filter-popover",
+      applyBtnId: "jobs-filter-apply",
+      resetBtnId: "jobs-filter-reset",
+      chipsContainerId: "jobs-active-filters",
+      fields: [
+        { id: "flt-job-type", labelKey: "Job Type", defaultVal: "All", formatValue: t },
+        { id: "flt-job-os", labelKey: "Netmiko Platform", defaultVal: "All", formatValue: platformLabel },
+        { id: "flt-job-status", labelKey: "Status", defaultVal: "All", formatValue: t },
+      ],
+      onChange: () => { page.pages.jobs.page = 1; renderJobsView(); },
     });
-    ["flt-jd-name", "flt-jd-ip", "flt-jd-status"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pages.jobDevices.page = 1; renderJobDetails(); });
-      $(id).addEventListener("change", () => { page.pages.jobDevices.page = 1; renderJobDetails(); });
+
+    page.toolbars.jobDevices = wireDataTableToolbar({
+      searchInputId: "jd-dt-search",
+      searchClearId: "jd-dt-search-clear",
+      filterBtnId: "jd-filter-btn",
+      filterBadgeId: "jd-filter-badge",
+      popoverId: "jd-filter-popover",
+      applyBtnId: "jd-filter-apply",
+      resetBtnId: "jd-filter-reset",
+      chipsContainerId: "jd-active-filters",
+      fields: [
+        { id: "flt-jd-status", labelKey: "Status", defaultVal: "All", formatValue: t },
+      ],
+      onChange: () => { page.pages.jobDevices.page = 1; renderJobDetails(); },
     });
+
+    page.toolbars.wizDevices = wireDataTableToolbar({
+      searchInputId: "wiz-dt-search",
+      searchClearId: "wiz-dt-search-clear",
+      filterBtnId: "wiz-filter-btn",
+      filterBadgeId: "wiz-filter-badge",
+      popoverId: "wiz-filter-popover",
+      applyBtnId: "wiz-filter-apply",
+      resetBtnId: "wiz-filter-reset",
+      chipsContainerId: "wiz-active-filters",
+      fields: [
+        { id: "wiz-flt-os", labelKey: "Netmiko Platform", defaultVal: "All", formatValue: platformLabel },
+        { id: "wiz-flt-group", labelKey: "Group", defaultVal: "" },
+        { id: "wiz-flt-status", labelKey: "Status", defaultVal: "All", formatValue: t },
+      ],
+      onChange: () => { page.pages.wizDevices.page = 1; renderWizardDevices(); },
+    });
+
     document.querySelectorAll("[data-job-subtab]").forEach((btn) => {
       btn.addEventListener("click", () => {
         page.activeJobSubtab = btn.getAttribute("data-job-subtab");
@@ -666,10 +746,6 @@
     });
     ["wiz-cmds", "wiz-audit"].forEach((id) => {
       $(id).addEventListener("input", () => { refreshWizardVariables(); });
-    });
-    ["wiz-flt-name", "wiz-flt-ip", "wiz-flt-os", "wiz-flt-group", "wiz-flt-status"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pages.wizDevices.page = 1; renderWizardDevices(); });
-      $(id).addEventListener("change", () => { page.pages.wizDevices.page = 1; renderWizardDevices(); });
     });
     $("wiz-dev-select-all").addEventListener("click", () => {
       getWizardFilteredDevices().forEach((d) => page.wizard.selectedDeviceIds.add(d.id));

@@ -3,9 +3,9 @@
 from pathlib import Path
 import pytest
 
-from pssh_ui.models import Snippet, SnippetSeverity, SnippetType
-from pssh_ui.paths import bundled_snippets_dir
-from pssh_ui.snippet_store import SnippetStore, snippet_from_xml_file
+from aethernms.models import Snippet, SnippetSeverity, SnippetType
+from aethernms.paths import bundled_snippets_dir
+from aethernms.snippet_store import SnippetStore, snippet_from_xml_file
 
 
 def test_builtin_aruba_snippets_exist_in_subfolders(tmp_path: Path):

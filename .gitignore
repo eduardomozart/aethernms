@@ -240,4 +240,5 @@ device_models.xml
 .session_secret
 sql.log
 locales/**/LC_MESSAGES/*.mo
+_site/
 

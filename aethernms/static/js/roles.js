@@ -1,40 +1,70 @@
-/* Roles (/administration/roles) RBAC management controller */
+/* Roles (/administration/roles) RBAC management controller: Read-only System Roles + Custom Roles CRUD */
 
 (function () {
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, escHtml, icon, toast, api, openModal, closeModal, showConfirm } = UI;
+  const { $, t, escHtml, icon, toast, api, fillSelect, openModal, closeModal, showConfirm, wireDataTableToolbar } = UI;
 
   const page = {
     roles: [],
     allPermissions: [],
     editingRoleId: null,
+    toolbar: null,
   };
+
+  function populateFilterDropdowns() {
+    fillSelect(
+      $("flt-role-type"),
+      [
+        { value: "All", label: t("All") },
+        { value: "System", label: t("System") },
+        { value: "Custom", label: t("Custom") },
+      ],
+      true
+    );
+    if (page.toolbar) page.toolbar.sync();
+  }
 
   async function reloadPageData() {
     const data = await api("/api/roles");
     page.roles = data.items || [];
     page.allPermissions = data.all_permissions || (UI.state.meta && UI.state.meta.all_permissions) || [];
+    populateFilterDropdowns();
     renderRolesTable();
   }
 
   function renderRolesTable() {
+    const q = ($("roles-dt-search") ? $("roles-dt-search").value : "").trim().toLowerCase();
+    const typeQ = $("flt-role-type").value || "All";
+
+    const filtered = page.roles.filter((r) => {
+      const roleType = r.is_system ? "System" : "Custom";
+      const descDisp = r.is_system ? t(r.description || "") : (r.description || "");
+      if (q) {
+        const hay = [r.name, t(roleType), descDisp].filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (typeQ !== "All" && roleType !== typeQ) return false;
+      return true;
+    });
+
     const tbody = $("roles-tbody");
-    if (!page.roles.length) {
+    if (!filtered.length) {
       tbody.innerHTML = `<tr class="empty-row"><td colspan="6">-</td></tr>`;
       return;
     }
-    tbody.innerHTML = page.roles
+    tbody.innerHTML = filtered
       .map((r) => {
-        const isImmutableAdmin = r.name === "Admin";
-        const typeTag = r.is_system
+        const isReadOnly = Boolean(r.is_system);
+        const typeTag = isReadOnly
           ? `<span class="cds--tag cds--tag--purple">${escHtml(t("System"))}</span>`
           : `<span class="cds--tag cds--tag--blue">${escHtml(t("Custom"))}</span>`;
         const permsCount = (r.permissions || []).length;
-        const editIcon = isImmutableAdmin ? icon("view", 16) : icon("edit", 16);
-        const editTitle = isImmutableAdmin ? t("View") : t("Edit");
-        const delBtn = r.is_system
+        const editIcon = isReadOnly ? icon("view", 16) : icon("edit", 16);
+        const editTitle = isReadOnly ? t("View") : t("Edit");
+        const descDisp = isReadOnly ? t(r.description || "") : (r.description || "");
+        const delBtn = isReadOnly
           ? ""
           : `<button type="button" class="cds--btn--icon danger act-role-del" data-id="${r.id}" title="${escHtml(t("Delete"))}">${icon("trash-can", 16)}</button>`;
         return `
@@ -43,7 +73,7 @@
             <td>${typeTag}</td>
             <td><span class="cds--tag cds--tag--gray">${permsCount} / ${page.allPermissions.length}</span></td>
             <td>${escHtml(r.user_count != null ? r.user_count : 0)}</td>
-            <td>${escHtml(r.description || "")}</td>
+            <td>${escHtml(descDisp)}</td>
             <td class="col-actions">
               <button type="button" class="cds--btn--icon act-role-edit" data-id="${r.id}" title="${escHtml(editTitle)}">${editIcon}</button>
               ${delBtn}
@@ -63,7 +93,7 @@
       btn.addEventListener("click", () => {
         const rid = parseInt(btn.getAttribute("data-id"), 10);
         const r = page.roles.find((x) => x.id === rid);
-        if (!r) return;
+        if (!r || r.is_system) return;
         showConfirm(
           t("Delete Role"),
           t("Delete custom role '{name}'?", { name: r.name }),
@@ -116,19 +146,26 @@
 
   function openRoleModal(role) {
     page.editingRoleId = role ? role.id : null;
-    const isImmutableAdmin = Boolean(role && role.name === "Admin");
-    $("modal-role-title").textContent = role ? (isImmutableAdmin ? `${t("Role")}: Admin` : t("Edit Role")) : t("Add Role");
+    const isSystemReadOnly = Boolean(role && role.is_system);
+    $("modal-role-title").textContent = role
+      ? (isSystemReadOnly ? `${t("Role")}: ${role.name}` : t("Edit Role"))
+      : t("Add Role");
     $("role-editor-err").classList.add("hidden");
+    $("role-readonly-note").classList.toggle("hidden", !isSystemReadOnly);
 
     $("role-name").value = role ? role.name : "";
-    $("role-name").readOnly = Boolean(role && role.is_system);
-    $("role-desc").value = role ? (role.description || "") : "";
-    $("role-desc").readOnly = isImmutableAdmin;
+    $("role-name").readOnly = isSystemReadOnly;
+    $("role-desc").value = role ? (isSystemReadOnly ? t(role.description || "") : (role.description || "")) : "";
+    $("role-desc").readOnly = isSystemReadOnly;
 
-    renderPermissionsGrid(role ? role.permissions : ["jobs:read", "snippets:read", "devices:read"], isImmutableAdmin);
-    $("btn-save-role").classList.toggle("hidden", isImmutableAdmin);
-    $("btn-role-perms-all").classList.toggle("hidden", isImmutableAdmin);
-    $("btn-role-perms-none").classList.toggle("hidden", isImmutableAdmin);
+    renderPermissionsGrid(
+      role ? role.permissions : ["jobs:read", "snippets:read", "devices:read"],
+      isSystemReadOnly
+    );
+    $("btn-save-role").classList.toggle("hidden", isSystemReadOnly);
+    $("btn-role-perms-all").classList.toggle("hidden", isSystemReadOnly);
+    $("btn-role-perms-none").classList.toggle("hidden", isSystemReadOnly);
+    $("btn-cancel-role").textContent = isSystemReadOnly ? t("Close") : t("Cancel");
 
     openModal("modal-role-editor");
   }
@@ -155,6 +192,21 @@
       $("role-editor-err").classList.remove("hidden");
     }
   }
+
+  page.toolbar = wireDataTableToolbar({
+    searchInputId: "roles-dt-search",
+    searchClearId: "roles-dt-search-clear",
+    filterBtnId: "roles-filter-btn",
+    filterBadgeId: "roles-filter-badge",
+    popoverId: "roles-filter-popover",
+    applyBtnId: "roles-filter-apply",
+    resetBtnId: "roles-filter-reset",
+    chipsContainerId: "roles-active-filters",
+    fields: [
+      { id: "flt-role-type", labelKey: "Type", defaultVal: "All", formatValue: t },
+    ],
+    onChange: renderRolesTable,
+  });
 
   $("btn-add-role").addEventListener("click", () => openRoleModal(null));
   $("btn-save-role").addEventListener("click", saveRole);

@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 # Translations template for aethernms.
+=======
+# Portuguese (Brazil) translations for aethernms.
+>>>>>>> Stashed changes
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the aethernms project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -10,11 +14,24 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: aethernms 0.1.0\n"
+<<<<<<< Updated upstream
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-11-19 14:27-0300\n"
 "PO-Revision-Date: 2026-11-19 20:09+0000\n"
 "Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>, 2026\n"
 "Language-Team: Portuguese (Brazil) (https://app.transifex.com/eduardomozart/teams/311730/pt_BR/)\n"
+=======
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-19 17:07-0300\n"
+"PO-Revision-Date: 2026-11-17 22:03+0000\n"
+"Last-Translator: Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>,"
+" 2026\n"
+"Language: pt_BR\n"
+"Language-Team: Portuguese (Brazil) "
+"(https://app.transifex.com/eduardomozart/teams/311730/pt_BR/)\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
+"1000000 == 0 ? 1 : 2;\n"
+>>>>>>> Stashed changes
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -165,7 +182,7 @@ msgid "Select at least one target device matching this Netmiko platform."
 msgstr ""
 "Selecione ao menos um dispositivo compatível com esta plataforma Netmiko."
 
-#: aethernms/job_builder.py:111
+#: aethernms/job_builder.py:111 aethernms/web_strings.py:342
 msgid "Username is required."
 msgstr "O usuário é obrigatório."
 
@@ -1013,7 +1030,7 @@ msgstr "Protocolo *"
 msgid "Port"
 msgstr "Porta"
 
-#: aethernms/web_strings.py:219
+#: aethernms/web_strings.py:219 aethernms/web_strings.py:310
 msgid "Port *"
 msgstr "Porta *"
 
@@ -1296,3 +1313,433 @@ msgstr "Ocultar"
 #: aethernms/web_strings.py:288
 msgid "Refresh Status"
 msgstr "Atualizar Status"
+<<<<<<< Updated upstream
+=======
+
+#: aethernms/web_strings.py:290
+msgid "Initial Setup Guide"
+msgstr "Guia de Configuração Inicial"
+
+#: aethernms/web_strings.py:291
+msgid ""
+"Configure your database backend and create the first administrator "
+"account."
+msgstr ""
+"Configure o backend do banco de dados e crie a primeira conta de "
+"administrador."
+
+#: aethernms/web_strings.py:292
+msgid "Database Backend"
+msgstr "Banco de Dados"
+
+#: aethernms/web_strings.py:293
+msgid "Administrator Account"
+msgstr "Conta de Administrador"
+
+#: aethernms/web_strings.py:294
+msgid "Review & Complete"
+msgstr "Revisar e Concluir"
+
+#: aethernms/web_strings.py:295
+msgid "Database Engine *"
+msgstr "Mecanismo de Banco de Dados *"
+
+#: aethernms/web_strings.py:296
+msgid "Database Engine"
+msgstr "Mecanismo de Banco de Dados"
+
+#: aethernms/web_strings.py:297
+msgid "Python Driver Status:"
+msgstr "Status do Driver Python:"
+
+#: aethernms/web_strings.py:298
+msgid "Driver Installed"
+msgstr "Driver Instalado"
+
+#: aethernms/web_strings.py:299
+msgid "Driver Missing"
+msgstr "Driver Ausente"
+
+#: aethernms/web_strings.py:300
+msgid "Custom Adapter URI"
+msgstr "URI de Adaptador Personalizado"
+
+#: aethernms/web_strings.py:301
+msgid "SQLite (Local — Default)"
+msgstr "SQLite (Local — Padrão)"
+
+#: aethernms/web_strings.py:302
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+#: aethernms/web_strings.py:303
+msgid "MySQL / MariaDB"
+msgstr "MySQL / MariaDB"
+
+#: aethernms/web_strings.py:304
+msgid "Microsoft SQL Server (MSSQL)"
+msgstr "Microsoft SQL Server (MSSQL)"
+
+#: aethernms/web_strings.py:305
+msgid "Oracle Database"
+msgstr "Oracle Database"
+
+#: aethernms/web_strings.py:306
+msgid "Custom PyDAL URI"
+msgstr "URI PyDAL Personalizado"
+
+#: aethernms/web_strings.py:307
+msgid "SQLite Database File Path *"
+msgstr "Caminho do Arquivo de Banco SQLite *"
+
+#: aethernms/web_strings.py:308
+msgid "Local WAL-mode SQLite database file created upon completing setup."
+msgstr ""
+"Arquivo de banco de dados SQLite local em modo WAL criado ao concluir a "
+"configuração."
+
+#: aethernms/web_strings.py:309
+msgid "Host *"
+msgstr "Host *"
+
+#: aethernms/web_strings.py:311
+msgid "Database Name / Service *"
+msgstr "Nome do Banco / Serviço *"
+
+#: aethernms/web_strings.py:312
+msgid "Database Username *"
+msgstr "Usuário do Banco *"
+
+#: aethernms/web_strings.py:313
+msgid "Database Password"
+msgstr "Senha do Banco"
+
+#: aethernms/web_strings.py:314
+msgid "ODBC Driver"
+msgstr "Driver ODBC"
+
+#: aethernms/web_strings.py:315
+msgid "Extra URI Query Parameters"
+msgstr "Parâmetros Extras da URI"
+
+#: aethernms/web_strings.py:317
+msgid ""
+"Optional query parameters appended to the PyDAL connection URI (e.g. "
+"sslmode=require or charset=utf8mb4)."
+msgstr ""
+"Parâmetros opcionais adicionados à URI de conexão PyDAL (ex.: "
+"sslmode=require ou charset=utf8mb4)."
+
+#: aethernms/web_strings.py:319
+msgid "Custom PyDAL URI *"
+msgstr "URI PyDAL Personalizado *"
+
+#: aethernms/web_strings.py:321
+msgid ""
+"Provide any valid PyDAL connection string (credentials will be stored in "
+"db_config.json and masked in UI/logs)."
+msgstr ""
+"Informe qualquer string de conexão PyDAL válida (as credenciais serão "
+"armazenadas em db_config.json e mascaradas na interface e nos logs)."
+
+#: aethernms/web_strings.py:323
+msgid "Test Connection"
+msgstr "Testar Conexão"
+
+#: aethernms/web_strings.py:324
+msgid "Minimum 6 characters."
+msgstr "Mínimo de 6 caracteres."
+
+#: aethernms/web_strings.py:325
+msgid "Seed built-in Netmiko snippets"
+msgstr "Carregar snippets Netmiko integrados"
+
+#: aethernms/web_strings.py:327
+msgid ""
+"Populate bundled Aruba AOS-CX and AOS-S Config and Audit snippets into "
+"the database."
+msgstr ""
+"Popula os snippets integrados de Configuração e Auditoria para Aruba AOS-"
+"CX e AOS-S no banco de dados."
+
+#: aethernms/web_strings.py:329
+msgid "Connection URI"
+msgstr "URI de Conexão"
+
+#: aethernms/web_strings.py:330
+msgid "Administrator Username"
+msgstr "Usuário Administrador"
+
+#: aethernms/web_strings.py:331
+msgid "Default RBAC Roles"
+msgstr "Perfis RBAC Padrão"
+
+#: aethernms/web_strings.py:332
+msgid "Seed Built-in Snippets"
+msgstr "Carregar Snippets Integrados"
+
+#: aethernms/web_strings.py:333
+msgid "Complete Setup"
+msgstr "Concluir Configuração"
+
+#: aethernms/web_strings.py:334
+#, python-brace-format
+msgid "Database backend is configured via environment variable or CLI flag: {uri}"
+msgstr ""
+"O backend de banco de dados foi configurado por variável de ambiente ou "
+"parâmetro CLI: {uri}"
+
+#: aethernms/web_strings.py:335
+#, python-brace-format
+msgid ""
+"Required Python driver is missing ({cmd}). Install it first or choose "
+"SQLite."
+msgstr ""
+"O driver Python obrigatório está ausente ({cmd}). Instale-o primeiro ou "
+"escolha SQLite."
+
+#: aethernms/web_strings.py:336
+msgid "SQLite database path is required."
+msgstr "O caminho do banco de dados SQLite é obrigatório."
+
+#: aethernms/web_strings.py:337
+msgid "Custom PyDAL URI must include a scheme such as 'scheme://...'."
+msgstr "A URI PyDAL personalizada deve incluir um esquema como 'scheme://...'."
+
+#: aethernms/web_strings.py:338
+msgid "Database host is required."
+msgstr "O host do banco de dados é obrigatório."
+
+#: aethernms/web_strings.py:339
+msgid "Database port must be between 1 and 65535."
+msgstr "A porta do banco de dados deve estar entre 1 e 65535."
+
+#: aethernms/web_strings.py:340
+msgid "Database name is required."
+msgstr "O nome do banco de dados é obrigatório."
+
+#: aethernms/web_strings.py:341
+msgid "Database username is required."
+msgstr "O usuário do banco de dados é obrigatório."
+
+#: aethernms/web_strings.py:343
+msgid "Password must be at least 6 characters long."
+msgstr "A senha deve ter pelo menos 6 caracteres."
+
+#: aethernms/web_strings.py:344
+msgid "Connection test failed."
+msgstr "Falha no teste de conexão."
+
+#: aethernms/web_strings.py:345
+msgid "Connection succeeded."
+msgstr "Conexão bem-sucedida."
+
+#: aethernms/web_strings.py:346
+msgid "Connection failed."
+msgstr "Falha na conexão."
+
+#: aethernms/web_strings.py:347
+msgid "Setup failed."
+msgstr "Falha na configuração."
+
+#: aethernms/web_strings.py:348
+msgid "Read-only"
+msgstr "Somente leitura"
+
+#: aethernms/web_strings.py:349
+msgid ""
+"Database connection settings are configured during initial setup "
+"(db_config.json) or via AETHERNMS_DB_URI / --db-uri."
+msgstr ""
+"As configurações de conexão com o banco de dados são definidas durante a "
+"configuração inicial (db_config.json) ou via AETHERNMS_DB_URI / --db-uri."
+
+#: aethernms/web_strings.py:350
+msgid "Initial administrator setup is required first."
+msgstr "A configuração inicial do administrador é necessária primeiro."
+
+#: aethernms/web_strings.py:351
+msgid "Initial setup has already been completed."
+msgstr "A configuração inicial já foi concluída."
+
+#: aethernms/web_strings.py:352
+msgid "Initial setup is required. Complete setup at /setup first."
+msgstr ""
+"A configuração inicial é necessária. Conclua a configuração em /setup "
+"primeiro."
+
+#: aethernms/web_strings.py:353
+msgid "Administrator account is already configured."
+msgstr "A conta de administrador já está configurada."
+
+#: aethernms/web_strings.py:354
+msgid "Current password is incorrect."
+msgstr "A senha atual está incorreta."
+
+#: aethernms/web_strings.py:355
+msgid "Authentication required."
+msgstr "Autenticação obrigatória."
+
+#: aethernms/web_strings.py:356
+msgid "Invalid JSON payload."
+msgstr "Payload JSON inválido."
+
+#: aethernms/web_strings.py:358
+msgid ""
+"Full administrative access to automation, system settings, users, roles, "
+"and API keys."
+msgstr ""
+"Acesso administrativo completo à automação, configurações do sistema, "
+"usuários, funções e chaves de API."
+
+#: aethernms/web_strings.py:359
+msgid ""
+"Can run jobs, manage snippets and devices, import from AirWave, and "
+"manage own API keys."
+msgstr ""
+"Pode executar tarefas, gerenciar snippets e dispositivos, importar do "
+"AirWave e gerenciar as próprias chaves de API."
+
+#: aethernms/web_strings.py:360
+msgid "Read-only access to jobs, execution logs, snippets, and device inventory."
+msgstr ""
+"Acesso somente leitura a tarefas, logs de execução, snippets e inventário "
+"de dispositivos."
+
+#: aethernms/web_strings.py:362
+msgid "Help"
+msgstr "Ajuda"
+
+#: aethernms/web_strings.py:363
+msgid "Theme"
+msgstr "Tema"
+
+#: aethernms/web_strings.py:364
+msgid "Language"
+msgstr "Idioma"
+
+#: aethernms/web_strings.py:365
+msgid "Toggle navigation"
+msgstr "Alternar navegação"
+
+#: aethernms/web_strings.py:366
+msgid "Side navigation"
+msgstr "Navegação lateral"
+
+#: aethernms/web_strings.py:367
+msgid "Setup steps"
+msgstr "Etapas de configuração"
+
+#: aethernms/web_strings.py:368
+msgid "Search devices"
+msgstr "Pesquisar dispositivos"
+
+#: aethernms/web_strings.py:369
+msgid "Swagger / OpenAPI 3.0"
+msgstr "Swagger / OpenAPI 3.0"
+
+#: aethernms/web_strings.py:370
+msgid "Return to Application"
+msgstr "Retornar à Aplicação"
+
+#: aethernms/web_strings.py:371
+msgid "Back to App"
+msgstr "Voltar à Aplicação"
+
+#: aethernms/web_strings.py:372
+msgid "Access Denied"
+msgstr "Acesso Negado"
+
+#: aethernms/web_strings.py:374
+msgid "Complete"
+msgstr "Concluir"
+
+#: aethernms/web_strings.py:376
+msgid "Search table..."
+msgstr "Pesquisar na tabela..."
+
+#: aethernms/web_strings.py:377
+msgid "Filter"
+msgstr "Filtrar"
+
+#: aethernms/web_strings.py:378
+msgid "Filters"
+msgstr "Filtros"
+
+#: aethernms/web_strings.py:379
+msgid "Apply"
+msgstr "Aplicar"
+
+#: aethernms/web_strings.py:380
+msgid "Reset filters"
+msgstr "Redefinir filtros"
+
+#: aethernms/web_strings.py:381
+msgid "Clear"
+msgstr "Limpar"
+
+#: aethernms/web_strings.py:383
+msgid "Built-in"
+msgstr "Integrado"
+
+#: aethernms/web_strings.py:384
+msgid "View Snippet"
+msgstr "Visualizar Snippet"
+
+#: aethernms/web_strings.py:385
+msgid ""
+"Built-in snippets are read-only templates and cannot be modified or "
+"deleted."
+msgstr ""
+"Snippets integrados são modelos somente leitura e não podem ser "
+"modificados ou excluídos."
+
+#: aethernms/web_strings.py:386
+msgid "Built-in snippets are read-only and cannot be modified."
+msgstr "Snippets integrados são somente leitura e não podem ser modificados."
+
+#: aethernms/web_strings.py:387
+msgid "Built-in snippets are read-only and cannot be deleted."
+msgstr "Snippets integrados são somente leitura e não podem ser excluídos."
+
+#: aethernms/web_strings.py:388
+msgid "Built-in system roles are read-only and cannot be modified or deleted."
+msgstr ""
+"Funções padrão do sistema são somente leitura e não podem ser "
+"modificadas ou excluídas."
+
+#: aethernms/web_strings.py:389
+#, python-brace-format
+msgid "System role '{name}' is read-only and cannot be modified."
+msgstr "A função padrão '{name}' é somente leitura e não pode ser modificada."
+
+#: aethernms/web_strings.py:390
+#, python-brace-format
+msgid "System role '{name}' is read-only and cannot be deleted."
+msgstr "A função padrão '{name}' é somente leitura e não pode ser excluída."
+
+#: aethernms/web_strings.py:392
+msgid "Current Password"
+msgstr "Senha Atual"
+
+#: aethernms/web_strings.py:393
+msgid "Required only when changing your password."
+msgstr "Obrigatório apenas ao alterar sua senha."
+
+#: aethernms/web_strings.py:394
+msgid ""
+"Configure Netmiko execution defaults, connection defaults, and External "
+"REST API / Swagger access."
+msgstr ""
+"Configure padrões de execução Netmiko, padrões de conexão e acesso à API "
+"REST Externa / Swagger."
+
+#: aethernms/web_strings.py:395
+msgid ""
+"Manage user accounts, per-user appearance preferences, role assignments, "
+"and active status."
+msgstr ""
+"Gerencie contas de usuário, preferências de aparência por usuário, "
+"atribuições de função e status ativo."
+
+>>>>>>> Stashed changes

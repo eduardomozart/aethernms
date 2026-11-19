@@ -1,7 +1,8 @@
 """Tests for ${var|type|regex} and ${var|['Item 1', 'Item 2']} parsing, validation, and rendering."""
 
-from pssh_ui.models import HostEntry
-from pssh_ui.variables import (
+from aethernms.i18n import get_language, set_language
+from aethernms.models import HostEntry
+from aethernms.variables import (
     extract_variables,
     render_template,
     validate_single_value,
@@ -121,7 +122,12 @@ def test_backwards_compatible_regex_and_html_type_validation():
     assert errs_ok == {}
 
     bad_spec = extract_variables("cmd ${broken|text|[unclosed}")[0]
-    err_msg = validate_single_value(bad_spec, "anything")
+    prev_lang = get_language()
+    set_language("en")
+    try:
+        err_msg = validate_single_value(bad_spec, "anything")
+    finally:
+        set_language(prev_lang)
     assert err_msg is not None and "Invalid regex" in err_msg
 
 

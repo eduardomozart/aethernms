@@ -2,8 +2,8 @@
 <div id="modal-add-job" class="cds--modal cds--modal-backdrop" role="dialog" aria-modal="true">
   <div class="cds--modal-container xl">
     <div class="cds--modal-header">
-      <h3 class="cds--modal-header__heading" data-i18n="Add Job">Add Job</h3>
-      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="Close">
+      <h3 class="cds--modal-header__heading" data-i18n="Add Job">[[=T("Add Job")]]</h3>
+      <button type="button" class="cds--modal-close" data-modal-cancel aria-label="[[=T('Close')]]">
         [[=XML(icon("close", 20))]]
       </button>
     </div>
@@ -15,35 +15,35 @@
       <div id="wiz-step-command">
         <div class="form-grid">
           <div class="cds--form-item span-2">
-            <label class="cds--label" data-i18n="Job Type *">Job Type *</label>
+            <label class="cds--label" data-i18n="Job Type *">[[=T("Job Type *")]]</label>
             <div class="radio-group">
-              <label><input type="radio" name="wiz-job-type" value="Config" checked /> <span data-i18n="Config">Config</span></label>
-              <label><input type="radio" name="wiz-job-type" value="Audit and Remediate" /> <span data-i18n="Audit and Remediate">Audit and Remediate</span></label>
+              <label><input type="radio" name="wiz-job-type" value="Config" checked /> <span data-i18n="Config">[[=T("Config")]]</span></label>
+              <label><input type="radio" name="wiz-job-type" value="Audit and Remediate" /> <span data-i18n="Audit and Remediate">[[=T("Audit and Remediate")]]</span></label>
             </div>
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-name" data-i18n="Job Name *">Job Name *</label>
+            <label class="cds--label" for="wiz-name" data-i18n="Job Name *">[[=T("Job Name *")]]</label>
             <input id="wiz-name" class="cds--text-input" type="text" />
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-os" data-i18n="Netmiko Platform *">Netmiko Platform *</label>
+            <label class="cds--label" for="wiz-os" data-i18n="Netmiko Platform *">[[=T("Netmiko Platform *")]]</label>
             <select id="wiz-os" class="cds--select-input"></select>
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-snippet" data-i18n="Snippets *">Snippets *</label>
+            <label class="cds--label" for="wiz-snippet" data-i18n="Snippets *">[[=T("Snippets *")]]</label>
             <select id="wiz-snippet" class="cds--select-input"></select>
             <span id="wiz-snippet-desc" class="cds--helper-text"></span>
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-desc" data-i18n="Job Description">Job Description</label>
+            <label class="cds--label" for="wiz-desc" data-i18n="Job Description">[[=T("Job Description")]]</label>
             <input id="wiz-desc" class="cds--text-input" type="text" />
           </div>
           <div class="cds--form-item span-2">
-            <label class="cds--label" for="wiz-cmds" data-i18n="Config Commands *">Config Commands *</label>
+            <label class="cds--label" for="wiz-cmds" data-i18n="Config Commands *">[[=T("Config Commands *")]]</label>
             <textarea id="wiz-cmds" class="cds--text-area mono" rows="7"></textarea>
           </div>
           <div id="wiz-audit-wrap" class="cds--form-item span-2 hidden">
-            <label class="cds--label" for="wiz-audit" data-i18n="Audit Validation RegEx (1 pattern per line, ! comments ignored)">Audit Validation RegEx (1 pattern per line, ! comments ignored)</label>
+            <label class="cds--label" for="wiz-audit" data-i18n="Audit Validation RegEx (1 pattern per line, ! comments ignored)">[[=T("Audit Validation RegEx (1 pattern per line, ! comments ignored)")]]</label>
             <textarea id="wiz-audit" class="cds--text-area mono" rows="4"></textarea>
           </div>
         </div>
@@ -51,7 +51,7 @@
 
       <!-- Step 2: Parameters (dynamic) -->
       <div id="wiz-step-params" class="hidden">
-        <p id="wiz-params-hint" class="cds--helper-text" style="margin:0 0 12px;" data-i18n="Fill in snippet variables below.">Fill in snippet variables below.</p>
+        <p id="wiz-params-hint" class="cds--helper-text" style="margin:0 0 12px;" data-i18n="Fill in snippet variables below.">[[=T("Fill in snippet variables below.")]]</p>
         <div id="wiz-params-container" class="form-grid"></div>
       </div>
 
@@ -60,49 +60,75 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
           <strong id="wiz-target-os-hint"></strong>
           <div style="display:flex;gap:8px;">
-            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="wiz-dev-select-all" data-i18n="Select All">Select All</button>
-            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="wiz-dev-clear-sel" data-i18n="Clear Selection">Clear Selection</button>
+            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="wiz-dev-select-all" data-i18n="Select All">[[=T("Select All")]]</button>
+            <button type="button" class="cds--btn cds--btn--ghost cds--btn--sm" id="wiz-dev-clear-sel" data-i18n="Clear Selection">[[=T("Clear Selection")]]</button>
           </div>
         </div>
-        <div class="filter-bar">
-          <div class="filter-field">
-            <label class="cds--label" for="wiz-flt-name" data-i18n="Device">Device</label>
-            <input id="wiz-flt-name" class="cds--text-input" type="text" />
+        <div class="anms-table-container">
+          <div class="anms-dt-toolbar">
+            <div class="anms-dt-search-wrap">
+              <span class="anms-dt-search-icon">[[=XML(icon("search", 16))]]</span>
+              <input
+                id="wiz-dt-search"
+                class="anms-dt-search-input"
+                type="text"
+                placeholder="[[=T('Search table...')]]"
+                data-i18n-placeholder="Search table..."
+                aria-label="[[=T('Search table...')]]"
+              />
+              <button type="button" id="wiz-dt-search-clear" class="anms-dt-search-clear hidden" title="[[=T('Clear')]]" data-i18n-title="Clear">
+                [[=XML(icon("close", 16))]]
+              </button>
+            </div>
+            <div class="anms-dt-toolbar-actions">
+              <div class="anms-dt-filter-wrap">
+                <button type="button" id="wiz-filter-btn" class="anms-dt-icon-btn" title="[[=T('Filter')]]" data-i18n-title="Filter" aria-label="[[=T('Filter')]]">
+                  [[=XML(icon("filter", 16))]]
+                  <span id="wiz-filter-badge" class="anms-filter-badge hidden">0</span>
+                </button>
+                <div id="wiz-filter-popover" class="anms-filter-popover hidden" role="dialog" aria-label="[[=T('Filters')]]">
+                  <div class="anms-filter-popover__body">
+                    <div class="cds--form-item">
+                      <label class="cds--label" for="wiz-flt-os" data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</label>
+                      <select id="wiz-flt-os" class="cds--select-input"></select>
+                    </div>
+                    <div class="cds--form-item">
+                      <label class="cds--label" for="wiz-flt-group" data-i18n="Group">[[=T("Group")]]</label>
+                      <input id="wiz-flt-group" class="cds--text-input" type="text" />
+                    </div>
+                    <div class="cds--form-item">
+                      <label class="cds--label" for="wiz-flt-status" data-i18n="Status">[[=T("Status")]]</label>
+                      <select id="wiz-flt-status" class="cds--select-input"></select>
+                    </div>
+                  </div>
+                  <div class="anms-filter-popover__footer">
+                    <button type="button" id="wiz-filter-reset" class="cds--btn cds--btn--secondary" data-i18n="Reset filters">[[=T("Reset filters")]]</button>
+                    <button type="button" id="wiz-filter-apply" class="cds--btn cds--btn--primary" data-i18n="Apply">[[=T("Apply")]]</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="filter-field">
-            <label class="cds--label" for="wiz-flt-ip" data-i18n="IP Address">IP Address</label>
-            <input id="wiz-flt-ip" class="cds--text-input" type="text" />
+          <div id="wiz-active-filters" class="anms-active-filters hidden"></div>
+
+          <div class="table-wrap">
+            <table class="cds--data-table">
+              <thead>
+                <tr>
+                  <th class="col-check"></th>
+                  <th data-i18n="Device">[[=T("Device")]]</th>
+                  <th data-i18n="Status">[[=T("Status")]]</th>
+                  <th data-i18n="IP Address">[[=T("IP Address")]]</th>
+                  <th data-i18n="Protocol:Port">[[=T("Protocol:Port")]]</th>
+                  <th data-i18n="Netmiko Platform">[[=T("Netmiko Platform")]]</th>
+                  <th data-i18n="Group">[[=T("Group")]]</th>
+                </tr>
+              </thead>
+              <tbody id="wiz-devices-tbody"></tbody>
+            </table>
           </div>
-          <div class="filter-field compact">
-            <label class="cds--label" for="wiz-flt-os" data-i18n="Netmiko Platform">Netmiko Platform</label>
-            <select id="wiz-flt-os" class="cds--select-input"></select>
-          </div>
-          <div class="filter-field">
-            <label class="cds--label" for="wiz-flt-group" data-i18n="Group">Group</label>
-            <input id="wiz-flt-group" class="cds--text-input" type="text" />
-          </div>
-          <div class="filter-field compact">
-            <label class="cds--label" for="wiz-flt-status" data-i18n="Status">Status</label>
-            <select id="wiz-flt-status" class="cds--select-input"></select>
-          </div>
+          <div id="wiz-devices-pagination" class="cds--pagination"></div>
         </div>
-        <div class="table-wrap">
-          <table class="cds--data-table">
-            <thead>
-              <tr>
-                <th class="col-check"></th>
-                <th data-i18n="Device">Device</th>
-                <th data-i18n="Status">Status</th>
-                <th data-i18n="IP Address">IP Address</th>
-                <th data-i18n="Protocol:Port">Protocol:Port</th>
-                <th data-i18n="Netmiko Platform">Netmiko Platform</th>
-                <th data-i18n="Group">Group</th>
-              </tr>
-            </thead>
-            <tbody id="wiz-devices-tbody"></tbody>
-          </table>
-        </div>
-        <div id="wiz-devices-pagination" class="cds--pagination"></div>
       </div>
 
       <!-- Step 4: Confirm -->
@@ -110,41 +136,41 @@
         <div id="wiz-confirm-summary" class="cds--inline-notification" style="margin-bottom:12px;"></div>
         <div class="form-grid" style="margin-bottom:14px;">
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-ssh-user" data-i18n="Username *">Username *</label>
+            <label class="cds--label" for="wiz-ssh-user" data-i18n="Username *">[[=T("Username *")]]</label>
             <input id="wiz-ssh-user" class="cds--text-input" type="text" autocomplete="off" />
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-ssh-pass" data-i18n="Password *">Password *</label>
+            <label class="cds--label" for="wiz-ssh-pass" data-i18n="Password *">[[=T("Password *")]]</label>
             <input id="wiz-ssh-pass" class="cds--text-input" type="password" autocomplete="new-password" />
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-enable-pass" data-i18n="Enable Password">Enable Password</label>
+            <label class="cds--label" for="wiz-enable-pass" data-i18n="Enable Password">[[=T("Enable Password")]]</label>
             <input id="wiz-enable-pass" class="cds--text-input" type="password" autocomplete="new-password" />
           </div>
           <div class="cds--form-item">
-            <label class="cds--label" for="wiz-max-parallel" data-i18n="Max Parallel Executions">Max Parallel Executions</label>
+            <label class="cds--label" for="wiz-max-parallel" data-i18n="Max Parallel Executions">[[=T("Max Parallel Executions")]]</label>
             <div style="display:flex;align-items:center;gap:12px;">
               <input id="wiz-max-parallel" class="cds--text-input" type="number" min="1" max="64" style="max-width:110px;" />
-              <label class="checkbox-label"><input id="wiz-seq" type="checkbox" /> <span data-i18n="Sequential">Sequential</span></label>
+              <label class="checkbox-label"><input id="wiz-seq" type="checkbox" /> <span data-i18n="Sequential">[[=T("Sequential")]]</span></label>
             </div>
           </div>
           <div id="wiz-save-cfg-wrap" class="cds--form-item span-2">
-            <label class="checkbox-label"><input id="wiz-save-cfg" type="checkbox" /> <span data-i18n="Save configuration">Save configuration</span></label>
+            <label class="checkbox-label"><input id="wiz-save-cfg" type="checkbox" /> <span data-i18n="Save configuration">[[=T("Save configuration")]]</span></label>
           </div>
         </div>
         <div class="cds--form-item">
-          <label class="cds--label" data-i18n="Resulting Commands (Read-Only)">Resulting Commands (Read-Only)</label>
+          <label class="cds--label" data-i18n="Resulting Commands (Read-Only)">[[=T("Resulting Commands (Read-Only)")]]</label>
           <pre id="wiz-confirm-preview" class="cli-preview"></pre>
         </div>
       </div>
     </div>
 
     <div class="cds--modal-footer spread">
-      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">Cancel</button>
+      <button type="button" class="cds--btn cds--btn--secondary" data-modal-cancel data-i18n="Cancel">[[=T("Cancel")]]</button>
       <div style="display:flex;gap:8px;">
-        <button type="button" class="cds--btn cds--btn--tertiary" id="wiz-back-btn" data-i18n="< Back">&lt; Back</button>
-        <button type="button" class="cds--btn cds--btn--primary" id="wiz-next-btn" data-i18n="Next >">Next &gt;</button>
-        <button type="button" class="cds--btn cds--btn--primary hidden" id="wiz-run-btn" data-i18n="Run Job">Run Job</button>
+        <button type="button" class="cds--btn cds--btn--tertiary" id="wiz-back-btn" data-i18n="< Back">[[=T("< Back")]]</button>
+        <button type="button" class="cds--btn cds--btn--primary" id="wiz-next-btn" data-i18n="Next >">[[=T("Next >")]]</button>
+        <button type="button" class="cds--btn cds--btn--primary hidden" id="wiz-run-btn" data-i18n="Run Job">[[=T("Run Job")]]</button>
       </div>
     </div>
   </div>

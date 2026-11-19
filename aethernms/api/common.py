@@ -18,6 +18,7 @@ from aethernms.models import (
     Snippet,
     is_airwave_host,
 )
+from aethernms.netmiko_catalog import platform_display_name
 from aethernms.os_integration import detect_os_language, match_supported_language
 
 CtxGetter = Callable[[], Any]
@@ -73,6 +74,8 @@ def extract_api_key_header() -> str:
 
 def check_external_api_access(ctx: Any) -> Optional[str]:
     """Enforce System Settings External API toggle and IP/CIDR allowlist. Returns error message or None."""
+    if ctx.db is None:
+        return "Initial setup is required. Complete setup at /setup first."
     settings = ctx.db.get_settings()
     if not settings.api_enabled:
         return "External API and Swagger access is disabled. Enable it in Administration -> System Settings."
@@ -87,6 +90,8 @@ def user_has_permission(user: Dict[str, Any], permission: str) -> bool:
 
 
 def resolve_session_user(ctx: Any, session: Any) -> Optional[Dict[str, Any]]:
+    if ctx.db is None:
+        return None
     uid = session.get("user_id")
     if uid:
         user = ctx.db.get_user_by_id(int(uid))
@@ -103,12 +108,19 @@ def require_api_user(
 ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """Authenticate a unified /api/* request via API Key (external) or signed Web UI browser session cookie.
 
+    - When database setup has not completed (ctx.db is None): 503 with setup_required=True.
     - External API Key requests (X-API-Key / Authorization: Bearer): gated by api_enabled + IP allowlist.
     - Signed Web UI browser session cookies (issued exclusively by /login and /setup): always allowed for
       authenticated UI interactions so administrators can manage the application even while External API is disabled.
     - Unauthenticated requests (neither API Key nor session cookie): 403 when External API is disabled or IP is
       blocked, else 401 requiring an API Key.
     """
+    if ctx.db is None:
+        return None, json_error(
+            503,
+            "Initial setup is required. Complete setup at /setup first.",
+            extra={"setup_required": True},
+        )
     api_token = extract_api_key_header()
     if api_token:
         ext_err = check_external_api_access(ctx)
@@ -140,14 +152,41 @@ def require_api_user(
     return user, None
 
 
-def effective_language(settings: AppSettings, requested_lang: str = "") -> str:
+def effective_language(
+    settings: AppSettings,
+    requested_lang: str = "",
+    user: Optional[Dict[str, Any]] = None,
+) -> str:
     langs = available_languages()
     req = (requested_lang or "").strip()
-    if req and req != "auto" and req in langs:
-        return req
-    saved = (settings.language or "auto").strip()
-    if saved != "auto" and saved in langs:
-        return saved
+    if req and req.lower() != "auto":
+        for chunk in req.split(","):
+            code = chunk.split(";", 1)[0].strip()
+            if not code:
+                continue
+            if code in langs:
+                return code
+            matched = match_supported_language(code, langs)
+            if matched:
+                return matched
+
+    if user is not None:
+        user_lang = str(user.get("language") or "auto").strip()
+        if user_lang.lower() != "auto" and user_lang in langs:
+            return user_lang
+    else:
+        accept_hdr = (request.headers.get("Accept-Language") or "").strip()
+        if accept_hdr:
+            for chunk in accept_hdr.split(","):
+                code = chunk.split(";", 1)[0].strip()
+                matched = match_supported_language(code, langs)
+                if matched:
+                    return matched
+        saved = (settings.language or "auto").strip()
+        if saved.lower() != "auto" and saved in langs:
+            return saved
+        return detect_os_language(langs)
+
     accept_hdr = (request.headers.get("Accept-Language") or "").strip()
     if accept_hdr:
         for chunk in accept_hdr.split(","):
@@ -158,14 +197,22 @@ def effective_language(settings: AppSettings, requested_lang: str = "") -> str:
     return detect_os_language(langs)
 
 
-def activate_request_locale(ctx: Any, requested_lang: str = "") -> str:
-    settings = ctx.db.get_settings()
-    eff = effective_language(settings, requested_lang=requested_lang)
+def activate_request_locale(
+    ctx: Any,
+    requested_lang: str = "",
+    user: Optional[Dict[str, Any]] = None,
+) -> str:
+    settings = ctx.db.get_settings() if ctx.db is not None else AppSettings()
+    eff = effective_language(settings, requested_lang=requested_lang, user=user)
     set_language(eff)
     return eff
 
 
-def serialize_settings(s: AppSettings, include_client_ip: bool = False) -> Dict[str, Any]:
+def serialize_settings(
+    s: AppSettings,
+    include_client_ip: bool = False,
+    db: Optional[Any] = None,
+) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "language": s.language,
         "theme_mode": s.theme_mode,
@@ -184,6 +231,9 @@ def serialize_settings(s: AppSettings, include_client_ip: bool = False) -> Dict[
         "api_enabled": bool(s.api_enabled),
         "api_allowed_ips": s.api_allowed_ips or DEFAULT_API_ALLOWED_IPS,
     }
+    if db is not None:
+        out["db_engine"] = getattr(db, "engine", "sqlite")
+        out["db_uri_masked"] = getattr(db, "db_uri_masked", "")
     if include_client_ip:
         out["client_ip"] = get_client_ip()
     return out
@@ -195,6 +245,7 @@ def serialize_device(h: HostEntry) -> Dict[str, Any]:
         "name": h.name,
         "ip": h.ip,
         "os_type": h.os_type,
+        "os_type_label": platform_display_name(h.os_type),
         "protocol": h.protocol.value,
         "port": int(h.port),
         "model": h.model,
@@ -221,11 +272,13 @@ def serialize_snippet(s: Snippet) -> Dict[str, Any]:
         "folder": s.folder,
         "snippet_type": s.snippet_type.value,
         "device_type": s.device_type,
+        "device_type_label": platform_display_name(s.device_type),
         "severity": s.severity.value,
         "description": s.description,
         "commands": s.commands,
         "audit_regex": s.audit_regex,
         "created_at": s.created_at,
+        "is_builtin": bool(s.is_builtin),
     }
 
 
@@ -237,6 +290,7 @@ def serialize_job_result(res: HostExecutionResult) -> Dict[str, Any]:
         "host_ip": res.host.ip,
         "host_port": int(res.host.port),
         "host_os": res.host.os_type,
+        "host_os_label": platform_display_name(res.host.os_type),
         "host_protocol": res.host.protocol.value,
         "status": res.status,
         "started_at": res.started_at,
@@ -258,6 +312,7 @@ def serialize_job(job: JobRecord, include_results: bool = True) -> Dict[str, Any
         "name": job.name,
         "job_type": job.job_type.value,
         "device_type": job.device_type,
+        "device_type_label": platform_display_name(job.device_type),
         "status": job.status,
         "creation_time": job.creation_time,
         "start_time": job.start_time,

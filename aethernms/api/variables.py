@@ -25,10 +25,10 @@ def register_variables_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_parse_variables():
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session)
+        user, err = require_api_user(ctx, session)
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         body = read_json_body()
         if body is None:
             return json_error(400, "Invalid JSON payload.")

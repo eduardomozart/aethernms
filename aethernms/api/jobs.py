@@ -44,10 +44,10 @@ def register_jobs_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_list_jobs():
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session, permission="jobs:read")
+        user, err = require_api_user(ctx, session, permission="jobs:read")
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         jobs = ctx.db.list_jobs()
         return json_response({"items": [serialize_job(j, include_results=True) for j in jobs]})
 
@@ -55,10 +55,10 @@ def register_jobs_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_create_job():
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session, permission="jobs:run")
+        user, err = require_api_user(ctx, session, permission="jobs:run")
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         body = read_json_body()
         if body is None:
             return json_error(400, "Invalid JSON payload.")
@@ -256,10 +256,10 @@ def register_jobs_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_get_job(job_uid: str):
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session, permission="jobs:read")
+        user, err = require_api_user(ctx, session, permission="jobs:read")
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         job = ctx.db.get_job(job_uid)
         if job is None:
             return json_error(404, "Job not found.")
@@ -300,10 +300,10 @@ def register_jobs_routes(get_ctx: CtxGetter, session: Any) -> None:
     @action.uses(session)
     def api_get_job_result_log(job_uid: str, result_id: int):
         ctx = get_ctx()
-        _user, err = require_api_user(ctx, session, permission="jobs:read")
+        user, err = require_api_user(ctx, session, permission="jobs:read")
         if err:
             return err
-        activate_request_locale(ctx)
+        activate_request_locale(ctx, user=user)
         res = ctx.db.get_job_result(job_uid, result_id)
         if res is None:
             return json_error(404, "Job result not found.")

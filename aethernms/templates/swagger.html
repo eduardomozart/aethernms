@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="cds--white" data-carbon-theme="white">
+<html lang="[[=html_lang]]" class="cds--[[=initial_theme]]" data-carbon-theme="[[=initial_theme]]" data-theme-mode="[[=theme_mode]]" data-page-title="API Docs (Swagger)">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>aethernms — REST API Docs (Swagger)</title>
-  <link rel="icon" href="/assets/aethernms.ico" />
+  <title>[[=page_title]] - aether</title>
+  [[include 'partials/head_icons.html']]
   <link rel="stylesheet" href="/static/vendor/npm-asset/carbon--styles/css/styles.min.css" />
   <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/400.css" />
   <link rel="stylesheet" href="/static/vendor/npm-asset/fontsource--ibm-plex-sans/600.css" />
@@ -55,17 +55,7 @@
   </style>
 </head>
 <body>
-  <header class="cds--header cds--g100">
-    <a class="cds--header__name" href="/">
-      <img src="/assets/aethernms-header.png" alt="aethernms" />
-      <span>aethernms</span>
-      <span class="cds--header__subtitle">REST API &amp; Swagger UI (OpenAPI 3.0)</span>
-    </a>
-    <div class="cds--header__global">
-      <a class="cds--header__action" href="/api/openapi.json" target="_blank">openapi.json</a>
-      <a class="cds--header__action" href="/">Back to App</a>
-    </div>
-  </header>
+  [[include 'partials/header.html']]
 
   <main class="swagger-wrap">
     <div id="swagger-ui"></div>
@@ -90,7 +80,6 @@
         return;
       }
 
-      // Offline fallback OpenAPI 3.0 interactive explorer (API-Key-only)
       const root = document.getElementById("offline-explorer");
       root.classList.remove("hidden");
       const spec = await (await fetch("/api/openapi.json", { credentials: "omit" })).json();

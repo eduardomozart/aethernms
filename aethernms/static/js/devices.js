@@ -4,13 +4,32 @@
   "use strict";
 
   const UI = window.AetherNMS;
-  const { $, t, escHtml, toast, api, statusTagHtml, fillSelect, openModal, closeModal, showConfirm, renderPagination, pingDevices, icon, hasPermission } = UI;
+  const {
+    $,
+    t,
+    platformLabel,
+    platformOptions,
+    escHtml,
+    toast,
+    api,
+    statusTagHtml,
+    fillSelect,
+    openModal,
+    closeModal,
+    showConfirm,
+    wireDataTableToolbar,
+    renderPagination,
+    pingDevices,
+    icon,
+    hasPermission,
+  } = UI;
 
   const page = {
     devices: [],
     editingDeviceId: null,
     globalQuery: "",
     highlightDeviceId: null,
+    toolbars: {},
     pages: {
       devices: { page: 1, size: 25 },
       airwave: { page: 1, size: 25 },
@@ -26,9 +45,7 @@
   function populateFilterDropdowns() {
     const meta = UI.state.meta || {};
     const usedPlatforms = meta.used_platforms || [];
-    const osOpts = [{ value: "All", label: t("All") }].concat(
-      usedPlatforms.map((p) => ({ value: p, label: p }))
-    );
+    const osOpts = [{ value: "All", label: t("All") }].concat(platformOptions(usedPlatforms));
     const pingStatusOpts = [
       { value: "All", label: t("All") },
       { value: "Up", label: t("Up") },
@@ -43,25 +60,24 @@
       .map((m) => `<option value="${escHtml(m)}"></option>`).join("");
     $("dl-groups").innerHTML = (meta.assigned_groups || [])
       .map((g) => `<option value="${escHtml(g)}"></option>`).join("");
+
+    if (page.toolbars.devices) page.toolbars.devices.sync();
   }
 
   function getFilteredDevices() {
     const gq = (page.globalQuery || "").trim().toLowerCase();
-    const nameQ = $("flt-dev-name").value.trim().toLowerCase();
-    const ipQ = $("flt-dev-ip").value.trim().toLowerCase();
+    const q = ($("devices-dt-search") ? $("devices-dt-search").value : "").trim().toLowerCase();
     const osQ = $("flt-dev-os").value || "All";
     const grpQ = $("flt-dev-group").value.trim().toLowerCase();
     const stQ = $("flt-dev-status").value || "All";
     return page.devices.filter((d) => {
-      if (gq) {
-        const hay = [d.name, d.ip, d.model, d.folder_path, d.os_type, d.serial_number]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        if (!hay.includes(gq)) return false;
-      }
-      if (nameQ && !(d.name || "").toLowerCase().includes(nameQ)) return false;
-      if (ipQ && !(d.ip || "").toLowerCase().includes(ipQ)) return false;
+      const platDisp = d.os_type_label || platformLabel(d.os_type);
+      const hay = [d.name, d.ip, d.model, d.folder_path, d.os_type, platDisp, d.serial_number]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (gq && !hay.includes(gq)) return false;
+      if (q && !hay.includes(q)) return false;
       if (osQ !== "All" && d.os_type !== osQ) return false;
       if (grpQ && !(d.folder_path || "").toLowerCase().includes(grpQ)) return false;
       if (stQ !== "All" && (d.ping_status || "Unknown") !== stQ) return false;
@@ -132,13 +148,14 @@
     }
     const canWrite = hasPermission("devices:write");
     tbody.innerHTML = pageItems
-      .map(
-        (d) => `
+      .map((d) => {
+        const platDisp = d.os_type_label || platformLabel(d.os_type);
+        return `
       <tr class="${d.id === page.highlightDeviceId ? "selected" : ""}" data-dev-id="${d.id}">
         <td><strong>${escHtml(d.display_label)}</strong></td>
         <td>${statusTagHtml(d.ping_status || "Unknown")}</td>
         <td class="mono">${escHtml(d.ip)}</td>
-        <td class="mono">${escHtml(d.os_type || "-")}</td>
+        <td>${escHtml(platDisp || "-")}</td>
         <td>${escHtml(d.protocol)}</td>
         <td class="mono">${escHtml(d.port)}</td>
         <td>${escHtml(d.model || "")}</td>
@@ -147,8 +164,8 @@
           ${canWrite ? `<button type="button" class="cds--btn--icon act-dev-edit" data-id="${d.id}" title="${escHtml(t("Edit"))}">${icon("edit", 16)}</button>` : ""}
           ${canWrite ? `<button type="button" class="cds--btn--icon danger act-dev-del" data-id="${d.id}" title="${escHtml(t("Delete"))}">${icon("trash-can", 16)}</button>` : ""}
         </td>
-      </tr>`
-      )
+      </tr>`;
+      })
       .join("");
 
     if (canWrite) {
@@ -212,7 +229,7 @@
     $("dev-airwave-note").classList.toggle("hidden", !isAw);
 
     const platforms = meta.platforms || ["aruba_procurve", "aruba_aoscx"];
-    fillSelect($("dev-os"), platforms, false);
+    fillSelect($("dev-os"), platformOptions(platforms), false);
 
     const initOs = dev && platforms.includes(dev.os_type)
       ? dev.os_type
@@ -229,7 +246,6 @@
     $("dev-model").value = dev ? dev.model : "";
     $("dev-group").value = dev ? dev.folder_path : "";
 
-    // Enforce AirWave read-only identity/inventory fields
     $("dev-name").readOnly = isAw;
     $("dev-ip").readOnly = isAw;
     $("dev-model").readOnly = isAw;
@@ -246,12 +262,10 @@
     $("aw-user").value = settings.airwave_username || "";
     $("aw-pass").value = "";
     $("aw-ssl").checked = Boolean(settings.airwave_verify_ssl);
-    // Preview starts empty until Fetch Inventory runs
     page.airwave = { items: [], folderOptions: [], checkedKeys: new Set(), totalRecords: 0 };
     fillSelect($("aw-flt-folder"), [{ value: "All", label: t("All") }], false);
     fillSelect($("aw-flt-os"), [{ value: "All", label: t("All") }], false);
-    $("aw-flt-name").value = "";
-    $("aw-flt-ip").value = "";
+    if (page.toolbars.airwave) page.toolbars.airwave.reset();
     $("aw-status-text").textContent = t("Enter AirWave credentials and click Fetch Inventory.");
     renderAirWaveTable();
     openModal("modal-airwave");
@@ -259,13 +273,17 @@
 
   function getFilteredAirWaveItems() {
     const fltFolder = $("aw-flt-folder").value || "All";
-    const fltName = $("aw-flt-name").value.trim().toLowerCase();
-    const fltIp = $("aw-flt-ip").value.trim().toLowerCase();
+    const q = ($("aw-dt-search") ? $("aw-dt-search").value : "").trim().toLowerCase();
     const fltOs = $("aw-flt-os").value || "All";
     return page.airwave.items.filter((h) => {
       if (fltFolder !== "All" && h.folder_id !== fltFolder && !(h.folder_path || "").toLowerCase().includes(fltFolder.toLowerCase())) return false;
-      if (fltName && !(h.name || "").toLowerCase().includes(fltName)) return false;
-      if (fltIp && !(h.ip || "").toLowerCase().includes(fltIp)) return false;
+      if (q) {
+        const hay = [h.name, h.ip, h.model, h.airwave_os, h.os_type, platformLabel(h.os_type), h.folder_path]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
       if (fltOs === "Unmapped" && h.os_type) return false;
       if (fltOs !== "All" && fltOs !== "Unmapped" && h.os_type !== fltOs) return false;
       return true;
@@ -290,7 +308,7 @@
       .map((h) => {
         const chk = page.airwave.checkedKeys.has(h.unique_key) ? "checked" : "";
         const osDisp = h.os_type
-          ? `<span class="mono">${escHtml(h.os_type)}</span>`
+          ? escHtml(platformLabel(h.os_type))
           : `<span class="cds--tag cds--tag--warm">${escHtml(t("Unmapped"))}</span>`;
         return `
           <tr>
@@ -348,10 +366,49 @@
   }
 
   function wirePageEvents() {
-    ["flt-dev-name", "flt-dev-ip", "flt-dev-os", "flt-dev-group", "flt-dev-status"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pages.devices.page = 1; renderDevicesView(); });
-      $(id).addEventListener("change", () => { page.pages.devices.page = 1; renderDevicesView(); });
+    page.toolbars.devices = wireDataTableToolbar({
+      searchInputId: "devices-dt-search",
+      searchClearId: "devices-dt-search-clear",
+      filterBtnId: "devices-filter-btn",
+      filterBadgeId: "devices-filter-badge",
+      popoverId: "devices-filter-popover",
+      applyBtnId: "devices-filter-apply",
+      resetBtnId: "devices-filter-reset",
+      chipsContainerId: "devices-active-filters",
+      fields: [
+        { id: "flt-dev-os", labelKey: "Netmiko Platform", defaultVal: "All", formatValue: platformLabel },
+        { id: "flt-dev-group", labelKey: "Group", defaultVal: "" },
+        { id: "flt-dev-status", labelKey: "Status", defaultVal: "All", formatValue: t },
+      ],
+      onChange: () => { page.pages.devices.page = 1; renderDevicesView(); },
     });
+
+    page.toolbars.airwave = wireDataTableToolbar({
+      searchInputId: "aw-dt-search",
+      searchClearId: "aw-dt-search-clear",
+      filterBtnId: "aw-filter-btn",
+      filterBadgeId: "aw-filter-badge",
+      popoverId: "aw-filter-popover",
+      applyBtnId: "aw-filter-apply",
+      resetBtnId: "aw-filter-reset",
+      chipsContainerId: "aw-active-filters",
+      fields: [
+        {
+          id: "aw-flt-folder",
+          labelKey: "Group",
+          defaultVal: "All",
+          formatValue: (val, el) => (el.selectedOptions[0] && el.selectedOptions[0].textContent) || val,
+        },
+        {
+          id: "aw-flt-os",
+          labelKey: "Netmiko Platform",
+          defaultVal: "All",
+          formatValue: (v) => (v === "Unmapped" ? t("Unmapped") : platformLabel(v)),
+        },
+      ],
+      onChange: () => { page.pages.airwave.page = 1; renderAirWaveTable(); },
+    });
+
     if ($("btn-clear-global-query")) {
       $("btn-clear-global-query").addEventListener("click", () => {
         page.globalQuery = "";
@@ -426,12 +483,13 @@
           ),
           false
         );
-        const foundOs = Array.from(new Set(page.airwave.items.map((h) => h.os_type).filter(Boolean))).sort();
-        const osOpts = [{ value: "All", label: t("All") }].concat(foundOs.map((p) => ({ value: p, label: p })));
+        const foundOs = Array.from(new Set(page.airwave.items.map((h) => h.os_type).filter(Boolean)));
+        const osOpts = [{ value: "All", label: t("All") }].concat(platformOptions(foundOs));
         if (page.airwave.items.some((h) => !h.os_type)) {
           osOpts.push({ value: "Unmapped", label: t("Unmapped") });
         }
         fillSelect($("aw-flt-os"), osOpts, false);
+        if (page.toolbars.airwave) page.toolbars.airwave.sync();
         page.pages.airwave.page = 1;
         renderAirWaveTable();
         updateAirWaveStatusLabel();
@@ -442,10 +500,6 @@
       } finally {
         $("btn-aw-fetch").disabled = false;
       }
-    });
-    ["aw-flt-folder", "aw-flt-name", "aw-flt-ip", "aw-flt-os"].forEach((id) => {
-      $(id).addEventListener("input", () => { page.pages.airwave.page = 1; renderAirWaveTable(); });
-      $(id).addEventListener("change", () => { page.pages.airwave.page = 1; renderAirWaveTable(); });
     });
     $("btn-aw-select-all").addEventListener("click", () => {
       const visible = getFilteredAirWaveItems();
@@ -473,8 +527,8 @@
           if (!groups[key]) groups[key] = { key, count: 0, firmware: h.firmware || "" };
           groups[key].count += 1;
         });
-        const platforms = (UI.state.meta && UI.state.meta.platforms) || [];
-        const platOpts = `<option value=""></option>` + platforms.map((p) => `<option value="${escHtml(p)}">${escHtml(p)}</option>`).join("");
+        const opts = platformOptions((UI.state.meta && UI.state.meta.platforms) || []);
+        const platOpts = `<option value=""></option>` + opts.map((o) => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
         $("unmapped-rows").innerHTML = Object.values(groups)
           .map(
             (g) => `

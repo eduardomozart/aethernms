@@ -108,6 +108,8 @@ def build_openapi_spec(server_url: str = "/") -> Dict[str, Any]:
                         "display_name": {"type": "string"},
                         "role": {"type": "string"},
                         "is_active": {"type": "boolean"},
+                        "language": {"type": "string", "example": "auto"},
+                        "theme_mode": {"type": "string", "enum": ["auto", "light", "dark"]},
                         "permissions": {"type": "array", "items": {"type": "string"}},
                         "created_at": {"type": "string"},
                     },
@@ -146,6 +148,8 @@ def build_openapi_spec(server_url: str = "/") -> Dict[str, Any]:
                         },
                         "api_enabled": {"type": "boolean", "default": False},
                         "api_allowed_ips": {"type": "string", "default": "127.0.0.1, ::1"},
+                        "db_engine": {"type": "string", "readOnly": True, "example": "sqlite"},
+                        "db_uri_masked": {"type": "string", "readOnly": True, "example": "sqlite:///aethernms.db"},
                     },
                 },
                 "Device": {
@@ -156,6 +160,7 @@ def build_openapi_spec(server_url: str = "/") -> Dict[str, Any]:
                         "name": {"type": "string", "example": "SW-CORE-01"},
                         "ip": {"type": "string", "example": "10.0.0.10"},
                         "os_type": {"type": "string", "example": "aruba_aoscx"},
+                        "os_type_label": {"type": "string", "readOnly": True, "example": "ArubaOS-CX"},
                         "protocol": {"type": "string", "enum": ["SSH", "Telnet"], "default": "SSH"},
                         "port": {"type": "integer", "default": 22},
                         "model": {"type": "string"},
@@ -182,11 +187,13 @@ def build_openapi_spec(server_url: str = "/") -> Dict[str, Any]:
                         "folder": {"type": "string", "example": "aruba/aruba_procurve"},
                         "snippet_type": {"type": "string", "enum": ["Config", "Audit and Remediate"]},
                         "device_type": {"type": "string", "example": "aruba_procurve"},
+                        "device_type_label": {"type": "string", "readOnly": True, "example": "ArubaOS-S"},
                         "severity": {"type": "string", "enum": ["Info", "Warning", "Minor", "Major", "Critical"]},
                         "description": {"type": "string"},
                         "commands": {"type": "string"},
                         "audit_regex": {"type": "string"},
                         "created_at": {"type": "string"},
+                        "is_builtin": {"type": "boolean", "readOnly": True},
                     },
                 },
                 "JobCreateRequest": {
@@ -644,20 +651,22 @@ def build_openapi_spec(server_url: str = "/") -> Dict[str, Any]:
             "/api/snippets/{snippet_id}": {
                 "put": {
                     "tags": ["Snippets"],
-                    "summary": "Update an existing snippet",
+                    "summary": "Update a custom snippet (built-in snippets are read-only -> 403)",
                     "parameters": [{"name": "snippet_id", "in": "path", "required": True, "schema": {"type": "integer"}}],
                     "requestBody": {"required": True, "content": _json_content(_ref("Snippet"))},
                     "responses": {
                         "200": {"description": "Snippet updated", "content": _json_content(_ref("Snippet"))},
+                        "403": _error_response("Built-in snippets are read-only"),
                         "404": _error_response("Snippet not found"),
                     },
                 },
                 "delete": {
                     "tags": ["Snippets"],
-                    "summary": "Delete a snippet",
+                    "summary": "Delete a custom snippet (built-in snippets are read-only -> 403)",
                     "parameters": [{"name": "snippet_id", "in": "path", "required": True, "schema": {"type": "integer"}}],
                     "responses": {
                         "200": {"description": "Snippet deleted"},
+                        "403": _error_response("Built-in snippets are read-only"),
                         "404": _error_response("Snippet not found"),
                     },
                 },
@@ -799,6 +808,12 @@ def register_openapi_routes(get_ctx: CtxGetter) -> None:
     @action("/api/openapi.json", method="GET")
     def api_openapi_spec():
         ctx = get_ctx()
+        if ctx.db is None:
+            return json_error(
+                503,
+                "Initial setup is required. Complete setup at /setup first.",
+                extra={"setup_required": True},
+            )
         ext_err = check_external_api_access(ctx)
         if ext_err:
             return json_error(403, ext_err)
